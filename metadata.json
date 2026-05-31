@@ -1,0 +1,6 @@
+{
+  "name": "RedHydra AI Chat",
+  "description": "An advanced, high-performance, dark-themed AI chatbot and agent platform featuring secure server-side RedHydra OpenCore streaming, multi-provider credentials support, structured task planning, defensive cybersecurity audits, and document extraction.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
