@@ -32,3 +32,15 @@ The `vite.config.ts` file now auto-detects the GitHub repository name during Git
 - normal repo such as `redhydra-ai-chat` => `/redhydra-ai-chat/`
 
 Local development still uses `/`, so `npm run dev` remains normal.
+
+
+## Emergency blank-page fix
+
+If GitHub Pages shows a blank page, use this setting instead:
+
+- Settings → Pages
+- Source: Deploy from a branch
+- Branch: main
+- Folder: /docs
+
+The `docs/` folder contains the static Vite build. The root `index.html` is only for local Vite development and should not be used as the Pages root.
