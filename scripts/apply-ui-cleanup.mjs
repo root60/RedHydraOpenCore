@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * One-time UI cleanup for RedHydra OpenCore.
+ * RedHydra OpenCore final UI cleanup.
  *
- * Run from repo root:
- * node scripts/apply-ui-cleanup.mjs
+ * Run once from repo root:
+ * node scripts/apply-final-chat-ui-fix.mjs
  */
 
 import fs from "node:fs";
@@ -12,69 +12,90 @@ import path from "node:path";
 const appPath = path.join(process.cwd(), "src", "App.tsx");
 
 if (!fs.existsSync(appPath)) {
-  console.error("src/App.tsx not found. Run this script from the repository root.");
+  console.error("src/App.tsx not found. Run this from the repository root.");
   process.exit(1);
 }
 
 let source = fs.readFileSync(appPath, "utf8");
 const before = source;
 
-const replaceAll = (from, to) => {
-  source = source.replace(from, to);
-};
+function replace(pattern, value) {
+  source = source.replace(pattern, value);
+}
 
-// Clean user-facing names and remove internal labels.
-replaceAll(/PROXIED:\/\/\{settings\.provider\.toUpperCase\(\)\}\s*•\s*\{settings\.modelName\}/g, "");
-replaceAll(/DECENTRALIZED INTELLIGENCE\s*\/\/\s*COGNITIVE FREEDOM/g, "RedHydra OpenCore");
-replaceAll(/Assistant Node/g, "RedHydra OpenCore");
-replaceAll(/Client Terminal/g, "You");
-replaceAll(/STREAM FEEDING\.\.\./g, "typing...");
-replaceAll(/Synchronizing pipeline logs\.\.\./g, "Thinking...");
-replaceAll(/REDHYDRA\s*\/\/\s*OPENCORE ACTIVE\s*PROXIED/g, "RedHydra OpenCore");
-replaceAll(/Hydra Cybernetic Emulator Core/g, "How can I help?");
-replaceAll(
-  /SYSTEM STATUS: ONLINE\s*\/\/\s*OPERATOR PARAMS:[\s\S]*?structural simulations\./g,
-  "Ask RedHydra OpenCore anything. Send a question, code, or error log."
-);
-replaceAll(/⚡ QUICK LAUNCH CYBER BLUEPRINTS \(INTERACTIVE\)/g, "Quick actions");
-replaceAll(/ENCRYPTED NODE: TLS_v1\.3_GCM_SHA384 STREAK INDETERMINATE/g, "");
+function replaceAllLiteral(from, to) {
+  source = source.split(from).join(to);
+}
 
-// Simplify title and first chat content.
-replaceAll(/title:\s*"Initial Hydra Intelligence Module"/g, 'title: "New Chat"');
+// Agent mode must not be default.
+replace(/const\s+\[isAgentMode,\s*setIsAgentMode\]\s*=\s*useState\(true\)/g, "const [isAgentMode, setIsAgentMode] = useState(false)");
 
-replaceAll(
-  /content:\s*`### Welcome to \*\*RedHydra OpenCore\*\*[\s\S]*?side-by-side with your agent\.`/g,
-  "content: `Hi, I’m RedHydra OpenCore. How can I help?`"
-);
+// Clean defaults.
+replace(/modelName:\s*'hydra-opencore-v3'/g, "modelName: 'RedHydra OpenCore'");
+replace(/responseStyle:\s*'structured'/g, "responseStyle: 'concise'");
 
-replaceAll(
-  /content:\s*`System profile synchronized:[\s\S]*?Use local guidelines or configure keys in settings\.`/g,
-  "content: `New chat started.`"
-);
+// Clean initial chat.
+replace(/title:\s*"Initial Hydra Intelligence Module"/g, 'title: "New Chat"');
+replace(/messages:\s*\[\s*\{\s*id:\s*"m-welcome",\s*role:\s*'assistant',\s*content:\s*`### Welcome to \*\*RedHydra OpenCore\*\*[\s\S]*?side-by-side with your agent\.`\s*,\s*timestamp:\s*new Date\(\)\.toLocaleTimeString\(\)\s*\}\s*\]/g, "messages: []");
 
-replaceAll(
-  /Current conversation pruned\.\nEnter a new query to start dynamic processing\./g,
-  "Chat cleared."
-);
+// Clean new chat system message.
+replace(/messages:\s*\[\s*\{\s*id:\s*`m-init-\$\{Date\.now\(\)\}`,\s*role:\s*'system',\s*content:\s*`System profile synchronized:[\s\S]*?settings\.`,\s*timestamp:\s*new Date\(\)\.toLocaleTimeString\(\)\s*\}\s*\]/g, "messages: []");
 
-replaceAll(/Pipeline request transmitted to RedHydra OpenCore sandbox\./g, "Message sent.");
-replaceAll(/Connection pipeline disruption/g, "Connection error");
-replaceAll(/Please check server setups or toggle API configuration\./g, "Please try again.");
+// Header cleanup.
+replace(/navView === 'chat' && `RedHydra OpenCore \/\/ \$\{\(activeChat\?\.assistantMode \|\| 'general'\)\.replace\('_', ' '\)\}`/g, "navView === 'chat' && 'RedHydra OpenCore'");
+replaceAllLiteral("DECENTRALIZED INTELLIGENCE // COGNITIVE FREEDOM", "");
+replace(/PROXIED:\/\/\{settings\.provider\.toUpperCase\(\)\}\s*•\s*\{settings\.modelName\}/g, "");
 
-// Remove provider/model info from exported chat files.
-replaceAll(
-  /Provider Profile:\s*\$\{settings\.provider\.toUpperCase\(\)\}\s*\(\$\{settings\.modelName\}\)\\n\\n---\\n\\n/g,
-  ""
-);
-replaceAll(/RedHydra AI Conversational Log/g, "RedHydra OpenCore Chat");
+// Message labels.
+replaceAllLiteral("Client Terminal", "You");
+replaceAllLiteral("Assistant Node", "RedHydra OpenCore");
+replaceAllLiteral("STREAM FEEDING...", "typing...");
+replaceAllLiteral("Synchronizing pipeline logs...", "Thinking...");
+replaceAllLiteral("GENERAL CONSOLE", "General");
+replaceAllLiteral("DEVELOPMENT CO-PILOT", "Developer");
+replaceAllLiteral("CYBER LAB", "Security");
+replaceAllLiteral("ANALYTICAL RESEARCH", "Research");
+replaceAllLiteral("SCRIBE COMPOSER", "Writer");
+replaceAllLiteral("CODE REVIEW AUDITOR", "Code Review");
 
-// Make chat title plain in the topbar.
-replaceAll(
-  /navView === 'chat' && `RedHydra OpenCore \/\/ \$\{\(activeChat\?\.assistantMode \|\| 'general'\)\.replace\('_', ' '\)\}`/g,
-  "navView === 'chat' && 'RedHydra OpenCore'"
-);
+// Empty state cleanup.
+replaceAllLiteral("REDHYDRA // OPENCORE ACTIVE  PROXIED", "RedHydra OpenCore");
+replaceAllLiteral("Hydra Cybernetic Emulator Core", "How can I help?");
+replace(/SYSTEM STATUS: ONLINE\s*\/\/\s*OPERATOR PARAMS:[\s\S]*?structural simulations\./g, "Ask a question, paste code, or send an error log.");
+replaceAllLiteral("⚡ QUICK LAUNCH CYBER BLUEPRINTS (INTERACTIVE)", "Quick actions");
+replaceAllLiteral("ENCRYPTED NODE: TLS_v1.3_GCM_SHA384 STREAK INDETERMINATE", "");
 
-// Add stable class/attribute to topbar.
+// Remove footer/internal info.
+replace(/<span className="text-\[10px\][^"]*">\s*RedHydra Conformance API Logs\.\s*Client API caches reside safely in Sandboxed IndexedDB storage\.\s*<\/span>/g, "");
+replaceAllLiteral("RedHydra Conformance API Logs. Client API caches reside safely in Sandboxed IndexedDB storage.", "");
+
+// Toast/log text cleanup.
+replaceAllLiteral("Agent Integration Activated", "Agent Mode On");
+replaceAllLiteral("Agent Integration Suspended", "Agent Mode Off");
+replace(/addToast\(`Agent Integration \$\{!isAgentMode \? 'Activated' : 'Suspended'\}`, "success"\);/g, "addToast(!isAgentMode ? 'Agent Mode On' : 'Agent Mode Off', 'success');");
+replaceAllLiteral("Prune Chat", "Clear Chat");
+replaceAllLiteral("Export Logs", "Export");
+replaceAllLiteral("STOP PIPELINE", "STOP");
+
+// Export cleanup.
+replace(/# RedHydra AI Conversational Log:/g, "# RedHydra OpenCore Chat:");
+replace(/Timestamp:\s*\$\{activeChat\.createdAt\}\\nProvider Profile:\s*\$\{settings\.provider\.toUpperCase\(\)\}\s*\(\$\{settings\.modelName\}\)\\n\\n---\\n\\n/g, "Timestamp: ${activeChat.createdAt}\\n\\n---\\n\\n");
+
+// Compilation/log panel cleanup.
+replace(/const\s+\[compilationLogs,\s*setCompilationLogs\]\s*=\s*useState\(\[[\s\S]*?"Monitoring operator terminal sessions\."\s*\]\)/g, "const [compilationLogs, setCompilationLogs] = useState<string[]>([])");
+
+// Disable fake forbidden admin logs.
+replace(/const handleUserAdminTrigger = \(\) => \{[\s\S]*?\};\s*const handleSelfUpgradeTrigger/g, "const handleUserAdminTrigger = () => { addToast('Action unavailable in browser build.', 'info'); }; const handleSelfUpgradeTrigger");
+replace(/const handleSelfUpgradeTrigger = \(\) => \{[\s\S]*?\};\s*const triggerAISelfUpgradeCompilation/g, "const handleSelfUpgradeTrigger = () => { addToast('Action unavailable in browser build.', 'info'); }; const triggerAISelfUpgradeCompilation");
+replace(/const triggerAISelfUpgradeCompilation = \(\) => \{[\s\S]*?\};\s*\/\/ CORE CHAT SENDING ENGINE/g, "const triggerAISelfUpgradeCompilation = () => {}; // CORE CHAT SENDING ENGINE");
+
+// Clean clear-chat message.
+replace(/content:\s*"Current conversation pruned\.\s*Enter a new query to start dynamic processing\."/g, 'content: "Chat cleared."');
+
+// Clean error display.
+replace(/content:\s*`### ⚠️ Connection pipeline disruption\\n\*\*Details:\*\* \$\{err\.message \|\| 'The request was terminated by client'\}\\n\\nPlease check server setups or toggle API configuration\.`/g, "content: `Something went wrong. Please try again.`");
+
+// Make topbar and chat scroll easier to target by CSS.
 if (!source.includes("data-redhydra-topbar")) {
   source = source.replace(
     /(\{\/\* TOP STATUS BAR BAR \*\/\}\s*)<div([^>]*?)className="([^"]*)"/,
@@ -82,7 +103,6 @@ if (!source.includes("data-redhydra-topbar")) {
   );
 }
 
-// Add stable class/attribute to chat scroll area.
 if (!source.includes("data-redhydra-chat-scroll")) {
   source = source.replace(
     /(\{\/\* Chat items scrolling list \*\/\}\s*)<div([^>]*?)className="([^"]*)"/,
@@ -91,8 +111,8 @@ if (!source.includes("data-redhydra-chat-scroll")) {
 }
 
 if (source === before) {
-  console.log("No changes made. App.tsx may already be cleaned, or its structure changed.");
+  console.log("No changes made. The file may already be patched or has changed structure.");
 } else {
   fs.writeFileSync(appPath, source, "utf8");
-  console.log("Updated src/App.tsx with clean labels and stable header markers.");
+  console.log("Updated src/App.tsx: clean responses, Agent Mode off by default, header/footer/internal labels cleaned.");
 }
