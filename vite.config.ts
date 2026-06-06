@@ -7,8 +7,7 @@ import { defineConfig } from 'vite';
  * GitHub Pages project URL:
  * https://root60.github.io/RedHydraOpenCore/
  *
- * Because this is a project page, Vite must build assets under:
- * /RedHydraOpenCore/
+ * Project pages must build Vite assets under /RedHydraOpenCore/.
  */
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/RedHydraOpenCore/' : '/',

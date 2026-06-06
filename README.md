@@ -1,92 +1,74 @@
-# RedHydra AI Chat 🐉
+# RedHydra OpenCore
 
-An advanced, production-ready, dark-themed AI chatbot and structured task-automation agent workspace. RedHydra offers robust code generation, research summaries, localized document parsing, and defensible cybersecurity exercises supported by multiple top-tier AI API providers.
+RedHydra OpenCore is a static-first React/Vite security and developer-assistance workspace.
 
----
+This fixed version removes the required Google/GCP/Gemini key path.
 
-## 🚀 Primary Features
+## Default public mode
 
-RedHydra is built with a sleek, high-contrast, cyberpunk-inspired visual identity. It targets developers, security researchers, and business analysts with structured data workspaces and robust model settings controls.
+The GitHub Pages version runs in **OpenCore Local Mode** by default.
 
-### 1. Advanced Chat Integration (ChatConsole)
-- **ChatGPT-like Layout**: Fluid typing animation, responsive user/assistant bubbles, and system instructions.
-- **Real-time SSE Streaming**: High-fidelity, character-by-character Server-Sent Events (SSE) streaming through the built-in Gemini channel.
-- **Full Markdown Overrides**: Complete rendering of bullet outline hierarchies, informational blockquotes, and data structures.
-- **Modular Code Blocks**: Support for syntax-styled code frames across 15+ target languages with instant copy widgets.
-- **Timeline Operations**: Regenerating assistant loops, inline editing previous user prompts, clearing logs, or downloading transcripts into raw Markdown formats.
+- No GCP API key
+- No Google service account
+- No built-in vendor key
+- No login required
+- No backend required for the default public chat path
+- Safe for open-source publication
 
-### 2. Multi-Step Agent Operations (AgentMode)
-- Interactive bento-grid timeline detailing:
-  - Overall system goal.
-  - Active comprehension parameters.
-  - Numbered itemized step tracking with dynamic status indicators (`Pending`, `Running`, `Completed`, `Failed`).
-  - Validation checklists with user-editable compliance ticks.
-  - Limitations and upcoming actions alerts.
+## What this means
 
-### 3. Integrated Specialty Workspaces
-- **Cybersecurity Audit Workspace**: Scan programs for OWASP Top 10 vulnerabilities, construct parameterized PDO statements, generate Docker secure layered configurations, or explain CVE disclosures safely.
-- **Research Analytics Console**: Analyze material factuality to separate verifiable facts from subjective assumptions, generate structured briefs, and explore complex topics.
-- **Multi-Source File Workbench**: Extract key outlines, draft FAQs, or perform comparative assessments between different document streams.
-- **Interactive Prompt Cards**: Choose from diverse categories including Coding, Debugging, Writing, and Business Strategy to quickly build queries.
+The default public mode is a local guided assistant. It gives structured help for:
 
-### 4. Enterprise-Grade Model Controls & Caching
-- **Multi-Provider Hub**: Support for Built-in RedHydra Gemini, client-side OpenAI token keys, OpenRouter (Claude, LLaMA), and local Ollama offline APIs.
-- **Parametric Tuning**: Real-time sliding temperature controls, max tokens adjustment, custom system prompt overrides, and template styles selections.
-- **Private Local Memory**: Retain preferences and chats solely in local sandboxed storage. Easily export backups or wipe data with one click.
+- GitHub Pages deployment
+- Code review checklists
+- Defensive cybersecurity guidance
+- File/text review
+- Secret-removal guidance
 
----
+It is not a hosted cloud LLM. A real hosted LLM requires a real backend or a user-owned provider key. A truly free public cloud LLM key should not be hardcoded into an open-source repository.
 
-## 🛠️ Technology Stack
-- **Library**: React 19 (TypeScript)
-- **Bundler & Server**: Vite 6, Custom Express Backend, `tsx` runner
-- **Styling**: Tailwind CSS v4
-- **Formatting**: React Markdown, Custom CSS Utility Layers
-- **Icons**: Lucide React
-- **Compilers**: esbuild, ts-node
+## Optional real LLM support
 
----
+Users can optionally connect their own provider from Settings:
 
-## 💻 Local Installation and Setup
+- Local Ollama / OpenAI-compatible local server
+- OpenRouter with their own key
+- OpenAI-compatible endpoint with their own key
 
-### Prerequisites
-- Node.js (v18.0 or higher)
-- npm package manager
+The project does not ship with shared credentials.
 
-### 1. Clone & Expand
-```bash
-git clone <repository-url>
-cd redhydra-ai-chat
-```
+## GitHub Pages deployment
 
-### 2. Install Dependencies
+Use:
+
 ```bash
 npm install
+npm run build:pages
 ```
 
-### 3. Setup Secrets
-Copy the environment template and configure secrets:
-```bash
-cp .env.example .env
-```
-Inside `.env`, configure your server-side Gemini API key:
-```env
-GEMINI_API_KEY="YOUR_ACTUAL_SECURE_GEMINI_API_KEY"
+GitHub Pages must use:
+
+```text
+Settings → Pages → Build and deployment → Source → GitHub Actions
 ```
 
-### 4. Launch Local Dev Server
+The workflow builds the static Vite app and publishes `dist`.
+
+## Local development
+
 ```bash
+npm install
 npm run dev
 ```
-The server will start listening on port `3000`. Navigate to `http://localhost:3000` to start using your RedHydra AI Chat workspace!
 
----
+Then open:
 
-## 🔒 Security, Safety, and Privacy
-- **Client-Side Key Neutrality**: No secret keys are ever hardcoded. Client keys entered in settings are cached only within the sandboxed browser local storage.
-- **Defensive Cyber Education ONLY**: The cybersecurity workspace strictly enforces safety policies. It is designed for defense, hardening, patching, and educational concept mapping. It will not assist in malicious scripting, exploitation, or malware compilation.
-- **Code Review Mandate**: Always manually inspect and verify any generated scripts, server configs, or docker layers before deploying to live production sites.
+```text
+http://localhost:3000
+```
 
----
+The local Node server also runs without GCP/Gemini credentials.
 
-## 📜 License
-Licensed under the Apache-2.0 License. See the LICENSE details for terms.
+## Important
+
+GitHub Pages cannot run `server.ts`, Express routes, or private environment variables. That is why this fix makes the public frontend work without depending on `/api/chat` by default.

@@ -1,0 +1,21 @@
+diff --git a/src/services/aiService.ts b/src/services/aiService.ts
+--- a/src/services/aiService.ts
++++ b/src/services/aiService.ts
+@@
+-// Old service attempted to call /api/chat and /api/chat-stream for the built-in provider.
+-// That required server-side GCP/Gemini configuration and failed on GitHub Pages.
++// New service uses local OpenCore guided mode by default.
++// No Google/GCP/Gemini SDK, no built-in API key, no service account.
++// Optional OpenAI-compatible providers remain user-owned and opt-in only.
+diff --git a/server.ts b/server.ts
+--- a/server.ts
++++ b/server.ts
+@@
+-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
++// Removed GoogleGenAI. This server now runs no-key local responses only.
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@
+-    "@google/genai": "^2.4.0",
++    // removed: @google/genai
