@@ -8,9 +8,8 @@ import { createServer as createViteServer } from "vite";
  *
  * No Google/GCP/Gemini SDK.
  * No service account.
- * No built-in API key.
- *
- * GitHub Pages does not run this file. It is only for local Node hosting.
+ * No built-in shared API key.
+ * Clean direct responses only.
  */
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,41 +20,22 @@ function buildLocalReply(messages: Array<{ role: string; content: string }>) {
   const normalized = last.toLowerCase();
 
   if (normalized.includes("api key") || normalized.includes("gcp") || normalized.includes("gemini")) {
-    return `### RedHydra OpenCore Local Server
-
-This server build does not use Google/GCP/Gemini credentials.
-
-- No built-in API key
-- No service account
-- No cloud AI dependency
-- Safe for open-source publication
-
-For real LLM responses, run a local OpenAI-compatible server such as Ollama and connect it from the app settings.`;
+    return "This build does not require a GCP/Gemini API key. Do not hardcode shared keys. Use local no-key mode by default, or let users add their own provider key if needed.";
   }
 
   if (normalized.includes("deploy") || normalized.includes("github pages")) {
-    return `### Deployment Note
-
-GitHub Pages is static hosting. It will serve the React/Vite frontend from the built \`dist\` folder, but it will not run \`server.ts\`.
-
-The public build now works without calling backend routes by default.`;
+    return "GitHub Pages can only host the static frontend. Build with npm run build:pages and publish the dist folder.";
   }
 
   if (normalized.includes("security") || normalized.includes("owasp") || normalized.includes("vulnerability")) {
-    return `### Defensive Security Checklist
-
-1. Remove hardcoded secrets from the repository.
-2. Use environment variables only on private backend hosts.
-3. Add secret scanning before release.
-4. Use parameterized database queries.
-5. Keep dependency versions patched.`;
+    return "For defensive security, remove hardcoded secrets, validate inputs, use parameterized queries, sanitize unsafe HTML, add rate limiting, and keep dependencies patched.";
   }
 
-  return `### RedHydra OpenCore Local Mode
+  if (normalized.includes("code") || normalized.includes("fix") || normalized.includes("bug")) {
+    return "Paste the code or error log and I will give the corrected version directly.";
+  }
 
-The local server is running without any cloud API key.
-
-Paste a code snippet, error log, or deployment issue and RedHydra will return structured local guidance.`;
+  return "RedHydra is running in clean no-key local mode. Send code, an error log, or a question and I will answer directly.";
 }
 
 async function startServer() {
@@ -68,8 +48,8 @@ async function startServer() {
     res.json({
       ok: true,
       mode: "opencore-local-no-key",
-      cloudProvider: "none",
       requiresApiKey: false,
+      responseStyle: "clean-direct",
     });
   });
 
@@ -87,11 +67,11 @@ async function startServer() {
     res.setHeader("Connection", "keep-alive");
 
     let index = 0;
-    const chunkSize = 20;
+    const chunkSize = 24;
 
     const timer = setInterval(() => {
       if (index >= text.length) {
-        res.write("data: [DONE]\\n\\n");
+        res.write("data: [DONE]\n\n");
         clearInterval(timer);
         res.end();
         return;
@@ -99,8 +79,8 @@ async function startServer() {
 
       const chunk = text.slice(index, index + chunkSize);
       index += chunkSize;
-      res.write(`data: ${JSON.stringify({ text: chunk })}\\n\\n`);
-    }, 20);
+      res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+    }, 15);
   });
 
   if (process.env.NODE_ENV === "production") {
@@ -119,11 +99,11 @@ async function startServer() {
   }
 
   app.listen(PORT, () => {
-    console.log(`RedHydra OpenCore local no-key server running on http://localhost:${PORT}`);
+    console.log(`RedHydra clean no-key server running on http://localhost:${PORT}`);
   });
 }
 
 startServer().catch((error) => {
-  console.error("Failed to start RedHydra OpenCore server:", error);
+  console.error("Failed to start server:", error);
   process.exit(1);
 });
