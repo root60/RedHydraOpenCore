@@ -8,23 +8,22 @@ const __dirname = path.dirname(__filename);
 
 function buildReply(messages: Array<{ role: string; content: string }>) {
   const last = messages[messages.length - 1]?.content || "";
-  const normalized = last.toLowerCase();
+  const lower = last.toLowerCase();
 
-  if (normalized.includes("hello") || normalized.includes("hi")) {
+  if (lower.includes("hello") || lower.includes("hi")) {
     return "Hi, I’m RedHydra OpenCore. How can I help?";
   }
 
-  if (
-    normalized.includes("fix") ||
-    normalized.includes("code") ||
-    normalized.includes("error") ||
-    normalized.includes("bug")
-  ) {
-    return "Send the code or error log, and I’ll give the corrected version.";
+  if (lower.includes("weather")) {
+    return "Which city should I check the weather for?";
   }
 
-  if (normalized.includes("deploy") || normalized.includes("github pages")) {
-    return "Send the workflow or deployment log, and I’ll fix it.";
+  if (lower.includes("exit code 1")) {
+    return "Exit code 1 means the build failed. Send the full error above that line and I’ll fix it.";
+  }
+
+  if (lower.includes("fix") || lower.includes("code") || lower.includes("error") || lower.includes("bug")) {
+    return "Send the code or full error log, and I’ll give the corrected version.";
   }
 
   return "Send the details, and I’ll help directly.";
@@ -54,8 +53,6 @@ async function startServer() {
     res.setHeader("Connection", "keep-alive");
 
     let index = 0;
-    const chunkSize = 24;
-
     const timer = setInterval(() => {
       if (index >= text.length) {
         res.write("data: [DONE]\n\n");
@@ -64,8 +61,8 @@ async function startServer() {
         return;
       }
 
-      const chunk = text.slice(index, index + chunkSize);
-      index += chunkSize;
+      const chunk = text.slice(index, index + 24);
+      index += 24;
       res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
     }, 15);
   });
