@@ -16,309 +16,6 @@ body,
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-@layer utilities {
-  @keyframes slide-in {
-    from {
-      transform: translateY(12px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes zoom-in {
-    from {
-      transform: scale(0.96);
-      opacity: 0;
-    }
-
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  @keyframes slide-left {
-    from {
-      transform: translateX(16px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  .animate-slide-in {
-    animation: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .animate-zoom-in {
-    animation: zoom-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .animate-slide-left {
-    animation: slide-left 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .animate-pulse-light {
-    animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  @keyframes cyber-pulse {
-    0%,
-    100% {
-      box-shadow:
-        0 0 6px rgba(239, 68, 68, 0.15),
-        inset 0 0 2px rgba(239, 68, 68, 0.05);
-      border-color: rgba(239, 68, 68, 0.2);
-    }
-
-    50% {
-      box-shadow:
-        0 0 16px rgba(239, 68, 68, 0.35),
-        inset 0 0 6px rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.4);
-    }
-  }
-
-  @keyframes scanline-flow {
-    0% {
-      background-position: 0 0;
-    }
-
-    100% {
-      background-position: 0 100%;
-    }
-  }
-
-  @keyframes crt-flicker {
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    21% {
-      opacity: 0.98;
-    }
-
-    22% {
-      opacity: 0.94;
-    }
-
-    23% {
-      opacity: 0.99;
-    }
-
-    49% {
-      opacity: 0.99;
-    }
-
-    50% {
-      opacity: 0.88;
-    }
-
-    51% {
-      opacity: 0.96;
-    }
-
-    52% {
-      opacity: 0.99;
-    }
-
-    81% {
-      opacity: 1;
-    }
-
-    82% {
-      opacity: 0.92;
-    }
-
-    83% {
-      opacity: 0.98;
-    }
-  }
-
-  @keyframes glitch-shake {
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-
-    94% {
-      transform: translate(0, 0);
-    }
-
-    95% {
-      transform: translate(-1px, 0.5px);
-    }
-
-    96% {
-      transform: translate(1px, -0.5px);
-    }
-
-    97% {
-      transform: translate(-0.5px, -1px);
-    }
-
-    98% {
-      transform: translate(0, 0);
-    }
-  }
-
-  .animate-cyber-pulse {
-    animation: cyber-pulse 2s infinite ease-in-out;
-  }
-
-  .animate-crt-flicker {
-    animation: crt-flicker 5s infinite ease-in-out;
-  }
-
-  .group:hover .group-hover-glitch {
-    animation: glitch-shake 0.3s infinite linear;
-  }
-
-  .scanline-overlay {
-    position: relative;
-  }
-
-  .scanline-overlay::after {
-    content: " ";
-    display: block;
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-      linear-gradient(
-        90deg,
-        rgba(255, 0, 0, 0.03),
-        rgba(0, 255, 0, 0.01),
-        rgba(0, 0, 255, 0.03)
-      );
-    background-size: 100% 4px, 6px 100%;
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  .glow-red-node {
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.08);
-  }
-
-  .bg-zinc-950 {
-    background-color: rgba(10, 10, 10, 0.55) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-  }
-
-  .bg-zinc-950\/95 {
-    background-color: rgba(10, 10, 10, 0.5) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-  }
-
-  .bg-zinc-900 {
-    background-color: rgba(20, 20, 20, 0.55) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-  }
-
-  .bg-zinc-900\/55 {
-    background-color: rgba(20, 20, 20, 0.45) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-  }
-
-  .bg-zinc-900\/50 {
-    background-color: rgba(15, 15, 15, 0.4) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-  }
-
-  .bg-zinc-950\/60 {
-    background-color: rgba(10, 10, 10, 0.45) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-  }
-
-  .bg-zinc-950\/80 {
-    background-color: rgba(10, 10, 10, 0.6) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-  }
-
-  .border-zinc-900 {
-    border-color: rgba(255, 255, 255, 0.05) !important;
-  }
-
-  .border-zinc-950 {
-    border-color: rgba(255, 255, 255, 0.04) !important;
-  }
-
-  .border-zinc-850 {
-    border-color: rgba(255, 255, 255, 0.07) !important;
-  }
-
-  .border-zinc-800 {
-    border-color: rgba(255, 255, 255, 0.08) !important;
-  }
-
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.22);
-  }
-
-  @keyframes laser-scan {
-    0% {
-      top: 0%;
-      opacity: 0.1;
-    }
-
-    50% {
-      opacity: 0.65;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-    }
-
-    100% {
-      top: 100%;
-      opacity: 0.1;
-    }
-  }
-
-  .animate-laser-scan {
-    animation: laser-scan 8s linear infinite;
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* RedHydra header and layout stability fix                                   */
-/* -------------------------------------------------------------------------- */
-
-/*
-  Fixes:
-  - header text getting hidden
-  - status information squeezing into one row
-  - title/subtitle/telemetry not aligning on mobile/tablet
-  - select/buttons overflowing out of the top bar
-  - flex children refusing to shrink because min-width defaults to auto
-*/
-
 *,
 *::before,
 *::after {
@@ -337,102 +34,202 @@ textarea {
   max-width: 100%;
 }
 
-/* Keep app viewport stable on mobile browser address-bar resize. */
 .h-screen,
 .min-h-screen {
   min-height: 100dvh;
 }
 
-/* Prevent important header/status text from disappearing inside flex rows. */
-#root h1,
-#root h2,
-#root h3,
-#root p,
-#root span {
-  overflow-wrap: anywhere;
+@layer utilities {
+  @keyframes slide-in {
+    from {
+      transform: translateY(12px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes zoom-in {
+    from {
+      transform: scale(0.96);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-zoom-in {
+    animation: zoom-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .bg-zinc-950 {
+    background-color: rgba(10, 10, 10, 0.72) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+  }
+
+  .bg-zinc-950\/95 {
+    background-color: rgba(10, 10, 10, 0.72) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+  }
+
+  .bg-zinc-900,
+  .bg-zinc-900\/55,
+  .bg-zinc-900\/50 {
+    background-color: rgba(20, 20, 20, 0.55) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  .border-zinc-900,
+  .border-zinc-950,
+  .border-zinc-850,
+  .border-zinc-800 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.24);
+  }
 }
 
-/* The app top bar uses fixed-height Tailwind classes. On narrow screens,
-   fixed height makes title, subtitle, provider info, buttons, and dropdown
-   clip/vanish. These overrides allow wrapping instead. */
-@media (max-width: 1279px) {
+/* -------------------------------------------------------------------------- */
+/* RedHydra OpenCore final header stability fix                               */
+/* -------------------------------------------------------------------------- */
+
+/* If the patch script adds the class/attribute, use the strongest selector. */
+.redhydra-topbar,
+[data-redhydra-topbar="true"] {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  min-height: 64px !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  flex-wrap: wrap !important;
+  overflow: visible !important;
+  background: rgba(5, 5, 5, 0.92) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Fallback selector for the current App.tsx topbar before running the patch. */
+#root div:has(> button[title="Toggle Workspace Sidebar"]) {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  flex-shrink: 0 !important;
+  height: auto !important;
+  min-height: 64px !important;
+  overflow: visible !important;
+  flex-wrap: wrap !important;
+  background: rgba(5, 5, 5, 0.92) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Keep the scroll on chat messages, not on the whole page/header. */
+.redhydra-chat-scroll,
+[data-redhydra-chat-scroll="true"] {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scroll-behavior: smooth;
+}
+
+/* Prevent automatic scroll from visually pushing the header away. */
+#root main,
+#root section,
+#root .flex-1 {
+  min-height: 0;
+}
+
+/* Header text should stay readable instead of clipping. */
+.redhydra-topbar h1,
+.redhydra-topbar h2,
+.redhydra-topbar h3,
+.redhydra-topbar p,
+.redhydra-topbar span,
+[data-redhydra-topbar="true"] h1,
+[data-redhydra-topbar="true"] h2,
+[data-redhydra-topbar="true"] h3,
+[data-redhydra-topbar="true"] p,
+[data-redhydra-topbar="true"] span {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* The app had fixed height utility classes that can clip the topbar. */
+@media (max-width: 1280px) {
   #root .h-20,
   #root .h-16,
   #root .h-14,
-  #root .h-\[72px\],
-  #root .min-h-20,
-  #root .min-h-16,
-  #root .min-h-14 {
+  #root .h-\[72px\] {
     height: auto !important;
     min-height: 64px !important;
   }
 
   #root .items-center.justify-between,
-  #root .items-center.justify-end,
-  #root .items-center.gap-3,
-  #root .items-center.gap-4,
-  #root .items-center.gap-5 {
+  #root .items-center.justify-end {
     flex-wrap: wrap;
   }
 }
 
-/* Header-specific responsive behavior.
-   The top status area contains:
-   - hamburger
-   - RedHydra title
-   - decentralized intelligence subtitle
-   - provider/model telemetry
-   - prune/export buttons
-   - assistant mode dropdown
-*/
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
+  .redhydra-topbar,
+  [data-redhydra-topbar="true"],
+  #root div:has(> button[title="Toggle Workspace Sidebar"]) {
+    align-items: flex-start !important;
+    padding: 0.75rem 1rem !important;
+    gap: 0.55rem !important;
+  }
+
   #root h2 {
-    font-size: clamp(0.92rem, 2.5vw, 1.15rem);
-    line-height: 1.25;
-    white-space: normal !important;
-    text-overflow: clip !important;
-    overflow: visible !important;
+    font-size: 0.92rem !important;
+    line-height: 1.25 !important;
   }
 
   #root select {
     width: 100%;
     min-width: 0;
-    white-space: normal;
-  }
-
-  #root button {
-    white-space: nowrap;
-  }
-
-  /* Make the top controls form a clean second row instead of hiding. */
-  #root div:has(> select),
-  #root div:has(> button) {
-    min-width: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  #root {
-    overflow-x: hidden;
-  }
-
-  #root h2 {
-    max-width: 100%;
   }
 
   #root .px-6 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-  }
-
-  #root .px-5 {
-    padding-left: 0.875rem !important;
-    padding-right: 0.875rem !important;
-  }
-
-  #root .py-4 {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
   }
 
   #root .gap-5 {
@@ -446,52 +243,15 @@ textarea {
   #root .gap-3 {
     gap: 0.5rem !important;
   }
-
-  #root .text-\[10\.5px\],
-  #root .text-xs {
-    line-height: 1.25;
-  }
-
-  /* Dropdown was too wide and could push other header actions off-screen. */
-  #root select.px-2\.5 {
-    flex: 1 1 180px;
-    max-width: 100%;
-  }
 }
 
 @media (max-width: 520px) {
   #root h2 {
-    font-size: 0.9rem;
+    font-size: 0.86rem !important;
   }
 
   #root button,
   #root select {
     font-size: 0.72rem !important;
   }
-
-  #root .rounded-xl {
-    border-radius: 0.7rem;
-  }
-
-  #root .hidden-on-xs {
-    display: none !important;
-  }
-}
-
-/* Disable visible glitch shake on critical header text.
-   Hover glitch is cool for decorative cards, but it makes header info look
-   broken when the top bar is crowded. */
-#root h1,
-#root h2,
-#root h3 {
-  animation: none !important;
-}
-
-/* Keep popovers and header controls above the chat scroll area. */
-#root .z-40 {
-  z-index: 40;
-}
-
-#root .z-50 {
-  z-index: 50;
 }
