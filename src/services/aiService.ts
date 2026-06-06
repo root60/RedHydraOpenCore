@@ -2,11 +2,13 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * RedHydra OpenCore no-key AI service.
+ * Clean direct AI service for RedHydra OpenCore.
  *
- * This file intentionally does NOT import Google/GCP/Gemini SDKs and does NOT
- * require a built-in API key. The public GitHub Pages build runs in local
- * open-source guided mode by default.
+ * Default mode:
+ * - No GCP key
+ * - No Google service account
+ * - No built-in shared API key
+ * - No forced template output
  */
 
 import { AISettings, Message, AgentPlan } from "../types";
@@ -18,331 +20,131 @@ import {
 
 type AgentStatus = "pending" | "running" | "completed" | "failed";
 
-function nowId(prefix = "m") {
+function createId(prefix = "m") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function streamText(text: string, onChunk?: (text: string) => void) {
+function getLastUserMessage(messages: Message[]) {
+  return messages[messages.length - 1]?.content || "";
+}
+
+function streamPlainText(text: string, onChunk?: (text: string) => void) {
   if (!onChunk) return;
+
   let index = 0;
-  const step = 14;
+  const step = 18;
+
   const timer = window.setInterval(() => {
     index += step;
     onChunk(text.slice(0, index));
+
     if (index >= text.length) {
       onChunk(text);
       window.clearInterval(timer);
     }
-  }, 12);
+  }, 10);
 }
 
-function hasAny(input: string, words: string[]) {
-  return words.some((word) => input.includes(word));
+function hasAny(text: string, keywords: string[]) {
+  return keywords.some((keyword) => text.includes(keyword));
 }
 
-function extractAttachmentBlock(content: string) {
+function extractAttachment(content: string) {
   const nameMatch = content.match(/\[ATTACHED FILE:\s*"([^"]+)"/i);
   const bodyMatch = content.match(
     /--- ATTACHMENT CONTENT START ---\n([\s\S]*?)\n--- ATTACHMENT CONTENT END ---/i
   );
 
   return {
-    name: nameMatch?.[1] || "attached-file",
+    name: nameMatch?.[1] || "attached file",
     body: bodyMatch?.[1]?.trim() || "",
   };
 }
 
-function escapeFence(text: string) {
-  return text.replace(/```/g, "ʼʼʼ");
+function stripMarkdownTemplate(text: string) {
+  return text
+    .replace(/^\s*#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/^\s*[-*]\s+/gm, "- ")
+    .trim();
 }
 
-function buildLocalGuidedAnswer(messages: Message[], settings: AISettings, isAgentMode: boolean): string {
-  const lastMessage = messages[messages.length - 1]?.content || "";
+function buildCleanLocalAnswer(messages: Message[]): string {
+  const lastMessage = getLastUserMessage(messages);
   const normalized = lastMessage.toLowerCase();
-  const attachment = extractAttachmentBlock(lastMessage);
-  const hasAttachment = lastMessage.includes("--- ATTACHMENT CONTENT START ---");
+  const attachment = extractAttachment(lastMessage);
 
-  let responseBody = "";
+  if (lastMessage.includes("--- ATTACHMENT CONTENT START ---")) {
+    const fileText = attachment.body || "No readable text was extracted from the file.";
+    const preview = fileText.length > 1000 ? `${fileText.slice(0, 1000)}\n...[truncated]` : fileText;
 
-  if (hasAttachment) {
-    const preview = attachment.body
-      ? escapeFence(attachment.body.slice(0, 1200))
-      : "[No readable text content was extracted. Binary files need a real model/backend or manual review.]";
+    return `I found the attached file: ${attachment.name}.
 
-    responseBody = `### Local File Review
+Preview:
+${preview}
 
-I am running in **OpenCore Local Mode**, so no Google/GCP key or login is being used.
-
-**File detected:** \`${attachment.name}\`
-
-#### Extracted preview
-
-\`\`\`text
-${preview}${attachment.body.length > 1200 ? "\n...[truncated]" : ""}
-\`\`\`
-
-#### Safe review checklist
-
-1. Check for hardcoded secrets such as API keys, tokens, passwords, private URLs, or service-account JSON.
-2. Remove any vendor-specific built-in credentials before publishing the repository.
-3. Keep user-provided keys optional and stored outside source control.
-4. For GitHub Pages, remember that only static frontend code runs. Backend API routes do not run there.
-
-#### Suggested next action
-
-Paste the specific error log, file, or code section you want reviewed, and I can give a focused patch-style answer.`;
-  } else if (hasAny(normalized, ["gcp", "gemini", "api key", "apikey", "service account", "google"])) {
-    responseBody = `### No-Key OpenCore Mode
-
-This build has been changed to avoid built-in Google/GCP/Gemini credentials.
-
-#### What changed
-
-- No built-in API key is required.
-- No Google service account is required.
-- No Gemini SDK is used by the browser chat path.
-- The public GitHub Pages version works in local guided mode.
-- Optional external providers remain optional only if a user adds their own key.
-
-#### Why this is safer
-
-A public open-source repository should not ship a shared cloud AI key. If a real key is pushed to GitHub, anyone can copy it, exhaust quota, or generate charges.
-
-#### Free no-login behavior
-
-This mode uses local rule-based assistance inside the browser. It is not a hosted LLM, but it keeps the project open-source, deployable, and usable without login or secrets.`;
-  } else if (hasAny(normalized, ["deploy", "github pages", "vite", "workflow", "artifact", "build"])) {
-    responseBody = `### GitHub Pages Deployment Guidance
-
-Your public build should stay static and no-key.
-
-#### Required setup
-
-1. Use \`base: '/RedHydraOpenCore/'\` in \`vite.config.ts\`.
-2. Use \`npm run build:pages\` for Pages.
-3. Upload only the \`dist\` folder as the Pages artifact.
-4. Use a unique artifact name to avoid duplicate \`github-pages\` artifacts.
-5. Set GitHub Pages source to **GitHub Actions**.
-
-#### Important
-
-GitHub Pages cannot run \`server.ts\`, Express routes, or private environment variables. That is why the frontend must not depend on \`/api/chat\` for the default public mode.`;
-  } else if (hasAny(normalized, ["react", "typescript", "javascript", "code", "function", "component", "bug", "fix"])) {
-    responseBody = `### Local Code Assistant
-
-I am running without any cloud API key. Here is a safe code-review pattern you can use:
-
-\`\`\`ts
-type Result<T> =
-  | { ok: true; value: T }
-  | { ok: false; error: string };
-
-export function safeParseJson<T = unknown>(input: string): Result<T> {
-  try {
-    return { ok: true, value: JSON.parse(input) as T };
-  } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "Invalid JSON",
-    };
-  }
-}
-\`\`\`
-
-#### Review checklist
-
-- Validate inputs before using them.
-- Avoid hardcoded secrets.
-- Keep browser-only code separate from server-only code.
-- Use environment variables only on a real backend, never inside static Pages output.`;
-  } else if (hasAny(normalized, ["owasp", "security", "vulnerability", "xss", "sql injection", "csrf", "cyber"])) {
-    responseBody = `### Defensive Security Guidance
-
-This local mode only provides defensive and educational cybersecurity help.
-
-#### Safe hardening checklist
-
-1. Use parameterized queries instead of string-concatenated SQL.
-2. Escape or sanitize user-controlled HTML to reduce XSS risk.
-3. Add rate limiting to public APIs.
-4. Keep secrets out of frontend bundles and public repos.
-5. Use least-privilege credentials for backend services.
-6. Add dependency scanning and secret scanning before release.
-
-#### Example safe SQL pattern
-
-\`\`\`ts
-const query = "SELECT * FROM users WHERE email = ?";
-await db.execute(query, [email]);
-\`\`\``;
-  } else if (hasAny(normalized, ["hello", "hi", "hey"])) {
-    responseBody = `### Hello from RedHydra OpenCore
-
-I am running in **free no-login local mode**.
-
-No GCP API key.  
-No service account.  
-No built-in vendor credential.  
-No forced login.
-
-Ask me for code review, deployment help, file checks, or defensive security guidance.`;
-  } else {
-    responseBody = `### RedHydra OpenCore Local Mode
-
-I can help with code review, GitHub Pages deployment, defensive security checklists, and structured technical guidance without using any cloud API key.
-
-#### Current mode
-
-- Provider: \`${settings.provider}\`
-- Model label: \`${settings.modelName || "opencore-local"}\`
-- Network AI: disabled by default
-- Login required: no
-- Built-in API key: no
-
-#### Best use
-
-Paste the code, error log, or file content you want fixed. I will return a clear patch-style answer that you can apply directly.`;
+Tell me what you want fixed or checked in this file, and I will give you the exact changes.`;
   }
 
-  if (!isAgentMode) return responseBody;
+  if (hasAny(normalized, ["gcp", "gemini", "api key", "apikey", "service account", "google"])) {
+    return "The app now works without a built-in GCP/Gemini API key. Do not hardcode any shared API key in the repo. The public version should use local no-key mode by default, and users can optionally add their own provider key or local Ollama endpoint if they want real LLM responses.";
+  }
 
-  return `[GOAL]
-Provide a no-login, no-GCP-key, open-source-safe response.
+  if (hasAny(normalized, ["deploy", "github pages", "vite", "workflow", "artifact", "build"])) {
+    return "For GitHub Pages, build the Vite frontend only, publish the dist folder, and keep base set to /RedHydraOpenCore/. GitHub Pages cannot run server.ts or backend API routes.";
+  }
 
-[UNDERSTANDING]
-The app is operating in local OpenCore mode, so it must not depend on Google/GCP/Gemini credentials or any built-in API key.
+  if (hasAny(normalized, ["react", "typescript", "javascript", "code", "function", "component", "bug", "fix"])) {
+    return "Paste the code or error log. I will point out the issue and give you the corrected version directly, without extra templates.";
+  }
 
-[PLAN]
-- [COMPLETED] Detect whether the request concerns keys, deployment, code, security, or files
-- [COMPLETED] Use local guided response logic only
-- [RUNNING] Return a structured answer compatible with the RedHydra agent panel
-- [PENDING] Let the user paste more code or logs for a precise patch
+  if (hasAny(normalized, ["owasp", "security", "vulnerability", "xss", "sql injection", "csrf", "cyber"])) {
+    return "Use defensive security practices only: validate inputs, avoid hardcoded secrets, use parameterized queries, sanitize unsafe HTML, rate-limit public APIs, and keep dependencies updated.";
+  }
 
-[OUTPUT]
-${responseBody}
+  if (hasAny(normalized, ["hello", "hi", "hey"])) {
+    return "Hi. RedHydra is running in no-key local mode. Ask me for code fixes, deployment help, or defensive security guidance.";
+  }
 
-[CHECKLIST]
-- [/] No hardcoded cloud API key used
-- [/] No Google service account required
-- [/] No server-side secret needed for GitHub Pages default mode
-- [ ] Real LLM quality requires optional local Ollama or user-owned provider key
-
-[LIMITATIONS]
-- Local mode is rule-based, not a full hosted LLM
-- Browser-only GitHub Pages cannot run private backend routes
-- Optional external providers still need the user's own credentials
-
-[NEXT_ACTION]
-Replace the fixed files, redeploy with GitHub Actions, then test the page with a fresh cache-busting URL.`;
+  return "I’m running in clean no-key local mode. Paste your code, error, or question, and I’ll answer directly.";
 }
 
-// Parse structured output from the agent response.
 export function parseAgentResponse(text: string): AgentPlan {
-  const plan: AgentPlan = {
-    goal: "",
-    understanding: "",
-    steps: [],
-    output: "",
-    validationChecklist: [],
-    limitations: [],
-    nextAction: "",
-  };
+  const cleanText = stripMarkdownTemplate(text);
 
-  const sections: Record<string, string> = {};
-  const regex =
-    /\[(GOAL|UNDERSTANDING|PLAN|OUTPUT|CHECKLIST|LIMITATIONS|NEXT_ACTION)\]([\s\S]*?)(?=\n\[[A-Z_]+\]|$)/g;
-
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(text)) !== null) {
-    sections[match[1]] = match[2].trim();
-  }
-
-  plan.goal = sections.GOAL || "Answer the user request safely.";
-  plan.understanding =
-    sections.UNDERSTANDING || "The request needs a structured technical response.";
-
-  const planLines = (sections.PLAN || "").split("\n");
-  let stepId = 1;
-
-  for (const line of planLines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
-    let status: AgentStatus = "pending";
-    let title = trimmed.replace(/^- /, "");
-
-    const statusMatch = title.match(/^\[(COMPLETED|RUNNING|PENDING|FAILED)\]\s*(.*)$/i);
-    if (statusMatch) {
-      const s = statusMatch[1].toLowerCase();
-      status = s === "completed" || s === "running" || s === "failed" ? s : "pending";
-      title = statusMatch[2].trim();
-    }
-
-    plan.steps.push({
-      id: `step-${stepId++}`,
-      title: title || "Continue task",
-      description: "Local OpenCore execution step",
-      status,
-    });
-  }
-
-  if (plan.steps.length === 0) {
-    plan.steps = [
+  return {
+    goal: "Answer directly",
+    understanding: "The user wants a clean response without extra templates.",
+    steps: [
       {
         id: "step-1",
-        title: "Analyze request",
-        description: "Understand the user's goal",
-        status: "completed",
+        title: "Read request",
+        description: "Understand the user message",
+        status: "completed" as AgentStatus,
       },
       {
         id: "step-2",
-        title: "Generate local response",
-        description: "Use no-key local guidance",
-        status: "running",
+        title: "Respond directly",
+        description: "Return only the useful answer",
+        status: "completed" as AgentStatus,
       },
-    ];
-  }
-
-  plan.output = sections.OUTPUT || text;
-
-  for (const line of (sections.CHECKLIST || "").split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
-    const checked = trimmed.includes("[/]");
-    const cleanText = trimmed
-      .replace(/^- /, "")
-      .replace(/^\[\/\]\s*/, "")
-      .replace(/^\[ \]\s*/, "")
-      .trim();
-
-    plan.validationChecklist.push({
-      text: cleanText,
-      checked,
-    });
-  }
-
-  if (plan.validationChecklist.length === 0) {
-    plan.validationChecklist = [
-      { text: "No hardcoded API key required", checked: true },
-      { text: "Response generated locally", checked: true },
-    ];
-  }
-
-  for (const line of (sections.LIMITATIONS || "").split("\n")) {
-    const trimmed = line.trim().replace(/^- /, "");
-    if (trimmed) plan.limitations.push(trimmed);
-  }
-
-  if (plan.limitations.length === 0) {
-    plan.limitations = ["Local mode is not a full hosted LLM."];
-  }
-
-  plan.nextAction = sections.NEXT_ACTION || "Paste more detail for a focused patch.";
-  return plan;
+    ],
+    output: cleanText,
+    validationChecklist: [
+      {
+        text: "No forced GOAL/PLAN/OUTPUT template",
+        checked: true,
+      },
+      {
+        text: "Direct answer returned",
+        checked: true,
+      },
+    ],
+    limitations: [],
+    nextAction: "Send the next code or error to fix.",
+  };
 }
 
-// Helper to decode Base64 Data URL to UTF-8 text if readable.
 export function getReadableAttachmentContent(attachment: {
   type: string;
   content: string;
@@ -374,34 +176,21 @@ export function getReadableAttachmentContent(attachment: {
     mimeType.includes("config");
 
   if (!isTextType) {
-    return `[Binary file content of type "${attachment.type}". Local no-key mode cannot OCR or deeply parse this binary content.]`;
+    return `Binary file detected: ${attachment.type}. Local mode cannot read this file deeply.`;
   }
 
   try {
     const binaryString = window.atob(base64Part);
     const bytes = new Uint8Array(binaryString.length);
+
     for (let i = 0; i < binaryString.length; i += 1) {
       bytes[i] = binaryString.charCodeAt(i);
     }
+
     return new TextDecoder("utf-8").decode(bytes);
   } catch {
-    return `[Encoded text could not be decoded: ${attachment.type}]`;
+    return `Could not decode attachment: ${attachment.type}`;
   }
-}
-
-function createAssistantMessage(text: string, isAgentMode: boolean): Message {
-  const message: Message = {
-    id: nowId(),
-    role: "assistant",
-    content: text,
-    timestamp: new Date().toLocaleTimeString(),
-  };
-
-  if (isAgentMode) {
-    message.agentPlan = parseAgentResponse(text);
-  }
-
-  return message;
 }
 
 function normalizeMessages(messages: Message[]) {
@@ -409,6 +198,7 @@ function normalizeMessages(messages: Message[]) {
     if (!message.attachment) return message;
 
     const readableContent = getReadableAttachmentContent(message.attachment);
+
     return {
       ...message,
       content: `[ATTACHED FILE: "${message.attachment.name}" (${message.attachment.type}, size: ${message.attachment.size} bytes)]
@@ -422,39 +212,40 @@ ${message.content}`,
 }
 
 function buildSystemInstruction(settings: AISettings, isAgentMode: boolean) {
-  let finalSystemInstruction =
+  let instruction =
     ASSISTANT_SYSTEM_INSTRUCTIONS[settings.assistantMode] ||
     ASSISTANT_SYSTEM_INSTRUCTIONS.general;
 
   const styleInstruction = getStyleInstruction(settings.responseStyle);
   if (styleInstruction) {
-    finalSystemInstruction += "\n\n" + styleInstruction;
+    instruction += "\n\n" + styleInstruction;
   }
 
   if (settings.customSystemPrompt) {
-    finalSystemInstruction += "\n\nUser custom instruction: " + settings.customSystemPrompt;
+    instruction += "\n\nUser instruction: " + settings.customSystemPrompt;
   }
 
   if (isAgentMode) {
-    finalSystemInstruction += "\n\n" + AGENT_SYSTEM_PROMPT;
+    instruction += "\n\n" + AGENT_SYSTEM_PROMPT;
   }
 
-  return finalSystemInstruction;
+  return instruction;
 }
 
 async function callOpenAICompatibleProvider(
   messages: Message[],
   settings: AISettings,
-  finalSystemInstruction: string
+  systemInstruction: string
 ): Promise<string> {
-  if (!settings.apiKey && settings.provider !== "ollama") {
-    throw new Error("No user-owned API key configured.");
-  }
-
-  const baseUrl = (settings.baseUrl || "").replace(/\/$/, "");
-  if (!baseUrl) {
+  if (!settings.baseUrl) {
     throw new Error("Provider base URL is missing.");
   }
+
+  if (!settings.apiKey && settings.provider !== "ollama") {
+    throw new Error("API key is missing for this provider.");
+  }
+
+  const baseUrl = settings.baseUrl.replace(/\/$/, "");
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -464,25 +255,23 @@ async function callOpenAICompatibleProvider(
     headers.Authorization = `Bearer ${settings.apiKey}`;
   }
 
-  const payload = {
-    model: settings.modelName,
-    messages: [
-      { role: "system", content: finalSystemInstruction },
-      ...messages
-        .filter((message) => message.role !== "system")
-        .map((message) => ({
-          role: message.role,
-          content: message.content,
-        })),
-    ],
-    temperature: settings.temperature,
-    max_tokens: settings.maxTokens,
-  };
-
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers,
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      model: settings.modelName,
+      messages: [
+        { role: "system", content: systemInstruction },
+        ...messages
+          .filter((message) => message.role !== "system")
+          .map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
+      ],
+      temperature: settings.temperature,
+      max_tokens: settings.maxTokens,
+    }),
   });
 
   if (!response.ok) {
@@ -496,49 +285,59 @@ async function callOpenAICompatibleProvider(
   return data.choices?.[0]?.message?.content || "";
 }
 
+function createAssistantMessage(text: string, isAgentMode: boolean): Message {
+  const message: Message = {
+    id: createId(),
+    role: "assistant",
+    content: stripMarkdownTemplate(text),
+    timestamp: new Date().toLocaleTimeString(),
+  };
+
+  if (isAgentMode) {
+    message.agentPlan = parseAgentResponse(message.content);
+  }
+
+  return message;
+}
+
 export async function sendChatMessage(
   messages: Message[],
   settings: AISettings,
   isAgentMode: boolean,
   onChunk?: (text: string) => void
 ): Promise<Message> {
-  const mappedMessages = normalizeMessages(messages);
-  const finalSystemInstruction = buildSystemInstruction(settings, isAgentMode);
-
+  const normalizedMessages = normalizeMessages(messages);
   const provider = settings.provider || "built-in-opencore";
-  const shouldUseLocalOpenCore =
+
+  const useLocalMode =
     provider === "built-in-opencore" ||
     provider === "opencore-local" ||
     provider === "local" ||
     provider === "free-opencore";
 
-  if (shouldUseLocalOpenCore) {
-    const text = buildLocalGuidedAnswer(mappedMessages, settings, isAgentMode);
-    streamText(text, onChunk);
-    return createAssistantMessage(text, isAgentMode);
+  if (useLocalMode) {
+    const text = buildCleanLocalAnswer(normalizedMessages);
+    const cleanText = stripMarkdownTemplate(text);
+    streamPlainText(cleanText, onChunk);
+    return createAssistantMessage(cleanText, isAgentMode);
   }
 
   try {
+    const systemInstruction = buildSystemInstruction(settings, isAgentMode);
     const text = await callOpenAICompatibleProvider(
-      mappedMessages,
+      normalizedMessages,
       settings,
-      finalSystemInstruction
+      systemInstruction
     );
 
-    streamText(text, onChunk);
-    return createAssistantMessage(text, isAgentMode);
+    const cleanText = stripMarkdownTemplate(text);
+    streamPlainText(cleanText, onChunk);
+    return createAssistantMessage(cleanText, isAgentMode);
   } catch (error: any) {
-    const fallbackText = buildLocalGuidedAnswer(mappedMessages, settings, isAgentMode);
+    const text = `Provider connection failed: ${error?.message || "Unknown error"}. RedHydra switched to local no-key mode. ${buildCleanLocalAnswer(normalizedMessages)}`;
+    const cleanText = stripMarkdownTemplate(text);
 
-    const safeError = `### Provider Not Used
-
-The selected provider could not be reached, so RedHydra stayed in **no-key OpenCore Local Mode**.
-
-**Reason:** ${error?.message || "Unknown provider error"}
-
-${fallbackText}`;
-
-    streamText(safeError, onChunk);
-    return createAssistantMessage(safeError, isAgentMode);
+    streamPlainText(cleanText, onChunk);
+    return createAssistantMessage(cleanText, isAgentMode);
   }
 }
