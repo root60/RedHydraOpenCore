@@ -276,6 +276,47 @@ Examine this report or ask me to implement further refinements or generate dedic
     });
   });
 
+  // Helper to map messages and attachment buffers into native Gemini multimodal contents layout
+  function mapMessagesToGeminiContents(messages: any[]) {
+    return messages.map((m: any) => {
+      const parts: any[] = [{ text: m.content || "" }];
+      
+      if (m.attachment) {
+        let mimeType = m.attachment.type || "text/plain";
+        let base64Data = "";
+        
+        if (m.attachment.content && m.attachment.content.startsWith("data:")) {
+          const commaIndex = m.attachment.content.indexOf(",");
+          if (commaIndex !== -1) {
+            base64Data = m.attachment.content.substring(commaIndex + 1);
+            const mimeMatch = m.attachment.content.substring(0, commaIndex).match(/data:([^;]+)/);
+            if (mimeMatch) {
+              mimeType = mimeMatch[1];
+            }
+          } else {
+            base64Data = m.attachment.content;
+          }
+        } else if (m.attachment.content) {
+          base64Data = Buffer.from(m.attachment.content).toString("base64");
+        }
+        
+        if (base64Data) {
+          parts.unshift({
+            inlineData: {
+              mimeType,
+              data: base64Data
+            }
+          });
+        }
+      }
+      
+      return {
+        role: m.role === "user" ? "user" : "model",
+        parts
+      };
+    });
+  }
+
   // Standard JSON response endpoint
   app.post("/api/chat", async (req, res) => {
     try {
@@ -295,10 +336,7 @@ Examine this report or ask me to implement further refinements or generate dedic
       }
 
       // Convert roles: 'assistant' -> 'model'
-      const contents = messages.map((m: any) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-      }));
+      const contents = mapMessagesToGeminiContents(messages);
 
       // Map client-facing OpenCore model names to the host engine model
       let targetModel = modelName || "gemini-3.5-flash";
@@ -377,10 +415,7 @@ Examine this report or ask me to implement further refinements or generate dedic
       }
 
       // Convert roles: 'assistant' -> 'model'
-      const contents = messages.map((m: any) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-      }));
+      const contents = mapMessagesToGeminiContents(messages);
 
       // Set headers for Server-Sent Events
       res.setHeader("Content-Type", "text/event-stream");
