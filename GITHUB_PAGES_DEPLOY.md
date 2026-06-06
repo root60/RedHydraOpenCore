@@ -1,46 +1,55 @@
-# GitHub Pages Deployment for RedHydra AI Chat
+# GitHub Pages Deployment Fix for RedHydraOpenCore
 
-This project is ready for GitHub Pages using the included workflow:
+This repository is a Vite React app. For GitHub Pages project hosting at:
 
-`.github/workflows/deploy.yml`
+https://root60.github.io/RedHydraOpenCore/
 
-## Steps
+Vite must build with this base path:
 
-1. Create a GitHub repository.
-2. Upload/push all project files to the repository.
-3. Go to **Repository Settings > Pages**.
-4. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-5. Push to the `main` branch.
-6. Open the live URL shown in the Actions deployment summary.
+/RedHydraOpenCore/
 
-## Important note about AI/API features
+## Files fixed
 
-GitHub Pages hosts only static frontend files. It cannot run `server.ts`, Express routes, or server-side environment variables.
+Replace these files in the repository:
 
-So on GitHub Pages:
+- `.github/workflows/deploy.yml`
+- `vite.config.ts`
+- `package.json`
 
-- The UI will load.
-- The live agent interface will load.
-- The built-in `/api/chat` and `/api/chat-stream` backend routes will not run.
-- For real AI replies on GitHub Pages, use Settings inside the app and select a browser-callable provider such as OpenAI/OpenRouter with your own key, or deploy the backend separately on Render, Railway, Vercel serverless, Cloud Run, or another Node host.
+## GitHub Pages setting
 
-## Repository path support
+Go to:
 
-The `vite.config.ts` file now auto-detects the GitHub repository name during GitHub Actions builds and sets the correct Vite `base` path:
+Settings → Pages → Build and deployment → Source
 
-- `username.github.io` repo => `/`
-- normal repo such as `redhydra-ai-chat` => `/redhydra-ai-chat/`
+Select:
 
-Local development still uses `/`, so `npm run dev` remains normal.
+GitHub Actions
 
+Do not select "Deploy from branch" unless you manually build and commit a `/docs` folder.
 
-## Emergency blank-page fix
+## Push command
 
-If GitHub Pages shows a blank page, use this setting instead:
+After replacing the files, run:
 
-- Settings → Pages
-- Source: Deploy from a branch
-- Branch: main
-- Folder: /docs
+```bash
+npm install
+npm run build:pages
+git add package.json package-lock.json vite.config.ts .github/workflows/deploy.yml
+git commit -m "Fix GitHub Pages deployment"
+git push origin main
+```
 
-The `docs/` folder contains the static Vite build. The root `index.html` is only for local Vite development and should not be used as the Pages root.
+Then open:
+
+https://root60.github.io/RedHydraOpenCore/?v=3
+
+The `?v=3` part helps bypass browser cache.
+
+## Important backend note
+
+GitHub Pages is static hosting only.
+
+The frontend UI can deploy on GitHub Pages, but `server.ts`, Express routes, `/api/chat`, `/api/chat-stream`, and private `.env` variables will not run there.
+
+For backend AI features, deploy the backend separately on a Node host such as Render, Railway, VPS, Cloud Run, or Vercel serverless.
