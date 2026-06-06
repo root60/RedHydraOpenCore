@@ -2,13 +2,13 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * Clean direct AI service for RedHydra OpenCore.
+ * RedHydra OpenCore clean chat service.
  *
- * Default mode:
- * - No GCP key
- * - No Google service account
- * - No built-in shared API key
- * - No forced template output
+ * User-facing rules:
+ * - Do not expose provider/model/internal mode text in chat.
+ * - Do not print local-mode/system-template messages.
+ * - Default assistant name: RedHydra OpenCore.
+ * - Stream responses in real time.
  */
 
 import { AISettings, Message, AgentPlan } from "../types";
@@ -28,11 +28,11 @@ function getLastUserMessage(messages: Message[]) {
   return messages[messages.length - 1]?.content || "";
 }
 
-function streamPlainText(text: string, onChunk?: (text: string) => void) {
+function streamText(text: string, onChunk?: (text: string) => void) {
   if (!onChunk) return;
 
   let index = 0;
-  const step = 18;
+  const step = 20;
 
   const timer = window.setInterval(() => {
     index += step;
@@ -42,7 +42,30 @@ function streamPlainText(text: string, onChunk?: (text: string) => void) {
       onChunk(text);
       window.clearInterval(timer);
     }
-  }, 10);
+  }, 9);
+}
+
+function cleanAssistantText(text: string) {
+  return String(text || "")
+    .replace(/\[GOAL\][\s\S]*?(?=\[OUTPUT\]|$)/gi, "")
+    .replace(/\[UNDERSTANDING\][\s\S]*?(?=\[OUTPUT\]|$)/gi, "")
+    .replace(/\[PLAN\][\s\S]*?(?=\[OUTPUT\]|$)/gi, "")
+    .replace(/\[OUTPUT\]/gi, "")
+    .replace(/\[CHECKLIST\][\s\S]*?(?=\[LIMITATIONS\]|\[NEXT_ACTION\]|$)/gi, "")
+    .replace(/\[LIMITATIONS\][\s\S]*?(?=\[NEXT_ACTION\]|$)/gi, "")
+    .replace(/\[NEXT_ACTION\]/gi, "")
+    .replace(/RedHydra is running in .*?mode\.?/gi, "")
+    .replace(/no-key local mode/gi, "")
+    .replace(/local mode/gi, "")
+    .replace(/provider:\s*`?[^`\n]+`?/gi, "")
+    .replace(/model:\s*`?[^`\n]+`?/gi, "")
+    .replace(/network ai:\s*[^.\n]+/gi, "")
+    .replace(/login required:\s*[^.\n]+/gi, "")
+    .replace(/built-in api key:\s*[^.\n]+/gi, "")
+    .replace(/^\s*#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function hasAny(text: string, keywords: string[]) {
@@ -61,87 +84,64 @@ function extractAttachment(content: string) {
   };
 }
 
-function stripMarkdownTemplate(text: string) {
-  return text
-    .replace(/^\s*#{1,6}\s*/gm, "")
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/^\s*[-*]\s+/gm, "- ")
-    .trim();
-}
-
-function buildCleanLocalAnswer(messages: Message[]): string {
+function buildDirectFallback(messages: Message[]): string {
   const lastMessage = getLastUserMessage(messages);
   const normalized = lastMessage.toLowerCase();
   const attachment = extractAttachment(lastMessage);
 
   if (lastMessage.includes("--- ATTACHMENT CONTENT START ---")) {
-    const fileText = attachment.body || "No readable text was extracted from the file.";
-    const preview = fileText.length > 1000 ? `${fileText.slice(0, 1000)}\n...[truncated]` : fileText;
+    const preview = attachment.body
+      ? attachment.body.slice(0, 1200) + (attachment.body.length > 1200 ? "\n..." : "")
+      : "I could not read the file content.";
 
-    return `I found the attached file: ${attachment.name}.
+    return `I found ${attachment.name}.
 
-Preview:
 ${preview}
 
-Tell me what you want fixed or checked in this file, and I will give you the exact changes.`;
-  }
-
-  if (hasAny(normalized, ["gcp", "gemini", "api key", "apikey", "service account", "google"])) {
-    return "The app now works without a built-in GCP/Gemini API key. Do not hardcode any shared API key in the repo. The public version should use local no-key mode by default, and users can optionally add their own provider key or local Ollama endpoint if they want real LLM responses.";
-  }
-
-  if (hasAny(normalized, ["deploy", "github pages", "vite", "workflow", "artifact", "build"])) {
-    return "For GitHub Pages, build the Vite frontend only, publish the dist folder, and keep base set to /RedHydraOpenCore/. GitHub Pages cannot run server.ts or backend API routes.";
-  }
-
-  if (hasAny(normalized, ["react", "typescript", "javascript", "code", "function", "component", "bug", "fix"])) {
-    return "Paste the code or error log. I will point out the issue and give you the corrected version directly, without extra templates.";
-  }
-
-  if (hasAny(normalized, ["owasp", "security", "vulnerability", "xss", "sql injection", "csrf", "cyber"])) {
-    return "Use defensive security practices only: validate inputs, avoid hardcoded secrets, use parameterized queries, sanitize unsafe HTML, rate-limit public APIs, and keep dependencies updated.";
+Send what you want changed, and I’ll give the exact fix.`;
   }
 
   if (hasAny(normalized, ["hello", "hi", "hey"])) {
-    return "Hi. RedHydra is running in no-key local mode. Ask me for code fixes, deployment help, or defensive security guidance.";
+    return "Hi, I’m RedHydra OpenCore. How can I help?";
   }
 
-  return "I’m running in clean no-key local mode. Paste your code, error, or question, and I’ll answer directly.";
+  if (hasAny(normalized, ["who are you", "your name", "what are you"])) {
+    return "I’m RedHydra OpenCore.";
+  }
+
+  if (hasAny(normalized, ["fix", "bug", "error", "code", "build failed", "typescript", "vite", "react"])) {
+    return "Send the code or error log, and I’ll give the corrected version.";
+  }
+
+  if (hasAny(normalized, ["deploy", "github pages", "workflow", "artifact"])) {
+    return "Send the deployment log or workflow file, and I’ll fix the GitHub Pages setup.";
+  }
+
+  if (hasAny(normalized, ["security", "owasp", "vulnerability", "xss", "sql injection", "csrf"])) {
+    return "Share the code or scenario. I’ll give a safe defensive fix.";
+  }
+
+  return "Please send the details, code, or error you want me to fix.";
 }
 
 export function parseAgentResponse(text: string): AgentPlan {
-  const cleanText = stripMarkdownTemplate(text);
+  const output = cleanAssistantText(text);
 
   return {
     goal: "Answer directly",
-    understanding: "The user wants a clean response without extra templates.",
+    understanding: "Return a clean user-facing answer.",
     steps: [
       {
         id: "step-1",
-        title: "Read request",
-        description: "Understand the user message",
-        status: "completed" as AgentStatus,
-      },
-      {
-        id: "step-2",
-        title: "Respond directly",
-        description: "Return only the useful answer",
+        title: "Answer",
+        description: "Provide the final answer directly",
         status: "completed" as AgentStatus,
       },
     ],
-    output: cleanText,
-    validationChecklist: [
-      {
-        text: "No forced GOAL/PLAN/OUTPUT template",
-        checked: true,
-      },
-      {
-        text: "Direct answer returned",
-        checked: true,
-      },
-    ],
+    output,
+    validationChecklist: [],
     limitations: [],
-    nextAction: "Send the next code or error to fix.",
+    nextAction: "",
   };
 }
 
@@ -176,7 +176,7 @@ export function getReadableAttachmentContent(attachment: {
     mimeType.includes("config");
 
   if (!isTextType) {
-    return `Binary file detected: ${attachment.type}. Local mode cannot read this file deeply.`;
+    return "This file is binary or not readable as plain text.";
   }
 
   try {
@@ -189,7 +189,7 @@ export function getReadableAttachmentContent(attachment: {
 
     return new TextDecoder("utf-8").decode(bytes);
   } catch {
-    return `Could not decode attachment: ${attachment.type}`;
+    return "Could not decode the attachment.";
   }
 }
 
@@ -238,11 +238,11 @@ async function callOpenAICompatibleProvider(
   systemInstruction: string
 ): Promise<string> {
   if (!settings.baseUrl) {
-    throw new Error("Provider base URL is missing.");
+    throw new Error("Connection is not configured.");
   }
 
   if (!settings.apiKey && settings.provider !== "ollama") {
-    throw new Error("API key is missing for this provider.");
+    throw new Error("Connection is not configured.");
   }
 
   const baseUrl = settings.baseUrl.replace(/\/$/, "");
@@ -271,14 +271,12 @@ async function callOpenAICompatibleProvider(
       ],
       temperature: settings.temperature,
       max_tokens: settings.maxTokens,
+      stream: false,
     }),
   });
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(
-      errorBody?.error?.message || errorBody?.error || `HTTP ${response.status}`
-    );
+    throw new Error("Connection failed.");
   }
 
   const data = await response.json();
@@ -286,15 +284,17 @@ async function callOpenAICompatibleProvider(
 }
 
 function createAssistantMessage(text: string, isAgentMode: boolean): Message {
+  const content = cleanAssistantText(text) || "Please send the details you want me to fix.";
+
   const message: Message = {
     id: createId(),
     role: "assistant",
-    content: stripMarkdownTemplate(text),
+    content,
     timestamp: new Date().toLocaleTimeString(),
   };
 
   if (isAgentMode) {
-    message.agentPlan = parseAgentResponse(message.content);
+    message.agentPlan = parseAgentResponse(content);
   }
 
   return message;
@@ -309,16 +309,16 @@ export async function sendChatMessage(
   const normalizedMessages = normalizeMessages(messages);
   const provider = settings.provider || "built-in-opencore";
 
-  const useLocalMode =
+  const useFallback =
     provider === "built-in-opencore" ||
     provider === "opencore-local" ||
     provider === "local" ||
     provider === "free-opencore";
 
-  if (useLocalMode) {
-    const text = buildCleanLocalAnswer(normalizedMessages);
-    const cleanText = stripMarkdownTemplate(text);
-    streamPlainText(cleanText, onChunk);
+  if (useFallback) {
+    const text = buildDirectFallback(normalizedMessages);
+    const cleanText = cleanAssistantText(text);
+    streamText(cleanText, onChunk);
     return createAssistantMessage(cleanText, isAgentMode);
   }
 
@@ -330,14 +330,13 @@ export async function sendChatMessage(
       systemInstruction
     );
 
-    const cleanText = stripMarkdownTemplate(text);
-    streamPlainText(cleanText, onChunk);
+    const cleanText = cleanAssistantText(text);
+    streamText(cleanText, onChunk);
     return createAssistantMessage(cleanText, isAgentMode);
-  } catch (error: any) {
-    const text = `Provider connection failed: ${error?.message || "Unknown error"}. RedHydra switched to local no-key mode. ${buildCleanLocalAnswer(normalizedMessages)}`;
-    const cleanText = stripMarkdownTemplate(text);
-
-    streamPlainText(cleanText, onChunk);
+  } catch {
+    const text = buildDirectFallback(normalizedMessages);
+    const cleanText = cleanAssistantText(text);
+    streamText(cleanText, onChunk);
     return createAssistantMessage(cleanText, isAgentMode);
   }
 }
