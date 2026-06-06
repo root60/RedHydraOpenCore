@@ -2,14 +2,13 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * RedHydra OpenCore chat service.
+ * RedHydra OpenCore AI service.
  *
- * Goals:
- * - clean user-facing replies
- * - no provider/model/internal mode text in chat
- * - realtime streaming effect
- * - Agent Mode optional, not forced
- * - useful direct fallback when no user-owned provider is connected
+ * Default base model:
+ * dphn/Dolphin-Llama3-8B-Instruct-exl2-6bpw
+ *
+ * This EXL2 model must run behind a GPU/OpenAI-compatible backend
+ * such as TabbyAPI or ExLlamaV2 OpenAI server.
  */
 
 import { AISettings, Message, AgentPlan } from "../types";
@@ -19,31 +18,38 @@ import {
   getStyleInstruction,
 } from "../utils/prompts";
 
+const DEFAULT_BASE_MODEL = "dphn/Dolphin-Llama3-8B-Instruct-exl2-6bpw";
+
 type AgentStatus = "pending" | "running" | "completed" | "failed";
 
 function createId(prefix = "m") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function lastUserText(messages: Message[]) {
-  const lastUser = [...messages].reverse().find((m) => m.role === "user");
-  return lastUser?.content?.trim() || "";
+function getLastUserMessage(messages: Message[]) {
+  return [...messages].reverse().find((m) => m.role === "user")?.content?.trim() || "";
 }
 
-function streamText(text: string, onChunk?: (text: string) => void) {
-  if (!onChunk) return;
+function getModelName(settings: AISettings) {
+  return (
+    (import.meta as any)?.env?.VITE_REDHYDRA_BASE_MODEL ||
+    settings.modelName ||
+    DEFAULT_BASE_MODEL
+  );
+}
 
-  let index = 0;
-  const step = 12;
-  const interval = window.setInterval(() => {
-    index += step;
-    onChunk(text.slice(0, index));
+function getCloudEndpoint() {
+  const envEndpoint =
+    (import.meta as any)?.env?.VITE_REDHYDRA_LLM_ENDPOINT ||
+    (import.meta as any)?.env?.VITE_CLOUD_LLM_ENDPOINT ||
+    "";
 
-    if (index >= text.length) {
-      onChunk(text);
-      window.clearInterval(interval);
-    }
-  }, 12);
+  const storedEndpoint =
+    typeof window !== "undefined"
+      ? window.localStorage.getItem("redhydra_llm_endpoint") || ""
+      : "";
+
+  return String(envEndpoint || storedEndpoint || "").trim().replace(/\/$/, "");
 }
 
 function cleanText(text: string) {
@@ -58,8 +64,6 @@ function cleanText(text: string) {
     .replace(/PROXIED:\/\/[^\n]+/gi, "")
     .replace(/built[- ]?in[- ]?opencore/gi, "")
     .replace(/hydra-opencore-v\d+/gi, "")
-    .replace(/no-key local mode/gi, "")
-    .replace(/local mode/gi, "")
     .replace(/provider:\s*`?[^`\n]+`?/gi, "")
     .replace(/model:\s*`?[^`\n]+`?/gi, "")
     .replace(/^\s*#{1,6}\s*/gm, "")
@@ -68,26 +72,29 @@ function cleanText(text: string) {
     .trim();
 }
 
+function streamText(text: string, onChunk?: (text: string) => void) {
+  if (!onChunk) return;
+
+  let index = 0;
+  const step = 10;
+
+  const timer = window.setInterval(() => {
+    index += step;
+    onChunk(text.slice(0, index));
+
+    if (index >= text.length) {
+      onChunk(text);
+      window.clearInterval(timer);
+    }
+  }, 12);
+}
+
 function includesAny(text: string, terms: string[]) {
   const lower = text.toLowerCase();
   return terms.some((term) => lower.includes(term));
 }
 
-function extractAttachment(content: string) {
-  const nameMatch = content.match(/\[ATTACHED FILE:\s*"([^"]+)"/i);
-  const bodyMatch = content.match(
-    /--- ATTACHMENT CONTENT START ---\n([\s\S]*?)\n--- ATTACHMENT CONTENT END ---/i
-  );
-
-  return {
-    name: nameMatch?.[1] || "attached file",
-    body: bodyMatch?.[1]?.trim() || "",
-  };
-}
-
 function extractWeatherLocation(text: string) {
-  const lower = text.toLowerCase();
-
   const patterns = [
     /weather\s+(?:today\s+)?(?:in|at|for)\s+([a-zA-Z\s,.-]{2,60})/i,
     /(?:in|at|for)\s+([a-zA-Z\s,.-]{2,60})\s+(?:weather|temperature)/i,
@@ -95,23 +102,17 @@ function extractWeatherLocation(text: string) {
 
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match?.[1]) {
-      return match[1].replace(/[?.!]+$/g, "").trim();
-    }
+    if (match?.[1]) return match[1].replace(/[?.!]+$/g, "").trim();
   }
 
-  if (lower.includes("dhaka")) return "Dhaka";
-  if (lower.includes("bangladesh")) return "Dhaka";
-
+  if (text.toLowerCase().includes("dhaka")) return "Dhaka";
   return "";
 }
 
 async function getWeatherAnswer(userText: string) {
   const location = extractWeatherLocation(userText);
 
-  if (!location) {
-    return "Which city should I check the weather for?";
-  }
+  if (!location) return "Which city should I check the weather for?";
 
   try {
     const response = await fetch(
@@ -130,20 +131,26 @@ async function getWeatherAnswer(userText: string) {
 
     if (!current) throw new Error("weather empty");
 
-    const condition = current.weatherDesc?.[0]?.value || "weather unavailable";
-    const tempC = current.temp_C;
-    const feelsC = current.FeelsLikeC;
-    const humidity = current.humidity;
-    const wind = current.windspeedKmph;
-
-    return `Weather in ${area}: ${condition}, ${tempC}°C. Feels like ${feelsC}°C. Humidity ${humidity}%, wind ${wind} km/h.`;
+    return `Weather in ${area}: ${current.weatherDesc?.[0]?.value || "unavailable"}, ${current.temp_C}°C. Feels like ${current.FeelsLikeC}°C. Humidity ${current.humidity}%, wind ${current.windspeedKmph} km/h.`;
   } catch {
-    return `I could not fetch live weather for ${location}. Try again, or send the city and country name.`;
+    return `I could not fetch live weather for ${location}. Try again with city and country name.`;
   }
 }
 
-async function getDirectFallbackAnswer(messages: Message[]) {
-  const text = lastUserText(messages);
+function extractAttachment(content: string) {
+  const nameMatch = content.match(/\[ATTACHED FILE:\s*"([^"]+)"/i);
+  const bodyMatch = content.match(
+    /--- ATTACHMENT CONTENT START ---\n([\s\S]*?)\n--- ATTACHMENT CONTENT END ---/i
+  );
+
+  return {
+    name: nameMatch?.[1] || "attached file",
+    body: bodyMatch?.[1]?.trim() || "",
+  };
+}
+
+async function fallbackAnswer(messages: Message[]) {
+  const text = getLastUserMessage(messages);
   const lower = text.toLowerCase();
   const attachment = extractAttachment(text);
 
@@ -155,7 +162,7 @@ async function getDirectFallbackAnswer(messages: Message[]) {
     return `I found ${attachment.name}.\n\n${preview}\n\nTell me what you want changed in it.`;
   }
 
-  if (includesAny(lower, ["weather", "temperature", "rain today", "forecast"])) {
+  if (includesAny(lower, ["weather", "temperature", "forecast", "rain today"])) {
     return getWeatherAnswer(text);
   }
 
@@ -163,38 +170,187 @@ async function getDirectFallbackAnswer(messages: Message[]) {
     return "Hi, I’m RedHydra OpenCore. How can I help?";
   }
 
-  if (includesAny(lower, ["who are you", "your name", "what are you"])) {
+  if (includesAny(lower, ["who are you", "your name"])) {
     return "I’m RedHydra OpenCore.";
   }
 
   if (includesAny(lower, ["exit code 1", "process completed with exit code 1"])) {
-    return "Exit code 1 only means the build failed. The real cause is usually a few lines above it. Send the full error section above “Build static frontend,” and I’ll give the exact fix.";
+    return "Exit code 1 means the build failed. The real cause is usually above that line. Send the full error section above it and I’ll give the exact fix.";
   }
 
   if (includesAny(lower, ["not exported", "is not exported", "imported by"])) {
-    return "This is an import/export mismatch. Export the missing item from the source file, or change the importing file to use the correct exported name. Send both file names and I’ll write the exact fix.";
+    return "That is an import/export mismatch. Export the missing item from the source file, or update the import to the correct exported name. Send both files and I’ll write the exact patch.";
   }
 
-  if (includesAny(lower, ["vite", "build failed", "typescript", "tsx", "react", "github actions", "github pages", "workflow"])) {
-    return "Send the full build log, especially the first error above “Process completed with exit code 1.” I’ll fix the exact file causing it.";
+  if (includesAny(lower, ["vite", "build failed", "typescript", "react", "github pages", "workflow"])) {
+    return "Send the full build log, especially the first error above “Process completed with exit code 1.” I’ll fix the exact file.";
   }
 
   if (includesAny(lower, ["fix", "bug", "error", "code", "script"])) {
     return "Send the code or full error log. I’ll give the corrected version directly.";
   }
 
-  if (includesAny(lower, ["security", "owasp", "vulnerability", "xss", "sql injection", "csrf"])) {
-    return "Share the code or scenario. I’ll give a safe defensive fix.";
-  }
-
   if (text.trim().endsWith("?")) {
-    return "I can help with that. Please add one more detail so I can answer accurately.";
+    return "I can help. Add one more detail so I can answer accurately.";
   }
 
   return "Got it. Send the details you want me to work on.";
 }
 
+function getSystemInstruction(settings: AISettings, isAgentMode: boolean) {
+  let instruction =
+    ASSISTANT_SYSTEM_INSTRUCTIONS[settings.assistantMode] ||
+    ASSISTANT_SYSTEM_INSTRUCTIONS.general;
+
+  const styleInstruction = getStyleInstruction(settings.responseStyle);
+  if (styleInstruction) instruction += "\n\n" + styleInstruction;
+
+  if (settings.customSystemPrompt) {
+    instruction += "\n\nUser instruction: " + settings.customSystemPrompt;
+  }
+
+  if (isAgentMode) instruction += "\n\n" + AGENT_SYSTEM_PROMPT;
+
+  return instruction;
+}
+
+function normalizeMessages(messages: Message[]) {
+  return messages.map((message) => {
+    if (!message.attachment) return message;
+
+    const readableContent = getReadableAttachmentContent(message.attachment);
+
+    return {
+      ...message,
+      content: `[ATTACHED FILE: "${message.attachment.name}" (${message.attachment.type}, size: ${message.attachment.size} bytes)]
+--- ATTACHMENT CONTENT START ---
+${readableContent}
+--- ATTACHMENT CONTENT END ---
+
+${message.content}`,
+    };
+  });
+}
+
+async function callCloudProxy(
+  messages: Message[],
+  settings: AISettings,
+  isAgentMode: boolean,
+  onChunk?: (text: string) => void
+) {
+  const endpoint = getCloudEndpoint();
+  if (!endpoint) throw new Error("No cloud endpoint configured.");
+
+  const response = await fetch(`${endpoint}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: getModelName(settings),
+      messages: messages
+        .filter((message) => message.role !== "system")
+        .map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
+      system: getSystemInstruction(settings, isAgentMode),
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) throw new Error("Cloud response failed.");
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("text/event-stream") && response.body) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split("\n\n");
+      buffer = events.pop() || "";
+
+      for (const event of events) {
+        const dataLine = event.split("\n").find((line) => line.startsWith("data:"));
+        if (!dataLine) continue;
+
+        const data = dataLine.replace(/^data:\s*/, "").trim();
+        if (!data || data === "[DONE]") continue;
+
+        try {
+          const parsed = JSON.parse(data);
+          const delta =
+            parsed.text ||
+            parsed.choices?.[0]?.delta?.content ||
+            parsed.choices?.[0]?.message?.content ||
+            "";
+
+          if (delta) {
+            fullText += delta;
+            onChunk?.(cleanText(fullText));
+          }
+        } catch {
+          fullText += data;
+          onChunk?.(cleanText(fullText));
+        }
+      }
+    }
+
+    return cleanText(fullText);
+  }
+
+  const data = await response.json();
+  return cleanText(data.text || "");
+}
+
+async function callOpenAICompatibleProvider(
+  messages: Message[],
+  settings: AISettings,
+  systemInstruction: string
+) {
+  if (!settings.baseUrl || (!settings.apiKey && settings.provider !== "ollama")) {
+    throw new Error("Provider is not configured.");
+  }
+
+  const baseUrl = settings.baseUrl.replace(/\/$/, "");
+
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (settings.apiKey) headers.Authorization = `Bearer ${settings.apiKey}`;
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model: getModelName(settings),
+      messages: [
+        { role: "system", content: systemInstruction },
+        ...messages
+          .filter((message) => message.role !== "system")
+          .map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
+      ],
+      temperature: settings.temperature,
+      max_tokens: settings.maxTokens,
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) throw new Error("Provider failed.");
+
+  const data = await response.json();
+  return cleanText(data.choices?.[0]?.message?.content || "");
+}
+
 export function parseAgentResponse(text: string): AgentPlan {
+  const output = cleanText(text);
+
   return {
     goal: "Answer directly",
     understanding: "Clean user-facing response.",
@@ -206,7 +362,7 @@ export function parseAgentResponse(text: string): AgentPlan {
         status: "completed" as AgentStatus,
       },
     ],
-    output: cleanText(text),
+    output,
     validationChecklist: [],
     limitations: [],
     nextAction: "",
@@ -219,9 +375,7 @@ export function getReadableAttachmentContent(attachment: {
 }): string {
   if (!attachment.content) return "";
 
-  if (!attachment.content.startsWith("data:")) {
-    return attachment.content;
-  }
+  if (!attachment.content.startsWith("data:")) return attachment.content;
 
   const commaIndex = attachment.content.indexOf(",");
   if (commaIndex === -1) return attachment.content;
@@ -243,9 +397,7 @@ export function getReadableAttachmentContent(attachment: {
     mimeType.includes("shell") ||
     mimeType.includes("config");
 
-  if (!isTextType) {
-    return "This file is not readable as plain text in the browser.";
-  }
+  if (!isTextType) return "This file is not readable as plain text in the browser.";
 
   try {
     const binaryString = window.atob(base64Part);
@@ -261,97 +413,7 @@ export function getReadableAttachmentContent(attachment: {
   }
 }
 
-function normalizeMessages(messages: Message[]) {
-  return messages.map((message) => {
-    if (!message.attachment) return message;
-
-    const readableContent = getReadableAttachmentContent(message.attachment);
-
-    return {
-      ...message,
-      content: `[ATTACHED FILE: "${message.attachment.name}" (${message.attachment.type}, size: ${message.attachment.size} bytes)]
---- ATTACHMENT CONTENT START ---
-${readableContent}
---- ATTACHMENT CONTENT END ---
-
-${message.content}`,
-    };
-  });
-}
-
-function buildSystemInstruction(settings: AISettings, isAgentMode: boolean) {
-  let instruction =
-    ASSISTANT_SYSTEM_INSTRUCTIONS[settings.assistantMode] ||
-    ASSISTANT_SYSTEM_INSTRUCTIONS.general;
-
-  const styleInstruction = getStyleInstruction(settings.responseStyle);
-  if (styleInstruction) {
-    instruction += "\n\n" + styleInstruction;
-  }
-
-  if (settings.customSystemPrompt) {
-    instruction += "\n\nUser instruction: " + settings.customSystemPrompt;
-  }
-
-  if (isAgentMode) {
-    instruction += "\n\n" + AGENT_SYSTEM_PROMPT;
-  }
-
-  return instruction;
-}
-
-async function callOpenAICompatibleProvider(
-  messages: Message[],
-  settings: AISettings,
-  systemInstruction: string
-): Promise<string> {
-  if (!settings.baseUrl) {
-    throw new Error("Connection is not configured.");
-  }
-
-  if (!settings.apiKey && settings.provider !== "ollama") {
-    throw new Error("Connection is not configured.");
-  }
-
-  const baseUrl = settings.baseUrl.replace(/\/$/, "");
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  if (settings.apiKey) {
-    headers.Authorization = `Bearer ${settings.apiKey}`;
-  }
-
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      model: settings.modelName,
-      messages: [
-        { role: "system", content: systemInstruction },
-        ...messages
-          .filter((message) => message.role !== "system")
-          .map((message) => ({
-            role: message.role,
-            content: message.content,
-          })),
-      ],
-      temperature: settings.temperature,
-      max_tokens: settings.maxTokens,
-      stream: false,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Connection failed.");
-  }
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
-}
-
-function createMessage(text: string, isAgentMode: boolean): Message {
+function createAssistantMessage(text: string, isAgentMode: boolean): Message {
   const content = cleanText(text) || "How can I help?";
 
   const message: Message = {
@@ -375,32 +437,45 @@ export async function sendChatMessage(
   onChunk?: (text: string) => void
 ): Promise<Message> {
   const normalizedMessages = normalizeMessages(messages);
-  const provider = settings.provider || "built-in-opencore";
+  const endpoint = getCloudEndpoint();
 
-  const useBuiltInFallback =
-    provider === "built-in-opencore" ||
-    provider === "opencore-local" ||
-    provider === "local" ||
-    provider === "free-opencore";
-
-  let text = "";
-
-  if (useBuiltInFallback) {
-    text = await getDirectFallbackAnswer(normalizedMessages);
-  } else {
+  if (endpoint) {
     try {
-      const systemInstruction = buildSystemInstruction(settings, isAgentMode);
-      text = await callOpenAICompatibleProvider(
-        normalizedMessages,
-        settings,
-        systemInstruction
-      );
+      const text = await callCloudProxy(normalizedMessages, settings, isAgentMode, onChunk);
+      return createAssistantMessage(text, isAgentMode);
     } catch {
-      text = await getDirectFallbackAnswer(normalizedMessages);
+      const fallback = await fallbackAnswer(normalizedMessages);
+      const clean = cleanText(fallback);
+      streamText(clean, onChunk);
+      return createAssistantMessage(clean, isAgentMode);
     }
   }
 
-  const content = cleanText(text);
-  streamText(content, onChunk);
-  return createMessage(content, isAgentMode);
+  const provider = settings.provider || "built-in-opencore";
+  const useFallback =
+    provider === "built-in-opencore" ||
+    provider === "opencore-local" ||
+    provider === "local" ||
+    provider === "free-opencore" ||
+    provider === "cloud-proxy";
+
+  let text = "";
+
+  if (useFallback) {
+    text = await fallbackAnswer(normalizedMessages);
+  } else {
+    try {
+      text = await callOpenAICompatibleProvider(
+        normalizedMessages,
+        settings,
+        getSystemInstruction(settings, isAgentMode)
+      );
+    } catch {
+      text = await fallbackAnswer(normalizedMessages);
+    }
+  }
+
+  const clean = cleanText(text);
+  streamText(clean, onChunk);
+  return createAssistantMessage(clean, isAgentMode);
 }
