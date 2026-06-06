@@ -270,6 +270,50 @@ Open the Settings drawer and activate Built-in RedHydra OpenCore or add your Ope
   return responseBody;
 }
 
+// Helper to decode Base64 Data URL to UTF-8 text if readable, or return a neat binary placeholder
+export function getReadableAttachmentContent(attachment: { type: string; content: string }): string {
+  if (!attachment.content) return "";
+  
+  // If it is not a base64 Data URL, treat as raw text
+  if (!attachment.content.startsWith("data:")) {
+    return attachment.content;
+  }
+  
+  const commaIndex = attachment.content.indexOf(",");
+  if (commaIndex === -1) return attachment.content;
+  
+  const base64Part = attachment.content.substring(commaIndex + 1);
+  const mimeType = (attachment.type || "").toLowerCase();
+  
+  const isTextType = mimeType.startsWith("text/") || 
+                     mimeType.includes("javascript") || 
+                     mimeType.includes("typescript") || 
+                     mimeType.includes("json") || 
+                     mimeType.includes("xml") || 
+                     mimeType.includes("yaml") || 
+                     mimeType.includes("markdown") ||
+                     mimeType.includes("css") ||
+                     mimeType.includes("csv") ||
+                     mimeType.includes("sql") ||
+                     mimeType.includes("shell") ||
+                     mimeType.includes("config");
+                     
+  if (isTextType) {
+    try {
+      const binaryString = window.atob(base64Part);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch (e) {
+      return `[Binary / Encoded text: ${attachment.type}]`;
+    }
+  } else {
+    return `[Binary file content of type "${attachment.type}" - parsed as inline data/multimodal representation inside Gemini Node]`;
+  }
+}
+
 // core chat interaction service caller
 export async function sendChatMessage(
   messages: Message[],
@@ -280,7 +324,8 @@ export async function sendChatMessage(
   // 1. Pre-process messages to serialize any file attachment contents directly into the prompt stream
   const mappedMessages = messages.map(m => {
     if (m.attachment) {
-      const displayContent = `[ATTACHED FILE: "${m.attachment.name}" (${m.attachment.type}, size: ${m.attachment.size} bytes)]\n--- ATTACHMENT CONTENT START ---\n${m.attachment.content}\n--- ATTACHMENT CONTENT END ---\n\n${m.content}`;
+      const readableContent = getReadableAttachmentContent(m.attachment);
+      const displayContent = `[ATTACHED FILE: "${m.attachment.name}" (${m.attachment.type}, size: ${m.attachment.size} bytes)]\n--- ATTACHMENT CONTENT START ---\n${readableContent}\n--- ATTACHMENT CONTENT END ---\n\n${m.content}`;
       return { ...m, content: displayContent };
     }
     return m;
@@ -388,13 +433,18 @@ export async function sendChatMessage(
               try {
                 const parsed = JSON.parse(dataStr);
                 if (parsed.error) {
-                  throw new Error(parsed.error);
+                  const sErr = new Error(parsed.error);
+                  (sErr as any).isStreamError = true;
+                  throw sErr;
                 }
                 const word = parsed.text || "";
                 accumulatedText += word;
                 onChunk(accumulatedText);
-              } catch (e) {
-                // Ignore parsing errors for intermediate SSE segments
+              } catch (e: any) {
+                if (e.isStreamError) {
+                  throw e;
+                }
+                // Ignore parsing errors for intermediate partial segments
               }
             }
           }
@@ -444,17 +494,35 @@ export async function sendChatMessage(
       }
     } catch (err: any) {
       console.error("Built-in Server OpenCore Call Failed:", err);
-      // Let's degrade gracefully of client key or server config is offline
-      const friendlyErr = `### ⚠️ Connection to Built-in Server OpenCore Failed
+      const errLower = (err.message || "").toLowerCase();
+      let friendlyErr = "";
+      
+      if (errLower.includes("quota") || errLower.includes("exhausted") || errLower.includes("rate_limit") || errLower.includes("limit") || errLower.includes("429") || errLower.includes("too many requests")) {
+        friendlyErr = `### 🛑 Gemini API Quota Exceeded (429 - Too Many Requests)
+**Status:** Temporary Rate Limit Enforced by Google AI Studio Server Node
+
+The Google AI Studio Gemini API free-tier limits have been reached, or the rate of request ticks exceeded metric bounds.
+
+#### ⚡ How to Proceed:
+1. **Wait 15-20 seconds** and retry your request. The token limits refresh automatically on the minute.
+2. **Integrate your own personal API Key** for unlimited quota:
+   - Click the **Settings/Config** tab in the sidebar navigation.
+   - Insert your custom API Key (Gemini, OpenAI, or OpenRouter) directly.
+   - Private key flows run immediately via browser cache lines bypassing global server blocks.
+`;
+      } else {
+        friendlyErr = `### ⚠️ Connection to Built-in Server OpenCore Failed
 **Details:** ${err.message || 'Server connection timed out'}
 
 This usually happens because the host **API Key** is not configured inside the server-side environment or you are experiencing temporary network limits.
 
 #### 💡 How to Recover:
-1. Click **Settings > Secrets** in your Workspace configurations.
+1. Click **Settings** in your Workspace configurations.
 2. Ensure your backend keys are set correctly.
 3. Alternatively, toggle your AI provider to **OpenAI** or **OpenRouter** in settings, private keys are set client-side within browser cache!
 `;
+      }
+
       if (onChunk) onChunk(friendlyErr);
       const m: Message = {
         id: `m-${Date.now()}`,
