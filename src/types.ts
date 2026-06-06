@@ -53,16 +53,6 @@ export interface Message {
   agentPlan?: AgentPlan;
 }
 
-export type AgentLiveActionStatus = 'queued' | 'thinking' | 'running' | 'waiting' | 'completed' | 'blocked';
-
-export interface AgentLiveAction {
-  id: string;
-  title: string;
-  detail: string;
-  status: AgentLiveActionStatus;
-  log?: string;
-}
-
 export interface AgentPlan {
   goal: string;
   understanding: string;
@@ -79,7 +69,6 @@ export interface AgentPlan {
   }[];
   limitations: string[];
   nextAction: string;
-  liveActions?: AgentLiveAction[];
 }
 
 export interface Chat {

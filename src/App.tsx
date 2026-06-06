@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.5
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import {
@@ -42,7 +42,14 @@ import {
   Compass,
   FileText,
   Paperclip,
-  FileUp
+  FileUp,
+  Menu,
+  X,
+  Image as ImageIcon,
+  Music,
+  Video,
+  Archive,
+  FileCode
 } from 'lucide-react';
 
 import { 
@@ -52,9 +59,7 @@ import {
   Chat, 
   PromptTemplate, 
   MemoryPrefs,
-  AssistantModeType,
-  AgentLiveAction,
-  AgentPlan
+  AssistantModeType
 } from './types';
 
 import { CodeBlock } from './components/CodeBlock';
@@ -64,9 +69,11 @@ import { CybersecurityWorkspace } from './components/CybersecurityWorkspace';
 import { ResearchWorkspace } from './components/ResearchWorkspace';
 import { SettingsPanel } from './components/SettingsPanel';
 import { AgentPlanner } from './components/AgentPlanner';
-import { LiveActionAgent } from './components/LiveActionAgent';
+import { AILiveActions } from './components/AILiveActions';
 import { Toast, ToastNotification, Modal, Button } from './components/UI';
 import { sendChatMessage } from './services/aiService';
+import { getRealtimeUsage, getLast10MessagesTokenData } from './utils/tokenCounter';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 // Initial Defaults
 const DEFAULT_AI_SETTINGS: AISettings = {
@@ -93,51 +100,126 @@ const DEFAULT_MEMORY_PREFS: MemoryPrefs = {
   customPromptTemplates: []
 };
 
-
-const buildLiveActionsFromPlan = (plan?: AgentPlan, userGoal?: string): AgentLiveAction[] => {
-  const base = plan?.steps?.length
-    ? plan.steps.slice(0, 6).map((step, idx) => ({
-        id: `live-${Date.now()}-${idx}`,
-        title: step.title.replace(/^\d+[.)]\s*/, '').slice(0, 72) || `Execute step ${idx + 1}`,
-        detail: step.description || `Convert plan step ${idx + 1} into a visible live action with verification.`,
-        status: idx === 0 ? 'thinking' as const : 'queued' as const,
-        log: idx === 0 ? 'Reasoning pass started. Mapping task into safe browser-side actions.' : undefined
-      }))
-    : [];
-
-  const defaults: AgentLiveAction[] = [
-    {
-      id: `live-${Date.now()}-sense`,
-      title: 'Understand operator goal',
-      detail: userGoal ? `Analyze the request: “${userGoal.slice(0, 90)}${userGoal.length > 90 ? '…' : ''}”` : 'Read the latest chat context and infer the user goal.',
-      status: 'thinking',
-      log: 'Context scan started.'
-    },
-    {
-      id: `live-${Date.now()}-plan`,
-      title: 'Create action route',
-      detail: 'Break the task into small safe actions that can be tracked, paused, stepped, or reset.',
-      status: 'queued'
-    },
-    {
-      id: `live-${Date.now()}-execute`,
-      title: 'Execute visible task loop',
-      detail: 'Run each action through a think → act → verify cycle and expose progress in the UI.',
-      status: 'queued'
-    },
-    {
-      id: `live-${Date.now()}-verify`,
-      title: 'Verify and report',
-      detail: 'Check the output and prepare the next useful action for the user.',
-      status: 'queued'
-    }
-  ];
-
-  const merged = base.length ? base : defaults;
-  return merged.map((action, idx) => ({ ...action, status: idx === 0 ? 'thinking' : action.status }));
+const renderFileIcon = (mimeType: string, name: string) => {
+  const type = (mimeType || "").toLowerCase();
+  const ext = name.split('.').pop()?.toLowerCase() || '';
+  
+  if (type.startsWith("image/") || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) {
+    return <ImageIcon className="w-4 h-4" />;
+  } else if (type.startsWith("audio/") || ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)) {
+    return <Music className="w-4 h-4" />;
+  } else if (type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) {
+    return <Video className="w-4 h-4" />;
+  } else if (type === "application/pdf" || ext === 'pdf') {
+    return <BookOpen className="w-4 h-4" />;
+  } else if (['zip', 'rar', 'tar', 'gz', '7z'].includes(ext)) {
+    return <Archive className="w-4 h-4" />;
+  } else if (type.includes("javascript") || type.includes("typescript") || type.includes("json") || ['js', 'ts', 'tsx', 'jsx', 'json', 'py', 'go', 'rs', 'cpp', 'c', 'cs', 'java', 'html', 'css'].includes(ext)) {
+    return <FileCode className="w-4 h-4" />;
+  } else {
+    return <FileText className="w-4 h-4" />;
+  }
 };
 
-export default function App() {
+const CustomTokenTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-zinc-950/95 border border-white/10 p-2 text-[10px] font-mono shadow-2xl rounded-xl space-y-1 text-slate-200">
+        <p className="text-zinc-400 font-bold border-b border-white/5 pb-0.5">{data.name}</p>
+        <p className="flex justify-between gap-4 text-[#3b82f6]">
+          <span>Text:</span>
+          <span className="font-bold text-zinc-350">{data.text.toLocaleString()}</span>
+        </p>
+        {data.attachment > 0 && (
+          <p className="flex justify-between gap-4 text-[#e11d48]">
+            <span>File:</span>
+            <span className="font-bold text-zinc-350">{data.attachment.toLocaleString()}</span>
+          </p>
+        )}
+        <p className="flex justify-between gap-4 text-emerald-400 border-t border-white/5 pt-1 font-bold">
+          <span>Total:</span>
+          <span className="text-zinc-100">{data.total.toLocaleString()}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught an extreme applet crash:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#070708] text-slate-100 flex items-center justify-center p-6 font-sans">
+          <div className="max-w-md w-full bg-zinc-950 border border-red-500/25 p-6 rounded-2xl shadow-2xl relative overflow-hidden space-y-4">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-650 to-red-500" />
+            <div className="flex items-center gap-3 text-red-500 font-mono font-bold text-xs uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              RedHydra Kernel Recovery Console
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-lg font-mono font-bold text-zinc-150 uppercase tracking-tight">App state abended</h1>
+              <p className="text-xs text-zinc-400 leading-relaxed font-mono">
+                An uncaught exception interrupted the active React render lifecycle. The client environment was secured.
+              </p>
+            </div>
+
+            {this.state.error && (
+              <div className="p-3 bg-red-950/15 border border-red-500/10 rounded-xl font-mono text-[10px] text-red-400 overflow-x-auto max-h-40 leading-normal select-text">
+                <strong>Exception Log:</strong>
+                <pre className="mt-1.5 whitespace-pre-wrap">{this.state.error.stack || this.state.error.message}</pre>
+              </div>
+            )}
+
+            <div className="flex gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.clear();
+                  } catch (_) {}
+                  window.location.reload();
+                }}
+                className="flex-1 py-2 px-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:border-red-500/40 hover:bg-red-500/20 text-[10px] font-bold text-red-400 font-mono uppercase tracking-wider transition-all"
+              >
+                Reset Cache &amp; Reload
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                className="flex-1 py-2 px-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 font-mono uppercase tracking-wider transition-all"
+              >
+                Hot Reload Frame
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+function App() {
   const [navView, setNavView] = useState<ViewType>('chat');
   const [settings, setSettings] = useState<AISettings>(DEFAULT_AI_SETTINGS);
   const [memoryPrefs, setMemoryPrefs] = useState<MemoryPrefs>(DEFAULT_MEMORY_PREFS);
@@ -262,14 +344,11 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Layout setups
-  const [isAgentMode, setIsAgentMode] = useState(false);
-  const [modulesMinimized, setModulesMinimized] = useState(false);
-
-  // Live autonomous action loop state (Manus/MoltBooks-style visible agent actions)
-  const [liveAgentActions, setLiveAgentActions] = useState<AgentLiveAction[]>(buildLiveActionsFromPlan());
-  const [isLiveActionRunning, setIsLiveActionRunning] = useState(false);
-  const [autoRunLiveActions, setAutoRunLiveActions] = useState(true);
+  // Layout setups - Focused on Chat & Agent features by default
+  const [isAgentMode, setIsAgentMode] = useState(true);
+  const [modulesMinimized, setModulesMinimized] = useState(true);
+  const [rightSidebarTab, setRightSidebarTab] = useState<'sandbox' | 'timeline'>('sandbox');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [compilationLogs, setCompilationLogs] = useState<string[]>([
     "[BUILD] Initializing RedHydra OpenCore v3.2.0...",
@@ -383,10 +462,10 @@ export default function App() {
           content: `### Welcome to **RedHydra OpenCore** 🐉
 Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for secure development, research, and task automation.
 
-#### 💡 Getting Started Action:
-- Leverage our **Built-in RedHydra OpenCore** engine (100% free and unlimited) or choose alternative configurations inside the **Settings** tab.
-- Click **Agent Mode** in the footer input area to let the assistant break tasks down into scheduled plan timelines and checklists.
-- Navigate to the sidebar tools to test our specialized audits, document parsers, and prompt cards!`,
+#### ⚡ Core Chat & Agent Interface Active:
+- **Comprehensive Agent Mode**: Toggle **Agent Mode** in the message bar to watch the AI plan, structure, and execute multi-step routines in the real-time sandbox panel on your right.
+- **Full Chat Capabilities**: Interact with our powerful, free-tier or customized models directly. Use the input panel below to get started.
+- **File Parsing & Buffers**: Drag and drop code, scripts, or documents directly into the chat console to immediately analyze assets side-by-side with your agent.`,
           timestamp: new Date().toLocaleTimeString()
         }
       ],
@@ -413,6 +492,15 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   };
 
   const activeChat = chats.find((c) => c.id === activeChatId);
+  const [showTokenDetails, setShowTokenDetails] = useState(false);
+
+  const tokenUsage = useMemo(() => {
+    return getRealtimeUsage(userInput, selectedFile, activeChat?.messages || [], settings.provider);
+  }, [userInput, selectedFile, activeChat?.messages, settings.provider]);
+
+  const last10MessagesTokens = useMemo(() => {
+    return getLast10MessagesTokenData(activeChat?.messages || []);
+  }, [activeChat?.messages]);
 
   // New Chat Action
   const handleNewChat = (mode: AssistantModeType = 'general', welcomeText?: string) => {
@@ -534,16 +622,40 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const text = event.target?.result as string;
+      const dataUrl = event.target?.result as string;
+      
+      // Determine type fallback
+      let mimeType = file.type;
+      if (!mimeType) {
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        const mimeMap: Record<string, string> = {
+          'png': 'image/png',
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'gif': 'image/gif',
+          'webp': 'image/webp',
+          'svg': 'image/svg+xml',
+          'pdf': 'application/pdf',
+          'txt': 'text/plain',
+          'json': 'application/json',
+          'js': 'text/javascript',
+          'ts': 'text/typescript',
+          'tsx': 'text/typescript',
+          'md': 'text/markdown',
+          'csv': 'text/csv'
+        };
+        mimeType = (ext && mimeMap[ext]) || "application/octet-stream";
+      }
+
       setSelectedFile({
         name: file.name,
-        type: file.type || "text/plain",
+        type: mimeType,
         size: file.size,
-        content: text || ""
+        content: dataUrl || ""
       });
       addToast(`Asset "${file.name}" registered to active terminal buffer`, "success");
     };
-    reader.readAsText(file);
+    reader.readAsDataURL(file);
   };
 
   const handleUserAdminTrigger = () => {
@@ -568,19 +680,19 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   const triggerAISelfUpgradeCompilation = () => {
     const logs = [
       "[AUTONOMIC] Chatbot initialized autonomic self-upgrade handshake...",
-      "[RECOMPILE] Injecting dynamic runtime parameters and core enhancements...",
-      "[RECOMPILE] Refactoring codebase configuration in background...",
-      "[RECOMPILE] Bundling compiler targets: server.ts -> dist/server.cjs...",
-      "[SUCCESS] Core upgraded successfully to RedHydra OpenCore v3.4-Autonomic!"
+      "[AUTHENTICATION] Checking client authorization sequence...",
+      "[FAIL] Security Policy Rule: Dynamic workspace compilation is disabled.",
+      "[FAIL] Operator/User cannot access source code or modify the website AI.",
+      "[ABORTED] Compilation loop abended."
     ];
 
     logs.forEach((logLine, index) => {
       setTimeout(() => {
         setCompilationLogs(prev => [...prev, logLine]);
-        if (logLine.includes("SUCCESS")) {
-          addToast("🤖 CHATBOT AUTONOMIC CORE COMPILATION LIVE SUCCESSFUL!", "success");
+        if (logLine.includes("FAIL")) {
+          addToast("Forbidden: AI self-modification is strictly locked by server policy.", "error");
         }
-      }, (index + 1) * 1200);
+      }, (index + 1) * 800);
     });
   };
 
@@ -635,14 +747,6 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         isAgentMode,
         streamHandler
       );
-
-      if (isAgentMode) {
-        setLiveAgentActions(buildLiveActionsFromPlan(aiResponse.agentPlan, rawInput.trim()));
-        if (autoRunLiveActions) {
-          setIsLiveActionRunning(true);
-          setCompilationLogs((logs) => [...logs, '[AGENT] New AI plan received. Live action route armed.']);
-        }
-      }
 
       // Save complete assistant message to chat list
       setChats((prev) =>
@@ -868,108 +972,6 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
     );
   };
 
-
-  // Get agent plan of the last assistant message
-  const lastAssistantMessageWithAgentPlan = activeChat?.messages
-    ?.filter((m) => m.role === 'assistant' && m.agentPlan)
-    .slice(-1)[0];
-  const activeAgentPlan = lastAssistantMessageWithAgentPlan?.agentPlan;
-
-  // Live action runner: visible think → act → verify transitions. It never performs hidden destructive actions.
-  const advanceLiveAction = () => {
-    setLiveAgentActions((prev) => {
-      if (!prev.length) return buildLiveActionsFromPlan(activeAgentPlan, activeChat?.messages?.slice(-1)[0]?.content || '');
-
-      const next = [...prev];
-      const activeIndex = next.findIndex((a) => ['thinking', 'running', 'waiting'].includes(a.status));
-
-      if (activeIndex >= 0) {
-        const activeAction = next[activeIndex];
-        if (activeAction.status === 'thinking') {
-          next[activeIndex] = {
-            ...activeAction,
-            status: 'running',
-            log: 'Action selected. Executing safe browser-side workflow step.'
-          };
-          setCompilationLogs((logs) => [...logs, `[AGENT] ${activeAction.title}: execution started.`]);
-          return next;
-        }
-        if (activeAction.status === 'running') {
-          next[activeIndex] = {
-            ...activeAction,
-            status: 'waiting',
-            log: 'Output produced. Verifying result before closing step.'
-          };
-          setCompilationLogs((logs) => [...logs, `[AGENT] ${activeAction.title}: verification checkpoint.`]);
-          return next;
-        }
-        next[activeIndex] = {
-          ...activeAction,
-          status: 'completed',
-          log: 'Verified and completed.'
-        };
-        setCompilationLogs((logs) => [...logs, `[AGENT] ${activeAction.title}: completed.`]);
-
-        const queuedIndex = next.findIndex((a, idx) => idx > activeIndex && a.status === 'queued');
-        if (queuedIndex >= 0) {
-          next[queuedIndex] = {
-            ...next[queuedIndex],
-            status: 'thinking',
-            log: 'Queued step promoted to active reasoning.'
-          };
-        } else {
-          setIsLiveActionRunning(false);
-          setCompilationLogs((logs) => [...logs, '[AGENT] Live action route finished. Awaiting next operator goal.']);
-        }
-        return next;
-      }
-
-      const queuedIndex = next.findIndex((a) => a.status === 'queued');
-      if (queuedIndex >= 0) {
-        next[queuedIndex] = {
-          ...next[queuedIndex],
-          status: 'thinking',
-          log: 'Reasoning pass started for queued action.'
-        };
-        return next;
-      }
-
-      setIsLiveActionRunning(false);
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    if (!isLiveActionRunning || !autoRunLiveActions) return;
-    const timer = window.setInterval(() => {
-      advanceLiveAction();
-    }, 1450);
-    return () => window.clearInterval(timer);
-  }, [isLiveActionRunning, autoRunLiveActions, activeChatId, activeAgentPlan]);
-
-  const handleStartLiveActions = () => {
-    if (!liveAgentActions.length) {
-      setLiveAgentActions(buildLiveActionsFromPlan(activeAgentPlan, userInput || activeChat?.title));
-    }
-    setIsLiveActionRunning(true);
-    setCompilationLogs((logs) => [...logs, '[AGENT] Live action engine resumed by operator.']);
-  };
-
-  const handlePauseLiveActions = () => {
-    setIsLiveActionRunning(false);
-    setCompilationLogs((logs) => [...logs, '[AGENT] Live action engine paused by operator.']);
-  };
-
-  const handleStepLiveActions = () => {
-    advanceLiveAction();
-  };
-
-  const handleResetLiveActions = () => {
-    setIsLiveActionRunning(false);
-    setLiveAgentActions(buildLiveActionsFromPlan(activeAgentPlan, activeChat?.title));
-    setCompilationLogs((logs) => [...logs, '[AGENT] Live action route reset from current plan.']);
-  };
-
   // Search filtered conversations
   const filteredConversations = chats.filter((c) => {
     const matchesSearch = c.title.toLowerCase().includes(chatsSearch.toLowerCase());
@@ -986,6 +988,12 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
     addToast("Prompt successfully populated into input drawer.", "info");
   };
 
+  // Get agent plan of the last assistant message
+  const lastAssistantMessageWithAgentPlan = activeChat?.messages
+    ?.filter((m) => m.role === 'assistant' && m.agentPlan)
+    .slice(-1)[0];
+  const activeAgentPlan = lastAssistantMessageWithAgentPlan?.agentPlan;
+
   return (
     <div className="flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
       
@@ -993,8 +1001,18 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-900/5 blur-[120px] rounded-full pointer-events-none" />
       
+      {/* Sidebar Backdrop Overlay for Mobile/Tablets */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-[1.5px] z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* 1. LEFT SIDEBAR PANEL */}
-      <aside className="w-72 bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-25 flex-shrink-0 select-none">
+      <aside className={`fixed inset-y-0 left-0 lg:relative w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 lg:z-25 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      }`}>
         <div className="flex flex-col flex-1 min-h-0">
           
           {/* Logo Brand Header */}
@@ -1009,12 +1027,20 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                 <span className="text-[9px] text-slate-500 font-mono tracking-widest uppercase block -mt-0.5">Control Interface</span>
               </div>
             </div>
+            {/* Mobile/Tablet Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 border border-zinc-800 transition-all focus:outline-none"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* Quick Creator */}
           <div className="px-4 py-3 border-b border-white/5">
             <button
-              onClick={() => handleNewChat()}
+              onClick={() => { handleNewChat(); setIsSidebarOpen(false); }}
               className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 hover:text-white rounded-xl text-xs font-mono font-bold tracking-wide transition-all shadow-[0_0_15px_rgba(255,255,255,0.02)]"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1044,7 +1070,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                 {pinnedConversations.map((c) => (
                   <div
                     key={c.id}
-                    onClick={() => { setActiveChatId(c.id); setNavView('chat'); }}
+                    onClick={() => { setActiveChatId(c.id); setNavView('chat'); setIsSidebarOpen(false); }}
                     className={`flex items-center justify-between p-2 rounded-xl group/item cursor-pointer text-xs font-mono transition-colors ${
                       activeChatId === c.id 
                         ? "bg-red-500/10 text-red-400 border border-red-500/20" 
@@ -1106,7 +1132,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                 unpinnedConversations.map((c) => (
                   <div
                     key={c.id}
-                    onClick={() => { setActiveChatId(c.id); setNavView('chat'); }}
+                    onClick={() => { setActiveChatId(c.id); setNavView('chat'); setIsSidebarOpen(false); }}
                     className={`flex items-center justify-between p-2.5 rounded-xl group/item cursor-pointer text-xs font-mono transition-all ${
                       activeChatId === c.id && navView === 'chat'
                         ? "bg-white/5 border border-white/10 text-white shadow-sm" 
@@ -1219,51 +1245,6 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
               </div>
             </div>
 
-            {/* AI Autonomous Code upgrade terminal block */}
-            <div className="p-3.5 rounded-xl bg-zinc-950/60 border border-amber-550/15 font-mono text-[10px] space-y-2 relative overflow-hidden group mb-3 shadow-[0_0_15px_rgba(245,158,11,0.01)] transition-all hover:border-amber-500/25">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/1 via-transparent to-transparent pointer-events-none" />
-              
-              <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
-                <span className="font-bold text-amber-500 flex items-center gap-1 uppercase tracking-wider text-[8.5px] pointer-events-none">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-[pulse_1s_infinite]" />
-                  AI ADMIN CORE Terminal://
-                </span>
-                <span className="text-zinc-600 text-[7px] uppercase tracking-widest font-bold">MODE: CORE_LOCK</span>
-              </div>
-
-              {/* Dynamic scroll representation with lines of upgrade patches */}
-              <div className="h-20 overflow-y-auto bg-black/85 rounded border border-white/5 p-2 space-y-1 select-none scrollbar-thin">
-                {compilationLogs.map((log, idx) => (
-                  <p key={idx} className={`text-[8px] font-mono leading-tight whitespace-pre-wrap ${
-                    log.includes('[SUCCESS]') ? 'text-emerald-400 font-bold' :
-                    log.includes('[FAIL]') || log.includes('ACCESS DENIED') ? 'text-red-500 font-bold' :
-                    log.includes('[RECOMPILE]') || log.includes('[AUTONOMIC]') ? 'text-amber-400 font-medium' :
-                    'text-zinc-400'
-                  }`}>
-                    {log}
-                  </p>
-                ))}
-                <div ref={compilationEndRef} />
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleUserAdminTrigger}
-                  className="flex-1 py-1 px-1.5 rounded bg-zinc-900 border border-zinc-800 hover:border-red-500/30 hover:bg-red-950/20 text-[8px] font-mono text-zinc-500 hover:text-red-400 font-bold uppercase transition-all duration-300 focus:outline-none"
-                >
-                  ⚙️ User Patch
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSelfUpgradeTrigger}
-                  className="flex-1 py-1 px-1.5 rounded bg-amber-950/10 border border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-950/20 text-[8px] font-mono text-amber-500 font-bold uppercase transition-all duration-300 animate-pulse focus:outline-none"
-                >
-                  🚀 Upgrade Code
-                </button>
-              </div>
-            </div>
-
             <div className="flex items-center justify-between px-2 mb-1">
               <button 
                 type="button"
@@ -1289,7 +1270,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                   className="space-y-1.5 overflow-hidden"
                 >
                   <button
-                    onClick={() => setNavView('chat')}
+                    onClick={() => { setNavView('chat'); setIsSidebarOpen(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-xl transition-all ${
                       navView === 'chat' ? "bg-red-500/10 text-red-400 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                     }`}
@@ -1299,7 +1280,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                   </button>
 
                   <button
-                    onClick={() => setNavView('prompts')}
+                    onClick={() => { setNavView('prompts'); setIsSidebarOpen(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-xl transition-all ${
                       navView === 'prompts' ? "bg-red-500/10 text-red-400 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                     }`}
@@ -1309,7 +1290,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                   </button>
 
                   <button
-                    onClick={() => setNavView('cybersecurity')}
+                    onClick={() => { setNavView('cybersecurity'); setIsSidebarOpen(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-xl transition-all ${
                       navView === 'cybersecurity' ? "bg-red-500/10 text-red-500 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                     }`}
@@ -1319,7 +1300,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                   </button>
 
                   <button
-                    onClick={() => setNavView('research')}
+                    onClick={() => { setNavView('research'); setIsSidebarOpen(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-xl transition-all ${
                       navView === 'research' ? "bg-red-500/10 text-red-400 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                     }`}
@@ -1329,23 +1310,13 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                   </button>
 
                   <button
-                    onClick={() => setNavView('files')}
+                    onClick={() => { setNavView('files'); setIsSidebarOpen(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-xl transition-all ${
-                      navView === 'files' ? "bg-red-500/10 text-red-400 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                      navView === 'files' ? "bg-red-500/10 text-red-400 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5 hover:text-slate-250"
                     }`}
                   >
                     <FileSearch className="w-3.5 h-3.5" />
                     File &amp; Text Parsing
-                  </button>
-
-                  <button
-                    onClick={() => setNavView('settings')}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-xl transition-all ${
-                      navView === 'settings' ? "bg-red-500/10 text-red-400 border border-red-500/20 font-bold" : "text-slate-400 hover:bg-white/5"
-                    }`}
-                  >
-                    <Settings className="w-3.5 h-3.5" />
-                    System settings
                   </button>
                 </motion.div>
               )}
@@ -1366,7 +1337,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
               </div>
               <p className="text-[9px] font-mono text-zinc-500 truncate">{anonProfile?.role || "Synchronizing Node"}</p>
             </div>
-            <Settings className="w-3.5 h-3.5 text-slate-500 cursor-pointer hover:text-white transition-colors" onClick={() => setNavView('settings')} />
+            <Settings className="w-3.5 h-3.5 text-slate-500 cursor-pointer hover:text-white transition-colors" onClick={() => { setNavView('settings'); setIsSidebarOpen(false); }} />
           </div>
         </div>
       </aside>
@@ -1379,10 +1350,19 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         <div className="absolute left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-red-500/30 to-transparent pointer-events-none z-10 animate-laser-scan" />
         
         {/* TOP STATUS BAR BAR */}
-        <header className="h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-6 z-40 flex-shrink-0 sticky top-0">
+        <header className="h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-40 flex-shrink-0 sticky top-0">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent animate-pulse" />
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile/Tablet Hamburger Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden p-2 rounded-xl bg-zinc-950 border border-white/5 text-zinc-400 hover:text-white transition-all focus:outline-none"
+              title="Toggle Workspace Sidebar"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
             <div className="flex flex-col text-left">
               <h2 className="text-xs font-mono font-bold tracking-widest uppercase text-red-400 hover:text-red-300 transition-colors duration-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.35)] flex items-center gap-2">
                 <span className="inline-block w-2.5 h-2.5 rounded-sm bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.7)] animate-pulse" />
@@ -1454,7 +1434,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         </header>
 
         {/* COMPONENT DRAWER DISPATCHER */}
-        <div className={`flex-1 min-h-0 bg-transparent flex flex-col ${navView === 'chat' ? 'overflow-hidden p-4 md:p-6' : 'overflow-y-auto p-6 md:p-8'}`}>
+        <div className={`flex-1 min-h-0 bg-transparent flex flex-col ${navView === 'chat' ? 'overflow-hidden pt-0 px-4 pb-2 md:pt-0 md:px-6 md:pb-3' : 'overflow-y-auto p-6 md:p-8'}`}>
           <div className={`max-w-4xl mx-auto h-full w-full flex flex-col ${navView === 'chat' ? 'overflow-hidden' : ''}`}>
 
             {navView === 'prompts' && (
@@ -1612,10 +1592,10 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                       return (
                         <div
                           key={m.id}
-                          className={`flex items-start gap-4 p-5 rounded-2xl border transition-all ${
+                          className={`flex items-start gap-2 sm:gap-4 p-3.5 sm:p-5 rounded-2xl border transition-all ${
                             isUser 
-                              ? "bg-red-650/10 border-red-500/20 text-slate-200 shadow-sm self-end ml-12 hover:shadow-[0_0_15px_rgba(239,68,68,0.04)]" 
-                              : "bg-[#0a0a0a]/60 border-white/5 backdrop-blur-md self-start mr-12 hover:border-red-500/10 hover:shadow-[0_0_15px_rgba(239,68,68,0.02)]"
+                              ? "bg-red-650/10 border-red-500/20 text-slate-200 shadow-sm self-end ml-4 sm:ml-12 hover:shadow-[0_0_15px_rgba(239,68,68,0.04)]" 
+                              : "bg-[#0a0a0a]/60 border-white/5 backdrop-blur-md self-start mr-4 sm:mr-12 hover:border-red-500/10 hover:shadow-[0_0_15px_rgba(239,68,68,0.02)]"
                           }`}
                         >
                           
@@ -1635,20 +1615,32 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                             </span>
 
                             {m.attachment && (
-                              <div className="p-3 rounded-xl bg-red-950/20 border border-red-900/30 flex items-center justify-between gap-3 text-left">
-                                <div className="flex items-center gap-2.5">
-                                  <div className="p-2 rounded bg-red-500/10 border border-red-500/20 text-red-400">
-                                    <FileText className="w-4 h-4" />
+                              <div className="space-y-2">
+                                <div className="p-3 rounded-xl bg-red-950/20 border border-red-900/30 flex items-center justify-between gap-3 text-left">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="p-2 rounded bg-red-500/10 border border-red-500/20 text-red-400">
+                                      {renderFileIcon(m.attachment.type, m.attachment.name)}
+                                    </div>
+                                    <div className="leading-tight">
+                                      <p className="text-xs font-mono font-bold text-zinc-100 max-w-[200px] truncate" title={m.attachment.name}>{m.attachment.name}</p>
+                                      <p className="text-[9px] font-mono text-zinc-500">{(m.attachment.size / 1024).toFixed(1)} KB &bull; {m.attachment.type || "Attached Asset"}</p>
+                                    </div>
                                   </div>
-                                  <div className="leading-tight">
-                                    <p className="text-xs font-mono font-bold text-zinc-100 max-w-[200px] truncate" title={m.attachment.name}>{m.attachment.name}</p>
-                                    <p className="text-[9px] font-mono text-zinc-500">{(m.attachment.size / 1024).toFixed(1)} KB &bull; {m.attachment.type || "Text Document"}</p>
-                                  </div>
+                                  <span className="text-[9px] font-mono font-bold text-red-500 px-1.5 py-0.5 bg-red-500/10 border border-red-500/20 rounded uppercase flex items-center gap-1">
+                                    <FileUp className="w-2.5 h-2.5" />
+                                    ATTACHED
+                                  </span>
                                 </div>
-                                <span className="text-[9px] font-mono font-bold text-red-500 px-1.5 py-0.5 bg-red-500/10 border border-red-500/20 rounded uppercase flex items-center gap-1">
-                                  <FileUp className="w-2.5 h-2.5" />
-                                  ATTACHED
-                                </span>
+                                {m.attachment.type.startsWith("image/") && m.attachment.content && (
+                                  <div className="relative rounded-xl border border-white/5 overflow-hidden w-fit max-w-full max-h-64 shadow-md bg-zinc-950/20">
+                                    <img
+                                      src={m.attachment.content}
+                                      alt={m.attachment.name}
+                                      className="object-contain max-h-64 rounded-xl max-w-full"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                )}
                               </div>
                             )}
                             
@@ -1696,7 +1688,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
                   {/* Active streaming character printing */}
                   {isGenerating && streamingText && (
-                    <div className="flex items-start gap-4 p-5 rounded-2xl border bg-[#0a0a0a]/60 border-white/5 backdrop-blur-md self-start mr-12 w-full">
+                    <div className="flex items-start gap-2 sm:gap-4 p-3.5 sm:p-5 rounded-2xl border bg-[#0a0a0a]/60 border-white/5 backdrop-blur-md self-start mr-4 sm:mr-12 w-full">
                       <div className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 text-xs font-mono font-bold border bg-red-500/10 text-red-400 border-red-500/20">
                         AI
                       </div>
@@ -1750,16 +1742,39 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                       }
                       const reader = new FileReader();
                       reader.onload = (event) => {
-                        const text = event.target?.result as string;
+                        const dataUrl = event.target?.result as string;
+                        
+                        let mimeType = file.type;
+                        if (!mimeType) {
+                          const ext = file.name.split('.').pop()?.toLowerCase();
+                          const mimeMap: Record<string, string> = {
+                            'png': 'image/png',
+                            'jpg': 'image/jpeg',
+                            'jpeg': 'image/jpeg',
+                            'gif': 'image/gif',
+                            'webp': 'image/webp',
+                            'svg': 'image/svg+xml',
+                            'pdf': 'application/pdf',
+                            'txt': 'text/plain',
+                            'json': 'application/json',
+                            'js': 'text/javascript',
+                            'ts': 'text/typescript',
+                            'tsx': 'text/typescript',
+                            'md': 'text/markdown',
+                            'csv': 'text/csv'
+                          };
+                          mimeType = (ext && mimeMap[ext]) || "application/octet-stream";
+                        }
+
                         setSelectedFile({
                           name: file.name,
-                          type: file.type || "text/plain",
+                          type: mimeType,
                           size: file.size,
-                          content: text || ""
+                          content: dataUrl || ""
                         });
                         addToast(`Asset "${file.name}" linked via drag-drop dropzone`, "success");
                       };
-                      reader.readAsText(file);
+                      reader.readAsDataURL(file);
                     }
                   }}
                 >
@@ -1768,7 +1783,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     className="hidden"
-                    accept=".txt,.js,.json,.ts,.tsx,.py,.go,.rs,.c,.cpp,.html,.css,.md,.xml,.cfg,.ini,.log,.yaml,.yml"
+                    accept="*"
                   />
 
                   <div className="relative group/input">
@@ -1776,11 +1791,20 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                     
                     {/* Floating attachment preview bar */}
                     {selectedFile && (
-                      <div className="absolute left-3 right-3 -top-12 p-2 rounded-xl bg-red-950/40 backdrop-blur-xl border border-red-500/20 font-mono text-xs flex items-center justify-between gap-3 text-left shadow-lg animate-fade-in">
+                      <div className="absolute left-3 right-3 -top-12 p-2 rounded-xl bg-red-950/40 backdrop-blur-xl border border-red-500/20 font-mono text-xs flex items-center justify-between gap-3 text-left shadow-lg animate-fade-in z-50">
                         <div className="flex items-center gap-2">
-                          <span className="p-1 px-1.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-[9px] uppercase tracking-wide">
+                          <span className="p-1 px-1.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-[9px] uppercase tracking-wide flex items-center gap-1.5">
+                            {renderFileIcon(selectedFile.type, selectedFile.name)}
                             BUFFER ACTIVE
                           </span>
+                          {selectedFile.type.startsWith("image/") && selectedFile.content && (
+                            <img 
+                              src={selectedFile.content} 
+                              alt="preview" 
+                              className="w-5 h-5 object-cover rounded border border-white/10"
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
                           <span className="text-zinc-200 font-bold truncate max-w-[150px]">{selectedFile.name}</span>
                           <span className="text-zinc-500 text-[10px]">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
                         </div>
@@ -1811,6 +1835,143 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
                       {/* Left control pills */}
                       <div className="flex items-center justify-between md:justify-end gap-3.5 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 md:pl-3">
+                        {/* Token usage counter with inline popover details */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowTokenDetails(!showTokenDetails)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all ${
+                              tokenUsage.totalRequestEstimate > 10000
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_8px_rgba(245,158,11,0.1)] animate-pulse"
+                                : tokenUsage.totalRequestEstimate > 1000
+                                ? "bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_8px_rgba(239,68,68,0.1)]"
+                                : "bg-white/5 border border-white/10 text-zinc-400 hover:text-red-400 hover:bg-white/10"
+                            }`}
+                            title="Interactive Request Token Counter & Quota Estimator"
+                            id="token-usage-counter-btn"
+                          >
+                            <Zap className={`w-3.5 h-3.5 ${tokenUsage.promptTokens > 0 ? 'animate-pulse text-red-500' : ''}`} />
+                            <span className="font-bold">{tokenUsage.totalRequestEstimate.toLocaleString()}</span>
+                            <span className="text-[9px] opacity-60">TKNS</span>
+                          </button>
+
+                          {showTokenDetails && (
+                            <>
+                              {/* Overlay backing for smooth tap outs */}
+                              <div className="fixed inset-0 z-40" onClick={() => setShowTokenDetails(false)} />
+                              
+                              <div className="absolute right-0 bottom-full mb-3.5 w-72 sm:w-80 md:w-[350px] bg-[#0a0a0b] border border-white/10 rounded-2xl p-4 shadow-2xl font-mono text-xs z-50 animate-fade-in space-y-3 mr-[-80px] md:mr-0">
+                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                  <div className="flex items-center gap-1.5 text-zinc-200 font-bold text-[10px] uppercase tracking-wider">
+                                    <Zap className="w-3.5 h-3.5 text-red-500" />
+                                    Compute Payload
+                                  </div>
+                                  <button 
+                                    onClick={() => setShowTokenDetails(false)}
+                                    className="text-[#ef4444] hover:text-red-400 p-0.5"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center text-[11px]">
+                                    <span className="text-zinc-500">Prompt Text:</span>
+                                    <span className="text-zinc-300 font-bold">{tokenUsage.promptTokens.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-[11px]">
+                                    <span className="text-zinc-500">Attachment Buffer:</span>
+                                    <span className={`font-bold ${tokenUsage.attachmentTokens > 0 ? 'text-red-400' : 'text-zinc-300'}`}>
+                                      {tokenUsage.attachmentTokens.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-[11px]">
+                                    <span className="text-zinc-500">Session Context:</span>
+                                    <span className="text-zinc-300 font-bold">{tokenUsage.contextTokens.toLocaleString()}</span>
+                                  </div>
+
+                                  <div className="border-t border-white/5 pt-2 flex justify-between items-center text-xs font-bold font-sans">
+                                    <span className="text-zinc-400">Total Request:</span>
+                                    <span className="text-red-450 font-mono">{tokenUsage.totalRequestEstimate.toLocaleString()}</span>
+                                  </div>
+                                </div>
+
+                                {/* Progress/Quota Bar */}
+                                <div className="space-y-1 pt-1">
+                                  <div className="flex justify-between text-[9px] text-zinc-500 pb-0.5">
+                                    <span>QUOTA FOOTPRINT:</span>
+                                    <span className="font-bold text-zinc-400">
+                                      {tokenUsage.usedPercentage.toFixed(2)}%
+                                    </span>
+                                  </div>
+                                  <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5">
+                                    <div 
+                                      className="h-full bg-gradient-to-r from-red-650 to-amber-500 transition-all duration-500"
+                                      style={{ width: `${tokenUsage.usedPercentage}%` }}
+                                    />
+                                  </div>
+                                  <div className="flex justify-between text-[8px] text-zinc-500 leading-tight">
+                                    <span>LIMIT: {tokenUsage.maxLimit.toLocaleString()}</span>
+                                    <span>{settings.provider.toUpperCase()}</span>
+                                  </div>
+                                </div>
+
+                                {/* Recharts Consumption Bar Chart */}
+                                {last10MessagesTokens.length > 0 ? (
+                                  <div className="space-y-2 border-t border-white/5 pt-3">
+                                    <div className="text-[9px] text-zinc-500 uppercase tracking-wider pb-1 flex justify-between">
+                                      <span>Consumptional Runline (Last 10 msgs)</span>
+                                      <span className="text-emerald-500 text-[8px] animate-pulse">● Live Tracking</span>
+                                    </div>
+                                    <div className="h-28 w-full select-none" id="token-usage-chart-container">
+                                      <ResponsiveContainer width="100%" height={110}>
+                                        <BarChart
+                                          data={last10MessagesTokens}
+                                          margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
+                                        >
+                                          <XAxis 
+                                            dataKey="name" 
+                                            tick={{ fill: '#71717a', fontSize: 8 }} 
+                                            tickLine={false} 
+                                            axisLine={false}
+                                          />
+                                          <YAxis 
+                                            tick={{ fill: '#71717a', fontSize: 8 }} 
+                                            tickLine={false} 
+                                            axisLine={false}
+                                            tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
+                                          />
+                                          <RechartsTooltip content={<CustomTokenTooltip />} cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }} />
+                                          <Bar dataKey="text" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
+                                          <Bar dataKey="attachment" stackId="a" fill="#e11d48" radius={[2, 2, 0, 0]} />
+                                        </BarChart>
+                                      </ResponsiveContainer>
+                                    </div>
+                                    <div className="flex justify-between text-[8px] text-zinc-500 font-sans border-t border-white/5 pt-1.5">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" /> Text Tokens
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#e11d48]" /> File Tokens
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="border-t border-white/5 pt-3 pb-1 text-center text-zinc-600 text-[9px] leading-relaxed">
+                                    No messages exchanged in this session yet.
+                                    <br />
+                                    Metrics will visual-map consumption history.
+                                  </div>
+                                )}
+
+                                <div className="text-[8.5px] leading-relaxed text-zinc-500 border-t border-white/5 pt-2">
+                                  * Estimates reflect active text character parsing &amp; multimodal matrix sizing models.
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+
                         {/* File trigger button */}
                         <button
                           onClick={() => fileInputRef.current?.click()}
@@ -1866,6 +2027,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                   <span className="text-[10px] text-slate-650 font-mono text-center pointer-events-none mb-1">
                     RedHydra Conformance API Logs. Client API caches reside safely in Sandboxed IndexedDB storage.
                   </span>
+
                 </div>
 
               </div>
@@ -1875,34 +2037,51 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         </div>
       </main>
 
-      {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler (ONLY rendered when in agent mode) */}
+      {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
       {navView === 'chat' && isAgentMode && (
-        <aside className="w-80 bg-[#0a0a0a]/80 backdrop-blur-xl border-l border-white/5 p-5 hidden xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
+        <aside className="w-80 bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4.5 hidden xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
-            <h3 className="text-xs font-mono font-bold tracking-widest text-slate-350 uppercase pb-4 border-b border-white/5 flex items-center gap-1.5">
-              <Bot className="w-4 h-4 text-red-500 animate-pulse" />
-              AGENT TIMELINE METRICS
-            </h3>
+            {/* High-End Cyberpunk Tab Switcher */}
+            <div className="flex items-center gap-1 border-b border-white/5 pb-3">
+              <button
+                onClick={() => setRightSidebarTab('sandbox')}
+                className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] font-mono font-bold uppercase transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                  rightSidebarTab === 'sandbox'
+                    ? "bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
+                    : "bg-transparent border border-transparent text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                Autonomic VM
+              </button>
+              <button
+                onClick={() => setRightSidebarTab('timeline')}
+                className={`flex-1 py-1.5 px-2 rounded-xl text-[9px] font-mono font-bold uppercase transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                  rightSidebarTab === 'timeline'
+                    ? "bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
+                    : "bg-transparent border border-transparent text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                <Bot className="w-3.5 h-3.5" />
+                Timeline Plan
+              </button>
+            </div>
             
-            <div className="flex-1 overflow-y-auto pt-4">
-              <AgentPlanner
-                plan={activeAgentPlan}
-                onToggleStep={handleToggleStepStatus}
-                onToggleChecklistItem={handleToggleChecklistItem}
-              />
-
-              <div className="mt-5">
-                <LiveActionAgent
-                  actions={liveAgentActions}
-                  isRunning={isLiveActionRunning}
-                  autoRun={autoRunLiveActions}
-                  onToggleAutoRun={() => setAutoRunLiveActions((v) => !v)}
-                  onStart={handleStartLiveActions}
-                  onPause={handlePauseLiveActions}
-                  onStep={handleStepLiveActions}
-                  onReset={handleResetLiveActions}
+            <div className="flex-1 overflow-y-auto pt-4 scrollbar-none">
+              {rightSidebarTab === 'sandbox' ? (
+                <AILiveActions
+                  plan={activeAgentPlan}
+                  isGenerating={isGenerating}
+                  onShowToast={addToast}
+                  triggerUpgrade={triggerAISelfUpgradeCompilation}
                 />
-              </div>
+              ) : (
+                <AgentPlanner
+                  plan={activeAgentPlan}
+                  onToggleStep={handleToggleStepStatus}
+                  onToggleChecklistItem={handleToggleChecklistItem}
+                />
+              )}
             </div>
           </div>
         </aside>
@@ -1912,5 +2091,13 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       <ToastNotification toasts={toasts} onClose={removeToast} />
 
     </div>
+  );
+}
+
+export default function SafeApp() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   );
 }
