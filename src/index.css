@@ -41,25 +41,18 @@ textarea {
 
 @layer utilities {
   @keyframes slide-in {
-    from {
-      transform: translateY(12px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 
   @keyframes zoom-in {
-    from {
-      transform: scale(0.96);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes slide-left {
+    from { transform: translateX(16px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
 
   .animate-slide-in {
@@ -70,16 +63,17 @@ textarea {
     animation: zoom-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .bg-zinc-950 {
-    background-color: rgba(10, 10, 10, 0.72) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+  .animate-slide-left {
+    animation: slide-left 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .bg-zinc-950\/95 {
+  .bg-zinc-950,
+  .bg-zinc-950\/95,
+  .bg-zinc-950\/80,
+  .bg-zinc-950\/60 {
     background-color: rgba(10, 10, 10, 0.72) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
   }
 
   .bg-zinc-900,
@@ -116,13 +110,10 @@ textarea {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* RedHydra OpenCore final header stability fix                               */
-/* -------------------------------------------------------------------------- */
-
-/* If the patch script adds the class/attribute, use the strongest selector. */
+/* Final RedHydra OpenCore UI cleanup */
 .redhydra-topbar,
-[data-redhydra-topbar="true"] {
+[data-redhydra-topbar="true"],
+#root div:has(> button[title="Toggle Workspace Sidebar"]) {
   position: sticky !important;
   top: 0 !important;
   z-index: 100 !important;
@@ -130,35 +121,14 @@ textarea {
   width: 100% !important;
   min-height: 64px !important;
   height: auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 0.75rem !important;
-  flex-wrap: wrap !important;
   overflow: visible !important;
-  background: rgba(5, 5, 5, 0.92) !important;
+  flex-wrap: wrap !important;
+  background: rgba(5, 5, 5, 0.94) !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Fallback selector for the current App.tsx topbar before running the patch. */
-#root div:has(> button[title="Toggle Workspace Sidebar"]) {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 100 !important;
-  flex-shrink: 0 !important;
-  height: auto !important;
-  min-height: 64px !important;
-  overflow: visible !important;
-  flex-wrap: wrap !important;
-  background: rgba(5, 5, 5, 0.92) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Keep the scroll on chat messages, not on the whole page/header. */
 .redhydra-chat-scroll,
 [data-redhydra-chat-scroll="true"] {
   flex: 1 1 auto !important;
@@ -168,31 +138,20 @@ textarea {
   scroll-behavior: smooth;
 }
 
-/* Prevent automatic scroll from visually pushing the header away. */
 #root main,
 #root section,
 #root .flex-1 {
   min-height: 0;
 }
 
-/* Header text should stay readable instead of clipping. */
-.redhydra-topbar h1,
-.redhydra-topbar h2,
-.redhydra-topbar h3,
-.redhydra-topbar p,
-.redhydra-topbar span,
-[data-redhydra-topbar="true"] h1,
-[data-redhydra-topbar="true"] h2,
-[data-redhydra-topbar="true"] h3,
-[data-redhydra-topbar="true"] p,
-[data-redhydra-topbar="true"] span {
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  overflow-wrap: anywhere !important;
+#root h1,
+#root h2,
+#root h3,
+#root p,
+#root span {
+  overflow-wrap: anywhere;
 }
 
-/* The app had fixed height utility classes that can clip the topbar. */
 @media (max-width: 1280px) {
   #root .h-20,
   #root .h-16,
@@ -230,28 +189,5 @@ textarea {
   #root .px-6 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-  }
-
-  #root .gap-5 {
-    gap: 0.75rem !important;
-  }
-
-  #root .gap-4 {
-    gap: 0.65rem !important;
-  }
-
-  #root .gap-3 {
-    gap: 0.5rem !important;
-  }
-}
-
-@media (max-width: 520px) {
-  #root h2 {
-    font-size: 0.86rem !important;
-  }
-
-  #root button,
-  #root select {
-    font-size: 0.72rem !important;
   }
 }
