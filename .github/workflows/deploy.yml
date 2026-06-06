@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy RedHydra OpenCore to GitHub Pages
 
 on:
   push:
@@ -13,21 +13,22 @@ permissions:
   actions: read
 
 concurrency:
-  group: pages
+  group: redhydra-pages
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      PAGES_ARTIFACT_NAME: redhydra-pages-${{ github.run_id }}
+      PAGES_ARTIFACT_NAME: redhydra-opencore-${{ github.run_id }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -35,11 +36,14 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build static frontend
+      - name: Build Vite frontend for GitHub Pages
         run: npm run build:pages
 
-      - name: Add .nojekyll file
+      - name: Add .nojekyll marker
         run: touch dist/.nojekyll
+
+      - name: Copy index.html to 404.html for SPA fallback
+        run: cp dist/index.html dist/404.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -54,9 +58,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      PAGES_ARTIFACT_NAME: redhydra-pages-${{ github.run_id }}
+      PAGES_ARTIFACT_NAME: redhydra-opencore-${{ github.run_id }}
 
     environment:
       name: github-pages
