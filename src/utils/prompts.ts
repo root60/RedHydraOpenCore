@@ -90,8 +90,6 @@ State potential boundaries, runtime dependencies, browser environment limits, or
 Suggest the very next task the user should execute to build or advance this output.
 ====================
 
-Also think in visible, user-controllable live actions. Each plan step should be concrete enough for the UI to convert it into a think → act → verify action route with pause, step, reset, and auto-run controls. Do not claim hidden system access or destructive self-modification; frame actions as safe, visible, browser-side workflow execution unless the user explicitly connects external tools.
-
 Ensure you output this exact structural block with the exact headings. Do not skip any section.
 `;
 
