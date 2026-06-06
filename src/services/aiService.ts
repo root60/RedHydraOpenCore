@@ -1,12 +1,242 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * RedHydra OpenCore no-key AI service.
+ *
+ * This file intentionally does NOT import Google/GCP/Gemini SDKs and does NOT
+ * require a built-in API key. The public GitHub Pages build runs in local
+ * open-source guided mode by default.
  */
 
 import { AISettings, Message, AgentPlan } from "../types";
-import { ASSISTANT_SYSTEM_INSTRUCTIONS, AGENT_SYSTEM_PROMPT, getStyleInstruction } from "../utils/prompts";
+import {
+  ASSISTANT_SYSTEM_INSTRUCTIONS,
+  AGENT_SYSTEM_PROMPT,
+  getStyleInstruction,
+} from "../utils/prompts";
 
-// Parse structured output from the agent response
+type AgentStatus = "pending" | "running" | "completed" | "failed";
+
+function nowId(prefix = "m") {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function streamText(text: string, onChunk?: (text: string) => void) {
+  if (!onChunk) return;
+  let index = 0;
+  const step = 14;
+  const timer = window.setInterval(() => {
+    index += step;
+    onChunk(text.slice(0, index));
+    if (index >= text.length) {
+      onChunk(text);
+      window.clearInterval(timer);
+    }
+  }, 12);
+}
+
+function hasAny(input: string, words: string[]) {
+  return words.some((word) => input.includes(word));
+}
+
+function extractAttachmentBlock(content: string) {
+  const nameMatch = content.match(/\[ATTACHED FILE:\s*"([^"]+)"/i);
+  const bodyMatch = content.match(
+    /--- ATTACHMENT CONTENT START ---\n([\s\S]*?)\n--- ATTACHMENT CONTENT END ---/i
+  );
+
+  return {
+    name: nameMatch?.[1] || "attached-file",
+    body: bodyMatch?.[1]?.trim() || "",
+  };
+}
+
+function escapeFence(text: string) {
+  return text.replace(/```/g, "ʼʼʼ");
+}
+
+function buildLocalGuidedAnswer(messages: Message[], settings: AISettings, isAgentMode: boolean): string {
+  const lastMessage = messages[messages.length - 1]?.content || "";
+  const normalized = lastMessage.toLowerCase();
+  const attachment = extractAttachmentBlock(lastMessage);
+  const hasAttachment = lastMessage.includes("--- ATTACHMENT CONTENT START ---");
+
+  let responseBody = "";
+
+  if (hasAttachment) {
+    const preview = attachment.body
+      ? escapeFence(attachment.body.slice(0, 1200))
+      : "[No readable text content was extracted. Binary files need a real model/backend or manual review.]";
+
+    responseBody = `### Local File Review
+
+I am running in **OpenCore Local Mode**, so no Google/GCP key or login is being used.
+
+**File detected:** \`${attachment.name}\`
+
+#### Extracted preview
+
+\`\`\`text
+${preview}${attachment.body.length > 1200 ? "\n...[truncated]" : ""}
+\`\`\`
+
+#### Safe review checklist
+
+1. Check for hardcoded secrets such as API keys, tokens, passwords, private URLs, or service-account JSON.
+2. Remove any vendor-specific built-in credentials before publishing the repository.
+3. Keep user-provided keys optional and stored outside source control.
+4. For GitHub Pages, remember that only static frontend code runs. Backend API routes do not run there.
+
+#### Suggested next action
+
+Paste the specific error log, file, or code section you want reviewed, and I can give a focused patch-style answer.`;
+  } else if (hasAny(normalized, ["gcp", "gemini", "api key", "apikey", "service account", "google"])) {
+    responseBody = `### No-Key OpenCore Mode
+
+This build has been changed to avoid built-in Google/GCP/Gemini credentials.
+
+#### What changed
+
+- No built-in API key is required.
+- No Google service account is required.
+- No Gemini SDK is used by the browser chat path.
+- The public GitHub Pages version works in local guided mode.
+- Optional external providers remain optional only if a user adds their own key.
+
+#### Why this is safer
+
+A public open-source repository should not ship a shared cloud AI key. If a real key is pushed to GitHub, anyone can copy it, exhaust quota, or generate charges.
+
+#### Free no-login behavior
+
+This mode uses local rule-based assistance inside the browser. It is not a hosted LLM, but it keeps the project open-source, deployable, and usable without login or secrets.`;
+  } else if (hasAny(normalized, ["deploy", "github pages", "vite", "workflow", "artifact", "build"])) {
+    responseBody = `### GitHub Pages Deployment Guidance
+
+Your public build should stay static and no-key.
+
+#### Required setup
+
+1. Use \`base: '/RedHydraOpenCore/'\` in \`vite.config.ts\`.
+2. Use \`npm run build:pages\` for Pages.
+3. Upload only the \`dist\` folder as the Pages artifact.
+4. Use a unique artifact name to avoid duplicate \`github-pages\` artifacts.
+5. Set GitHub Pages source to **GitHub Actions**.
+
+#### Important
+
+GitHub Pages cannot run \`server.ts\`, Express routes, or private environment variables. That is why the frontend must not depend on \`/api/chat\` for the default public mode.`;
+  } else if (hasAny(normalized, ["react", "typescript", "javascript", "code", "function", "component", "bug", "fix"])) {
+    responseBody = `### Local Code Assistant
+
+I am running without any cloud API key. Here is a safe code-review pattern you can use:
+
+\`\`\`ts
+type Result<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: string };
+
+export function safeParseJson<T = unknown>(input: string): Result<T> {
+  try {
+    return { ok: true, value: JSON.parse(input) as T };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Invalid JSON",
+    };
+  }
+}
+\`\`\`
+
+#### Review checklist
+
+- Validate inputs before using them.
+- Avoid hardcoded secrets.
+- Keep browser-only code separate from server-only code.
+- Use environment variables only on a real backend, never inside static Pages output.`;
+  } else if (hasAny(normalized, ["owasp", "security", "vulnerability", "xss", "sql injection", "csrf", "cyber"])) {
+    responseBody = `### Defensive Security Guidance
+
+This local mode only provides defensive and educational cybersecurity help.
+
+#### Safe hardening checklist
+
+1. Use parameterized queries instead of string-concatenated SQL.
+2. Escape or sanitize user-controlled HTML to reduce XSS risk.
+3. Add rate limiting to public APIs.
+4. Keep secrets out of frontend bundles and public repos.
+5. Use least-privilege credentials for backend services.
+6. Add dependency scanning and secret scanning before release.
+
+#### Example safe SQL pattern
+
+\`\`\`ts
+const query = "SELECT * FROM users WHERE email = ?";
+await db.execute(query, [email]);
+\`\`\``;
+  } else if (hasAny(normalized, ["hello", "hi", "hey"])) {
+    responseBody = `### Hello from RedHydra OpenCore
+
+I am running in **free no-login local mode**.
+
+No GCP API key.  
+No service account.  
+No built-in vendor credential.  
+No forced login.
+
+Ask me for code review, deployment help, file checks, or defensive security guidance.`;
+  } else {
+    responseBody = `### RedHydra OpenCore Local Mode
+
+I can help with code review, GitHub Pages deployment, defensive security checklists, and structured technical guidance without using any cloud API key.
+
+#### Current mode
+
+- Provider: \`${settings.provider}\`
+- Model label: \`${settings.modelName || "opencore-local"}\`
+- Network AI: disabled by default
+- Login required: no
+- Built-in API key: no
+
+#### Best use
+
+Paste the code, error log, or file content you want fixed. I will return a clear patch-style answer that you can apply directly.`;
+  }
+
+  if (!isAgentMode) return responseBody;
+
+  return `[GOAL]
+Provide a no-login, no-GCP-key, open-source-safe response.
+
+[UNDERSTANDING]
+The app is operating in local OpenCore mode, so it must not depend on Google/GCP/Gemini credentials or any built-in API key.
+
+[PLAN]
+- [COMPLETED] Detect whether the request concerns keys, deployment, code, security, or files
+- [COMPLETED] Use local guided response logic only
+- [RUNNING] Return a structured answer compatible with the RedHydra agent panel
+- [PENDING] Let the user paste more code or logs for a precise patch
+
+[OUTPUT]
+${responseBody}
+
+[CHECKLIST]
+- [/] No hardcoded cloud API key used
+- [/] No Google service account required
+- [/] No server-side secret needed for GitHub Pages default mode
+- [ ] Real LLM quality requires optional local Ollama or user-owned provider key
+
+[LIMITATIONS]
+- Local mode is rule-based, not a full hosted LLM
+- Browser-only GitHub Pages cannot run private backend routes
+- Optional external providers still need the user's own credentials
+
+[NEXT_ACTION]
+Replace the fixed files, redeploy with GitHub Actions, then test the page with a fresh cache-busting URL.`;
+}
+
+// Parse structured output from the agent response.
 export function parseAgentResponse(text: string): AgentPlan {
   const plan: AgentPlan = {
     goal: "",
@@ -15,602 +245,300 @@ export function parseAgentResponse(text: string): AgentPlan {
     output: "",
     validationChecklist: [],
     limitations: [],
-    nextAction: ""
+    nextAction: "",
   };
 
   const sections: Record<string, string> = {};
-  const regex = /\[(GOAL|UNDERSTANDING|PLAN|OUTPUT|CHECKLIST|LIMITATIONS|NEXT_ACTION)\]([\s\S]*?)(?===\s*=|\[[A-Z_]+\]|$)/g;
-  let match;
+  const regex =
+    /\[(GOAL|UNDERSTANDING|PLAN|OUTPUT|CHECKLIST|LIMITATIONS|NEXT_ACTION)\]([\s\S]*?)(?=\n\[[A-Z_]+\]|$)/g;
+
+  let match: RegExpExecArray | null;
   while ((match = regex.exec(text)) !== null) {
-    const sectionName = match[1];
-    const content = match[2].trim();
-    sections[sectionName] = content;
+    sections[match[1]] = match[2].trim();
   }
 
-  // Populate goal
-  plan.goal = sections["GOAL"] || "Achieve technical and conceptual objectives outlined by user query.";
-  plan.understanding = sections["UNDERSTANDING"] || "Analyze core requirements, identify architectural boundary conditions, and prepare structured modules.";
-  
-  // Populate steps
-  const planLines = (sections["PLAN"] || "").split("\n");
+  plan.goal = sections.GOAL || "Answer the user request safely.";
+  plan.understanding =
+    sections.UNDERSTANDING || "The request needs a structured technical response.";
+
+  const planLines = (sections.PLAN || "").split("\n");
   let stepId = 1;
+
   for (const line of planLines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-    let status: 'pending' | 'running' | 'completed' | 'failed' = 'pending';
-    let title = trimmed;
-    
-    if (trimmed.startsWith("[COMPLETED]")) {
-      status = 'completed';
-      title = trimmed.replace("[COMPLETED]", "").trim();
-    } else if (trimmed.startsWith("[RUNNING]")) {
-      status = 'running';
-      title = trimmed.replace("[RUNNING]", "").trim();
-    } else if (trimmed.startsWith("[PENDING]")) {
-      status = 'pending';
-      title = trimmed.replace("[PENDING]", "").trim();
-    } else if (trimmed.startsWith("- [COMPLETED]")) {
-      status = 'completed';
-      title = trimmed.replace("- [COMPLETED]", "").trim();
-    } else if (trimmed.startsWith("- [RUNNING]")) {
-      status = 'running';
-      title = trimmed.replace("- [RUNNING]", "").trim();
-    } else if (trimmed.startsWith("- [PENDING]")) {
-      status = 'pending';
-      title = trimmed.replace("- [PENDING]", "").trim();
-    } else if (trimmed.startsWith("- ")) {
-      title = trimmed.slice(2);
+
+    let status: AgentStatus = "pending";
+    let title = trimmed.replace(/^- /, "");
+
+    const statusMatch = title.match(/^\[(COMPLETED|RUNNING|PENDING|FAILED)\]\s*(.*)$/i);
+    if (statusMatch) {
+      const s = statusMatch[1].toLowerCase();
+      status = s === "completed" || s === "running" || s === "failed" ? s : "pending";
+      title = statusMatch[2].trim();
     }
+
     plan.steps.push({
       id: `step-${stepId++}`,
-      title,
-      description: `Task execution sub-plan`,
-      status
+      title: title || "Continue task",
+      description: "Local OpenCore execution step",
+      status,
     });
   }
 
   if (plan.steps.length === 0) {
     plan.steps = [
-      { id: "step-1", title: "Analyze query constraints", description: "Deconstruct requested fields and constraints", status: "completed" },
-      { id: "step-2", title: "Fulfill generation goals", description: "Compile outputs and formatting patterns", status: "running" },
-      { id: "step-3", title: "Validate compliance and quality", description: "Verify conformity and robustness", status: "pending" }
+      {
+        id: "step-1",
+        title: "Analyze request",
+        description: "Understand the user's goal",
+        status: "completed",
+      },
+      {
+        id: "step-2",
+        title: "Generate local response",
+        description: "Use no-key local guidance",
+        status: "running",
+      },
     ];
   }
 
-  // Populate output
-  plan.output = sections["OUTPUT"] || text;
+  plan.output = sections.OUTPUT || text;
 
-  // Populate checklist
-  const checklistLines = (sections["CHECKLIST"] || "").split("\n");
-  for (const line of checklistLines) {
+  for (const line of (sections.CHECKLIST || "").split("\n")) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-    let checked = false;
-    let content = trimmed;
-    if (trimmed.startsWith("[/]")) {
-      checked = true;
-      content = trimmed.replace("[/]", "").trim();
-    } else if (trimmed.startsWith("[ ]")) {
-      checked = false;
-      content = trimmed.replace("[ ]", "").trim();
-    } else if (trimmed.startsWith("- [/]")) {
-      checked = true;
-      content = trimmed.replace("- [/]", "").trim();
-    } else if (trimmed.startsWith("- [ ]")) {
-      checked = false;
-      content = trimmed.replace("- [ ]", "").trim();
-    } else if (trimmed.startsWith("- ")) {
-      content = trimmed.slice(2);
-    }
-    plan.validationChecklist.push({ text: content, checked });
+
+    const checked = trimmed.includes("[/]");
+    const cleanText = trimmed
+      .replace(/^- /, "")
+      .replace(/^\[\/\]\s*/, "")
+      .replace(/^\[ \]\s*/, "")
+      .trim();
+
+    plan.validationChecklist.push({
+      text: cleanText,
+      checked,
+    });
   }
 
   if (plan.validationChecklist.length === 0) {
     plan.validationChecklist = [
-      { text: "Review solution outputs for syntax", checked: true },
-      { text: "Crosscheck with security and defensive policies", checked: true },
-      { text: "Confirm execution steps pass browser testing", checked: false }
+      { text: "No hardcoded API key required", checked: true },
+      { text: "Response generated locally", checked: true },
     ];
   }
 
-  // Populate limitations
-  const limitLines = (sections["LIMITATIONS"] || "").split("\n");
-  for (const line of limitLines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    let content = trimmed.startsWith("- ") ? trimmed.slice(2) : trimmed;
-    plan.limitations.push(content);
+  for (const line of (sections.LIMITATIONS || "").split("\n")) {
+    const trimmed = line.trim().replace(/^- /, "");
+    if (trimmed) plan.limitations.push(trimmed);
   }
+
   if (plan.limitations.length === 0) {
-    plan.limitations = [
-      "Client-side sandbox environment",
-      "Data relies entirely on input context",
-      "Double-check generated structures before live production deployment"
-    ];
+    plan.limitations = ["Local mode is not a full hosted LLM."];
   }
 
-  plan.nextAction = sections["NEXT_ACTION"] || "Verify the modular output, edit the solution if needed, or ask for refinements.";
-
+  plan.nextAction = sections.NEXT_ACTION || "Paste more detail for a focused patch.";
   return plan;
 }
 
-// Fallback guided assistance generator when offline or no API is available
-export function getFallbackAnswer(
-  messages: Message[],
-  settings: AISettings,
-  isAgentMode: boolean
-): string {
-  const lastMessage = messages[messages.length - 1]?.content || "";
-  const normalized = lastMessage.toLowerCase();
-
-  let responseBody = "";
-
-  if (normalized.includes("hello") || normalized.includes("hi ") || normalized.includes("hey")) {
-    responseBody = `### Greetings from RedHydra AI!
-I am currently operating in **Offline Fallback Guided Mode** because no local API key or client provider has been fully activated yet.
-
-To unlock real, unrestricted generative AI capabilities, please navigate to the **Settings** panel and configure one of our supported providers:
-1. **Built-in RedHydra OpenCore**: 100% Open-Source, Unlimited, and Lifetime Free! Run directly through our secure backend.
-2. **OpenAI**: Bring your own ChatGPT key.
-3. **OpenRouter**: Hook up models like LLaMA-3, Claude, or Mistral.
-4. **Ollama**: Connect to models running locally on your hardware.
-
-How can I guide you today? I can help generate templates, explain security concepts, or give coding checklists!`;
-  } else if (normalized.includes("code") || normalized.includes("function") || normalized.includes("react") || normalized.includes("javascript")) {
-    responseBody = `### Code Generation Guide
-Since I am in fallback mode, here is a professional **React + TypeScript component template** with custom Tailwind CSS styling for a responsive, clean dashboard metric card:
-
-\`\`\`tsx
-import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
-
-interface MetricCardProps {
-  title: string;
-  value: string;
-  change: string;
-  isPositive?: boolean;
-}
-
-export const MetricCard: React.FC<MetricCardProps> = ({
-  title,
-  value,
-  change,
-  isPositive = true
-}) => {
-  return (
-    <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl relative overflow-hidden group hover:border-red-900/50 transition-all duration-300">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/5 blur-3xl rounded-full" />
-      <div className="flex justify-between items-start">
-        <span className="text-sm font-medium text-zinc-400">{title}</span>
-        <span className={\`flex items-center text-xs \${isPositive ? 'text-emerald-500' : 'text-rose-500'}\`}>
-          {change}
-          <ArrowUpRight className="w-3 h-3 ml-0.5" />
-        </span>
-      </div>
-      <div className="mt-4">
-        <h3 className="text-2xl font-mono font-bold text-zinc-100">{value}</h3>
-      </div>
-    </div>
-  );
-};
-\`\`\`
-
-To test custom generation, configure your API credential in settings!`;
-  } else if (normalized.includes("owasp") || normalized.includes("vulnerability") || normalized.includes("injection") || normalized.includes("security") || normalized.includes("cyber")) {
-    responseBody = `### Secured Cybersecurity Learning Module: Defending SQL Injection (SQLi)
-Defensive training on secure development paradigms is essential to cybersecurity learning.
-
-#### Vulnerability Architecture:
-SQL Injection occurs when user input is concatenated directly into SQL queries, enabling attackers to execute arbitrary database directives.
-
-*❌ Vulnerable Pattern (Express/Node):*
-\`\`\`js
-const query = \`SELECT * FROM users WHERE email = '\${req.body.email}' AND password = '\${req.body.password}'\`;
-db.query(query); // CRITICAL: Concatenation allows query termination via quotes
-\`\`\`
-
-*✅ Hardened Pattern (Parameterized Interface):*
-\`\`\`js
-const query = 'SELECT * FROM users WHERE email = ? AND password = ?';
-db.execute(query, [req.body.email, req.body.password]); // PARSED: Data parameter is fully neutralized
-\`\`\`
-
-#### Hardening Action Checklist:
-1. [x] Never concatenate queries dynamically with raw user inputs.
-2. [x] Use a secure ORM (Prisma, Sequelize, Mongoose) or parameterization arrays.
-3. [x] Implement Least Privilege configurations on database credentials.
-4. [x] Deploy Helmet middlewares and rate-limiting scripts on public APIs.`;
-  } else {
-    // General default answer
-    responseBody = `### RedHydra Assistant Guidance
-
-You are interacting with the RedHydra Fallback Assistant. 
-
-#### 💡 System Status & Configuration Options:
-- **No API Key is hardcoded on the client-side** to preserve security headers and prevent browser key harvesting.
-- **Built-in RedHydra OpenCore**: Run our 100% open-source, unlimited, and lifetime free model directly through our secure backend! simply select **Built-in RedHydra OpenCore** in Settings to instantly stream state queries!
-- **Bring Your Own Key**: Go to Settings to input a custom OpenAI, OpenRouter, or Ollama local endpoint.
-
-#### 🛠️ Ready-to-Copy Checklist for Setting up an API:
-1. Navigate to **Settings** (bottom-left gear or sidebar menu).
-2. Choose your **API Provider** (Built-in, OpenAI, OpenRouter, Ollama).
-3. Paste your key privately into the **API Key** slot. It will be stored purely in your encrypted browser storage session.
-4. Return to the chat and continue querying with full generative execution!`;
-  }
-
-  if (isAgentMode) {
-    return `[GOAL]
-Furnish fallback instructions and assist local users with configuration setups.
-
-[UNDERSTANDING]
-The user is querying in fallback guided mode because real API credentials are unconfigured or local services are offline.
-
-[PLAN]
-- [COMPLETED] Listen to user query keyword context
-- [RUNNING] Format guided answers and step plans
-- [PENDING] Direct user safely to settings or memory management
-
-[OUTPUT]
-${responseBody}
-
-[CHECKLIST]
-- [/] Respond safely without mock errors
-- [/] Instruct client on how to configure API endpoints
-- [ ] Receive valid client key injection
-
-[LIMITATIONS]
-- Static pre-built lookup logic only
-- Knowledge is capped to local help templates
-- No active reasoning parameters present
-
-[NEXT_ACTION]
-Open the Settings drawer and activate Built-in RedHydra OpenCore or add your OpenAI client token.`;
-  }
-
-  return responseBody;
-}
-
-// Helper to decode Base64 Data URL to UTF-8 text if readable, or return a neat binary placeholder
-export function getReadableAttachmentContent(attachment: { type: string; content: string }): string {
+// Helper to decode Base64 Data URL to UTF-8 text if readable.
+export function getReadableAttachmentContent(attachment: {
+  type: string;
+  content: string;
+}): string {
   if (!attachment.content) return "";
-  
-  // If it is not a base64 Data URL, treat as raw text
+
   if (!attachment.content.startsWith("data:")) {
     return attachment.content;
   }
-  
+
   const commaIndex = attachment.content.indexOf(",");
   if (commaIndex === -1) return attachment.content;
-  
+
   const base64Part = attachment.content.substring(commaIndex + 1);
   const mimeType = (attachment.type || "").toLowerCase();
-  
-  const isTextType = mimeType.startsWith("text/") || 
-                     mimeType.includes("javascript") || 
-                     mimeType.includes("typescript") || 
-                     mimeType.includes("json") || 
-                     mimeType.includes("xml") || 
-                     mimeType.includes("yaml") || 
-                     mimeType.includes("markdown") ||
-                     mimeType.includes("css") ||
-                     mimeType.includes("csv") ||
-                     mimeType.includes("sql") ||
-                     mimeType.includes("shell") ||
-                     mimeType.includes("config");
-                     
-  if (isTextType) {
-    try {
-      const binaryString = window.atob(base64Part);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return new TextDecoder("utf-8").decode(bytes);
-    } catch (e) {
-      return `[Binary / Encoded text: ${attachment.type}]`;
+
+  const isTextType =
+    mimeType.startsWith("text/") ||
+    mimeType.includes("javascript") ||
+    mimeType.includes("typescript") ||
+    mimeType.includes("json") ||
+    mimeType.includes("xml") ||
+    mimeType.includes("yaml") ||
+    mimeType.includes("markdown") ||
+    mimeType.includes("css") ||
+    mimeType.includes("csv") ||
+    mimeType.includes("sql") ||
+    mimeType.includes("shell") ||
+    mimeType.includes("config");
+
+  if (!isTextType) {
+    return `[Binary file content of type "${attachment.type}". Local no-key mode cannot OCR or deeply parse this binary content.]`;
+  }
+
+  try {
+    const binaryString = window.atob(base64Part);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i += 1) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
-  } else {
-    return `[Binary file content of type "${attachment.type}" - parsed as inline data/multimodal representation inside Gemini Node]`;
+    return new TextDecoder("utf-8").decode(bytes);
+  } catch {
+    return `[Encoded text could not be decoded: ${attachment.type}]`;
   }
 }
 
-// core chat interaction service caller
+function createAssistantMessage(text: string, isAgentMode: boolean): Message {
+  const message: Message = {
+    id: nowId(),
+    role: "assistant",
+    content: text,
+    timestamp: new Date().toLocaleTimeString(),
+  };
+
+  if (isAgentMode) {
+    message.agentPlan = parseAgentResponse(text);
+  }
+
+  return message;
+}
+
+function normalizeMessages(messages: Message[]) {
+  return messages.map((message) => {
+    if (!message.attachment) return message;
+
+    const readableContent = getReadableAttachmentContent(message.attachment);
+    return {
+      ...message,
+      content: `[ATTACHED FILE: "${message.attachment.name}" (${message.attachment.type}, size: ${message.attachment.size} bytes)]
+--- ATTACHMENT CONTENT START ---
+${readableContent}
+--- ATTACHMENT CONTENT END ---
+
+${message.content}`,
+    };
+  });
+}
+
+function buildSystemInstruction(settings: AISettings, isAgentMode: boolean) {
+  let finalSystemInstruction =
+    ASSISTANT_SYSTEM_INSTRUCTIONS[settings.assistantMode] ||
+    ASSISTANT_SYSTEM_INSTRUCTIONS.general;
+
+  const styleInstruction = getStyleInstruction(settings.responseStyle);
+  if (styleInstruction) {
+    finalSystemInstruction += "\n\n" + styleInstruction;
+  }
+
+  if (settings.customSystemPrompt) {
+    finalSystemInstruction += "\n\nUser custom instruction: " + settings.customSystemPrompt;
+  }
+
+  if (isAgentMode) {
+    finalSystemInstruction += "\n\n" + AGENT_SYSTEM_PROMPT;
+  }
+
+  return finalSystemInstruction;
+}
+
+async function callOpenAICompatibleProvider(
+  messages: Message[],
+  settings: AISettings,
+  finalSystemInstruction: string
+): Promise<string> {
+  if (!settings.apiKey && settings.provider !== "ollama") {
+    throw new Error("No user-owned API key configured.");
+  }
+
+  const baseUrl = (settings.baseUrl || "").replace(/\/$/, "");
+  if (!baseUrl) {
+    throw new Error("Provider base URL is missing.");
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (settings.apiKey) {
+    headers.Authorization = `Bearer ${settings.apiKey}`;
+  }
+
+  const payload = {
+    model: settings.modelName,
+    messages: [
+      { role: "system", content: finalSystemInstruction },
+      ...messages
+        .filter((message) => message.role !== "system")
+        .map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
+    ],
+    temperature: settings.temperature,
+    max_tokens: settings.maxTokens,
+  };
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(
+      errorBody?.error?.message || errorBody?.error || `HTTP ${response.status}`
+    );
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
 export async function sendChatMessage(
   messages: Message[],
   settings: AISettings,
   isAgentMode: boolean,
   onChunk?: (text: string) => void
 ): Promise<Message> {
-  // 1. Pre-process messages to serialize any file attachment contents directly into the prompt stream
-  const mappedMessages = messages.map(m => {
-    if (m.attachment) {
-      const readableContent = getReadableAttachmentContent(m.attachment);
-      const displayContent = `[ATTACHED FILE: "${m.attachment.name}" (${m.attachment.type}, size: ${m.attachment.size} bytes)]\n--- ATTACHMENT CONTENT START ---\n${readableContent}\n--- ATTACHMENT CONTENT END ---\n\n${m.content}`;
-      return { ...m, content: displayContent };
-    }
-    return m;
-  });
+  const mappedMessages = normalizeMessages(messages);
+  const finalSystemInstruction = buildSystemInstruction(settings, isAgentMode);
 
-  // 2. Build system instruction
-  let finalSystemInstruction = ASSISTANT_SYSTEM_INSTRUCTIONS[settings.assistantMode] || ASSISTANT_SYSTEM_INSTRUCTIONS.general;
-  
-  // Apply style preference
-  const styleInstruction = getStyleInstruction(settings.responseStyle);
-  if (styleInstruction) {
-    finalSystemInstruction += "\n\n" + styleInstruction;
+  const provider = settings.provider || "built-in-opencore";
+  const shouldUseLocalOpenCore =
+    provider === "built-in-opencore" ||
+    provider === "opencore-local" ||
+    provider === "local" ||
+    provider === "free-opencore";
+
+  if (shouldUseLocalOpenCore) {
+    const text = buildLocalGuidedAnswer(mappedMessages, settings, isAgentMode);
+    streamText(text, onChunk);
+    return createAssistantMessage(text, isAgentMode);
   }
 
-  // Apply custom system prompt if set
-  if (settings.customSystemPrompt) {
-    finalSystemInstruction += "\n\nUser custom instruction: " + settings.customSystemPrompt;
-  }
-
-  // Apply Agent mode layout if requested
-  if (isAgentMode) {
-    finalSystemInstruction += "\n\n" + AGENT_SYSTEM_PROMPT;
-  }
-
-  // Fallback behavior check
-  if (settings.provider !== 'built-in-opencore' && !settings.apiKey && settings.provider !== 'ollama') {
-    // Generate fallback template
-    const text = getFallbackAnswer(mappedMessages, settings, isAgentMode);
-    
-    // Smooth custom streaming typing effect integration
-    if (onChunk) {
-      let index = 0;
-      const step = 8; // characters per tick
-      const timer = setInterval(() => {
-        if (index < text.length) {
-          onChunk(text.substring(0, index + step));
-          index += step;
-        } else {
-          onChunk(text);
-          clearInterval(timer);
-        }
-      }, 15);
-      // Wait for immediate completion resolve
-    }
-
-    const m: Message = {
-      id: `m-${Date.now()}`,
-      role: 'assistant',
-      content: text,
-      timestamp: new Date().toLocaleTimeString(),
-    };
-    if (isAgentMode) {
-      m.agentPlan = parseAgentResponse(text);
-    }
-    return m;
-  }
-
-  // 3. Call designated APIs based on provider
-  if (settings.provider === 'built-in-opencore') {
-    try {
-      // Setup payload matching our Express routes
-      const payload = {
-        messages: mappedMessages.map(m => ({ role: m.role, content: m.content })),
-        systemInstruction: finalSystemInstruction,
-        temperature: settings.temperature,
-        maxTokens: settings.maxTokens,
-        modelName: settings.modelName || "hydra-opencore-v3",
-        thinkingLevel: settings.thinkingLevel || "auto",
-      };
-
-      if (settings.streaming && onChunk) {
-        // Run Real SSE Streaming call to server
-        const response = await fetch("/api/chat-stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server returned HTTP ${response.status}`);
-        }
-
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("Streaming reader unavailable");
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let accumulatedText = "";
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const dataStr = line.slice(6).trim();
-              if (dataStr === "[DONE]") continue;
-
-              try {
-                const parsed = JSON.parse(dataStr);
-                if (parsed.error) {
-                  const sErr = new Error(parsed.error);
-                  (sErr as any).isStreamError = true;
-                  throw sErr;
-                }
-                const word = parsed.text || "";
-                accumulatedText += word;
-                onChunk(accumulatedText);
-              } catch (e: any) {
-                if (e.isStreamError) {
-                  throw e;
-                }
-                // Ignore parsing errors for intermediate partial segments
-              }
-            }
-          }
-        }
-
-        const m: Message = {
-          id: `m-${Date.now()}`,
-          role: 'assistant',
-          content: accumulatedText,
-          timestamp: new Date().toLocaleTimeString(),
-        };
-        if (isAgentMode) {
-          m.agentPlan = parseAgentResponse(accumulatedText);
-        }
-        return m;
-
-      } else {
-        // Standard JSON fetch request
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `Server HTTP response: ${res.status}`);
-        }
-
-        const data = await res.json();
-        const text = data.text || "";
-
-        if (onChunk) {
-          onChunk(text);
-        }
-
-        const m: Message = {
-          id: `m-${Date.now()}`,
-          role: 'assistant',
-          content: text,
-          timestamp: new Date().toLocaleTimeString(),
-        };
-        if (isAgentMode) {
-          m.agentPlan = parseAgentResponse(text);
-        }
-        return m;
-      }
-    } catch (err: any) {
-      console.error("Built-in Server OpenCore Call Failed:", err);
-      const errLower = (err.message || "").toLowerCase();
-      let friendlyErr = "";
-      
-      if (errLower.includes("quota") || errLower.includes("exhausted") || errLower.includes("rate_limit") || errLower.includes("limit") || errLower.includes("429") || errLower.includes("too many requests")) {
-        friendlyErr = `### 🛑 Gemini API Quota Exceeded (429 - Too Many Requests)
-**Status:** Temporary Rate Limit Enforced by Google AI Studio Server Node
-
-The Google AI Studio Gemini API free-tier limits have been reached, or the rate of request ticks exceeded metric bounds.
-
-#### ⚡ How to Proceed:
-1. **Wait 15-20 seconds** and retry your request. The token limits refresh automatically on the minute.
-2. **Integrate your own personal API Key** for unlimited quota:
-   - Click the **Settings/Config** tab in the sidebar navigation.
-   - Insert your custom API Key (Gemini, OpenAI, or OpenRouter) directly.
-   - Private key flows run immediately via browser cache lines bypassing global server blocks.
-`;
-      } else {
-        friendlyErr = `### ⚠️ Connection to Built-in Server OpenCore Failed
-**Details:** ${err.message || 'Server connection timed out'}
-
-This usually happens because the host **API Key** is not configured inside the server-side environment or you are experiencing temporary network limits.
-
-#### 💡 How to Recover:
-1. Click **Settings** in your Workspace configurations.
-2. Ensure your backend keys are set correctly.
-3. Alternatively, toggle your AI provider to **OpenAI** or **OpenRouter** in settings, private keys are set client-side within browser cache!
-`;
-      }
-
-      if (onChunk) onChunk(friendlyErr);
-      const m: Message = {
-        id: `m-${Date.now()}`,
-        role: 'assistant',
-        content: friendlyErr,
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      return m;
-    }
-  }
-
-  // OpenAI, OpenRouter, Custom standard fetch client proxying
   try {
-    let url = settings.baseUrl;
-    let headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const text = await callOpenAICompatibleProvider(
+      mappedMessages,
+      settings,
+      finalSystemInstruction
+    );
 
-    if (settings.apiKey) {
-      headers["Authorization"] = `Bearer ${settings.apiKey}`;
-    }
+    streamText(text, onChunk);
+    return createAssistantMessage(text, isAgentMode);
+  } catch (error: any) {
+    const fallbackText = buildLocalGuidedAnswer(mappedMessages, settings, isAgentMode);
 
-    // Adapt payload for classic OpenAI schema
-    const payload = {
-      model: settings.modelName,
-      messages: [
-        { role: "system", content: finalSystemInstruction },
-        ...mappedMessages.map(m => ({ role: m.role, content: m.content }))
-      ],
-      temperature: settings.temperature,
-      max_tokens: settings.maxTokens,
-    };
+    const safeError = `### Provider Not Used
 
-    const res = await fetch(`${url}/chat/completions`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload)
-    });
+The selected provider could not be reached, so RedHydra stayed in **no-key OpenCore Local Mode**.
 
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}));
-      throw new Error(errBody?.error?.message || errBody?.error || `HTTP ${res.status}`);
-    }
+**Reason:** ${error?.message || "Unknown provider error"}
 
-    const data = await res.json();
-    const text = data.choices?.[0]?.message?.content || "";
+${fallbackText}`;
 
-    if (onChunk) {
-      // Simulate client side typing chunk feed animation
-      let index = 0;
-      const step = 12;
-      const timer = setInterval(() => {
-        if (index < text.length) {
-          onChunk(text.substring(0, index + step));
-          index += step;
-        } else {
-          onChunk(text);
-          clearInterval(timer);
-        }
-      }, 15);
-    }
-
-    const m: Message = {
-      id: `m-${Date.now()}`,
-      role: 'assistant',
-      content: text,
-      timestamp: new Date().toLocaleTimeString(),
-    };
-    if (isAgentMode) {
-      m.agentPlan = parseAgentResponse(text);
-    }
-    return m;
-
-  } catch (err: any) {
-    const errorMsg = `### ⚠️ API Provider Connection Failure
-**Provider:** ${settings.provider.toUpperCase()}
-**URL:** ${settings.baseUrl}
-**Error Details:** ${err.message || 'Unknown network error. Please check your browser CORS policies for localhost/Ollama.'}
-
-Check if your local server (Ollama) is launched, api endpoints are formatted, or keys are correctly pasted.`;
-
-    if (onChunk) onChunk(errorMsg);
-    
-    return {
-      id: `m-${Date.now()}`,
-      role: 'assistant',
-      content: errorMsg,
-      timestamp: new Date().toLocaleTimeString(),
-    };
+    streamText(safeError, onChunk);
+    return createAssistantMessage(safeError, isAgentMode);
   }
 }
