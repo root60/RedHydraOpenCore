@@ -3,39 +3,31 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 
-/**
- * RedHydra OpenCore local server.
- *
- * No Google/GCP/Gemini SDK.
- * No service account.
- * No built-in shared API key.
- * Clean direct responses only.
- */
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function buildLocalReply(messages: Array<{ role: string; content: string }>) {
+function buildReply(messages: Array<{ role: string; content: string }>) {
   const last = messages[messages.length - 1]?.content || "";
   const normalized = last.toLowerCase();
 
-  if (normalized.includes("api key") || normalized.includes("gcp") || normalized.includes("gemini")) {
-    return "This build does not require a GCP/Gemini API key. Do not hardcode shared keys. Use local no-key mode by default, or let users add their own provider key if needed.";
+  if (normalized.includes("hello") || normalized.includes("hi")) {
+    return "Hi, I’m RedHydra OpenCore. How can I help?";
+  }
+
+  if (
+    normalized.includes("fix") ||
+    normalized.includes("code") ||
+    normalized.includes("error") ||
+    normalized.includes("bug")
+  ) {
+    return "Send the code or error log, and I’ll give the corrected version.";
   }
 
   if (normalized.includes("deploy") || normalized.includes("github pages")) {
-    return "GitHub Pages can only host the static frontend. Build with npm run build:pages and publish the dist folder.";
+    return "Send the workflow or deployment log, and I’ll fix it.";
   }
 
-  if (normalized.includes("security") || normalized.includes("owasp") || normalized.includes("vulnerability")) {
-    return "For defensive security, remove hardcoded secrets, validate inputs, use parameterized queries, sanitize unsafe HTML, add rate limiting, and keep dependencies patched.";
-  }
-
-  if (normalized.includes("code") || normalized.includes("fix") || normalized.includes("bug")) {
-    return "Paste the code or error log and I will give the corrected version directly.";
-  }
-
-  return "RedHydra is running in clean no-key local mode. Send code, an error log, or a question and I will answer directly.";
+  return "Send the details, and I’ll help directly.";
 }
 
 async function startServer() {
@@ -45,22 +37,17 @@ async function startServer() {
   app.use(express.json({ limit: "20mb" }));
 
   app.get("/api/health", (_req, res) => {
-    res.json({
-      ok: true,
-      mode: "opencore-local-no-key",
-      requiresApiKey: false,
-      responseStyle: "clean-direct",
-    });
+    res.json({ ok: true });
   });
 
   app.post("/api/chat", (req, res) => {
     const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
-    res.json({ text: buildLocalReply(messages) });
+    res.json({ text: buildReply(messages) });
   });
 
   app.post("/api/chat-stream", (req, res) => {
     const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
-    const text = buildLocalReply(messages);
+    const text = buildReply(messages);
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -99,7 +86,7 @@ async function startServer() {
   }
 
   app.listen(PORT, () => {
-    console.log(`RedHydra clean no-key server running on http://localhost:${PORT}`);
+    console.log(`RedHydra OpenCore server running on http://localhost:${PORT}`);
   });
 }
 
