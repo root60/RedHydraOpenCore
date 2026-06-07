@@ -4,11 +4,11 @@
  *
  * RedHydra OpenCore AI service.
  *
- * Default base model:
- * dphn/Dolphin-Llama3-8B-Instruct-exl2-6bpw
+ * Default AI backend:
+ * https://itsredhydra-redhydraopencore-dolphin.hf.space
  *
- * This EXL2 model must run behind a GPU/OpenAI-compatible backend
- * such as TabbyAPI or ExLlamaV2 OpenAI server.
+ * Default base model:
+ * dphn/Dolphin3.0-Qwen2.5-0.5B
  */
 
 import { AISettings, Message, AgentPlan } from "../types";
@@ -18,7 +18,8 @@ import {
   getStyleInstruction,
 } from "../utils/prompts";
 
-const DEFAULT_BASE_MODEL = "dphn/Dolphin-Llama3-8B-Instruct-exl2-6bpw";
+const DEFAULT_BASE_MODEL = "dphn/Dolphin3.0-Qwen2.5-0.5B";
+const DEFAULT_LLM_ENDPOINT = "https://itsredhydra-redhydraopencore-dolphin.hf.space";
 
 type AgentStatus = "pending" | "running" | "completed" | "failed";
 
@@ -42,14 +43,16 @@ function getCloudEndpoint() {
   const envEndpoint =
     (import.meta as any)?.env?.VITE_REDHYDRA_LLM_ENDPOINT ||
     (import.meta as any)?.env?.VITE_CLOUD_LLM_ENDPOINT ||
-    "";
+    DEFAULT_LLM_ENDPOINT;
 
   const storedEndpoint =
     typeof window !== "undefined"
       ? window.localStorage.getItem("redhydra_llm_endpoint") || ""
       : "";
 
-  return String(envEndpoint || storedEndpoint || "").trim().replace(/\/$/, "");
+  return String(storedEndpoint || envEndpoint || DEFAULT_LLM_ENDPOINT)
+    .trim()
+    .replace(/\/$/, "");
 }
 
 function cleanText(text: string) {
@@ -111,7 +114,6 @@ function extractWeatherLocation(text: string) {
 
 async function getWeatherAnswer(userText: string) {
   const location = extractWeatherLocation(userText);
-
   if (!location) return "Which city should I check the weather for?";
 
   try {
@@ -131,9 +133,11 @@ async function getWeatherAnswer(userText: string) {
 
     if (!current) throw new Error("weather empty");
 
-    return `Weather in ${area}: ${current.weatherDesc?.[0]?.value || "unavailable"}, ${current.temp_C}°C. Feels like ${current.FeelsLikeC}°C. Humidity ${current.humidity}%, wind ${current.windspeedKmph} km/h.`;
+    return `Weather in ${area}: ${current.weatherDesc?.[0]?.value || "unavailable"}, ${current.temp_C}°C.
+Feels like ${current.FeelsLikeC}°C. Humidity ${current.humidity}%, wind ${current.windspeedKmph} km/h.`;
   } catch {
-    return `I could not fetch live weather for ${location}. Try again with city and country name.`;
+    return `I could not fetch live weather for ${location}.
+Try again with city and country name.`;
   }
 }
 
@@ -159,7 +163,11 @@ async function fallbackAnswer(messages: Message[]) {
       ? attachment.body.slice(0, 1200) + (attachment.body.length > 1200 ? "\n..." : "")
       : "I could not read the attached file content.";
 
-    return `I found ${attachment.name}.\n\n${preview}\n\nTell me what you want changed in it.`;
+    return `I found ${attachment.name}.
+
+${preview}
+
+Tell me what you want changed in it.`;
   }
 
   if (includesAny(lower, ["weather", "temperature", "forecast", "rain today"])) {
@@ -167,11 +175,11 @@ async function fallbackAnswer(messages: Message[]) {
   }
 
   if (includesAny(lower, ["hello", "hi", "hey"])) {
-    return "Hi, I’m RedHydra OpenCore. How can I help?";
+    return "Hi, I’m RedHydra OpenCore.\nHow can I help?";
   }
 
   if (includesAny(lower, ["who are you", "your name"])) {
-    return "I’m RedHydra OpenCore.";
+    return "I’m RedHydra OpenCore, powered by the Dolphin AI backend.";
   }
 
   if (includesAny(lower, ["exit code 1", "process completed with exit code 1"])) {
@@ -179,7 +187,8 @@ async function fallbackAnswer(messages: Message[]) {
   }
 
   if (includesAny(lower, ["not exported", "is not exported", "imported by"])) {
-    return "That is an import/export mismatch. Export the missing item from the source file, or update the import to the correct exported name. Send both files and I’ll write the exact patch.";
+    return `That is an import/export mismatch.
+Export the missing item from the source file, or update the import to the correct exported name. Send both files and I’ll write the exact patch.`;
   }
 
   if (includesAny(lower, ["vite", "build failed", "typescript", "react", "github pages", "workflow"])) {
@@ -187,14 +196,16 @@ async function fallbackAnswer(messages: Message[]) {
   }
 
   if (includesAny(lower, ["fix", "bug", "error", "code", "script"])) {
-    return "Send the code or full error log. I’ll give the corrected version directly.";
+    return `Send the code or full error log.
+I’ll give the corrected version directly.`;
   }
 
   if (text.trim().endsWith("?")) {
     return "I can help. Add one more detail so I can answer accurately.";
   }
 
-  return "Got it. Send the details you want me to work on.";
+  return `Got it.
+Send the details you want me to work on.`;
 }
 
 function getSystemInstruction(settings: AISettings, isAgentMode: boolean) {
@@ -203,6 +214,7 @@ function getSystemInstruction(settings: AISettings, isAgentMode: boolean) {
     ASSISTANT_SYSTEM_INSTRUCTIONS.general;
 
   const styleInstruction = getStyleInstruction(settings.responseStyle);
+
   if (styleInstruction) instruction += "\n\n" + styleInstruction;
 
   if (settings.customSystemPrompt) {
@@ -226,7 +238,6 @@ function normalizeMessages(messages: Message[]) {
 --- ATTACHMENT CONTENT START ---
 ${readableContent}
 --- ATTACHMENT CONTENT END ---
-
 ${message.content}`,
     };
   });
@@ -239,6 +250,7 @@ async function callCloudProxy(
   onChunk?: (text: string) => void
 ) {
   const endpoint = getCloudEndpoint();
+
   if (!endpoint) throw new Error("No cloud endpoint configured.");
 
   const response = await fetch(`${endpoint}/chat`, {
@@ -305,7 +317,15 @@ async function callCloudProxy(
   }
 
   const data = await response.json();
-  return cleanText(data.text || "");
+
+  return cleanText(
+    data.text ||
+      data.reply ||
+      data.response ||
+      data.message ||
+      data.choices?.[0]?.message?.content ||
+      ""
+  );
 }
 
 async function callOpenAICompatibleProvider(
@@ -318,8 +338,8 @@ async function callOpenAICompatibleProvider(
   }
 
   const baseUrl = settings.baseUrl.replace(/\/$/, "");
-
   const headers: Record<string, string> = { "Content-Type": "application/json" };
+
   if (settings.apiKey) headers.Authorization = `Bearer ${settings.apiKey}`;
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -345,6 +365,7 @@ async function callOpenAICompatibleProvider(
   if (!response.ok) throw new Error("Provider failed.");
 
   const data = await response.json();
+
   return cleanText(data.choices?.[0]?.message?.content || "");
 }
 
@@ -446,7 +467,9 @@ export async function sendChatMessage(
     } catch {
       const fallback = await fallbackAnswer(normalizedMessages);
       const clean = cleanText(fallback);
+
       streamText(clean, onChunk);
+
       return createAssistantMessage(clean, isAgentMode);
     }
   }
@@ -476,6 +499,8 @@ export async function sendChatMessage(
   }
 
   const clean = cleanText(text);
+
   streamText(clean, onChunk);
+
   return createAssistantMessage(clean, isAgentMode);
 }
