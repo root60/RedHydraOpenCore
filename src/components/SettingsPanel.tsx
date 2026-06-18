@@ -26,8 +26,33 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onShowToast
 }) => {
 
-  const [onlineSynced, setOnlineSynced] = useState(false);
+  const [onlineSynced, setOnlineSynced] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // RH_AUTO_DOLPHIN_SYNC
+  useEffect(() => {
+    setIsSyncing(true);
+    const t = window.setTimeout(() => {
+      setOnlineSynced(true);
+      setIsSyncing(false);
+
+      if (
+        settings.provider === 'built-in-opencore' &&
+        (settings.modelName !== 'dphn/Dolphin3.0-Qwen2.5-0.5B' || settings.baseUrl !== 'https://itsredhydra-redhydraopencore-dolphin.hf.space')
+      ) {
+        onUpdateSettings({
+          ...settings,
+          provider: 'built-in-opencore',
+          modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B',
+          baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
+          maxTokens: 8192,
+          streaming: true
+        });
+      }
+    }, 700);
+
+    return () => window.clearTimeout(t);
+  }, []);
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const prov = e.target.value as ProviderType;
@@ -312,21 +337,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     ...settings,
                     provider: 'built-in-opencore',
                     baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
-                    modelName: 'google/gemini-2.5-flash'
+                    modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B'
                   });
-                  onShowToast("🌐 Preloaded Google Dolphin OpenCore 2.5 Flash activated from automatic endpoint sync!", "success");
+                  onShowToast("🌐 Default Dolphin model activated.", "success");
                 }}
                 className={`p-2 rounded-lg border text-left transition-all font-mono text-[10px] ${
-                  settings.modelName === 'google/gemini-2.5-flash' 
+                  settings.modelName === 'dphn/Dolphin3.0-Qwen2.5-0.5B' 
                     ? "bg-red-500/10 border-red-500/30 text-red-500 font-bold" 
                     : "bg-zinc-900 border-zinc-800 text-zinc-350 hover:border-zinc-700"
                 }`}
               >
                 <div className="font-bold flex items-center justify-between">
-                  <span>🚀 Dolphin OpenCore 2.5 Flash</span>
+                  <span>🚀 Dolphin OpenCore</span>
                   <span className="text-[8px] px-1 bg-red-550/20 text-red-400 rounded-sm font-bold">Online</span>
                 </div>
-                <div className="text-[9px] text-zinc-500 mt-0.5">gemini-2.5-flash</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5">dphn/Dolphin3.0-Qwen2.5-0.5B</div>
               </button>
 
               <button
@@ -336,21 +361,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     ...settings,
                     provider: 'built-in-opencore',
                     baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
-                    modelName: 'google/gemini-2.5-pro'
+                    modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B'
                   });
-                  onShowToast("🌐 Preloaded Google Dolphin OpenCore 2.5 Pro reasoning engine activated!", "success");
+                  onShowToast("🌐 Default Dolphin model activated.", "success");
                 }}
                 className={`p-2 rounded-lg border text-left transition-all font-mono text-[10px] ${
-                  settings.modelName === 'google/gemini-2.5-pro' 
+                  settings.modelName === 'dphn/Dolphin3.0-Qwen2.5-0.5B' 
                     ? "bg-red-500/10 border-red-500/30 text-red-400 font-bold" 
                     : "bg-zinc-900 border-zinc-800 text-zinc-350 hover:border-zinc-700"
                 }`}
               >
                 <div className="font-bold flex items-center justify-between">
-                  <span>🧠 Dolphin OpenCore 2.5 Pro</span>
+                  <span>🧠 Dolphin OpenCore</span>
                   <span className="text-[8px] px-1 bg-red-550/20 text-red-400 rounded-sm font-bold">Online</span>
                 </div>
-                <div className="text-[9px] text-zinc-500 mt-0.5">gemini-2.5-pro</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5">dphn/Dolphin3.0-Qwen2.5-0.5B</div>
               </button>
             </div>
           </div>
@@ -474,7 +499,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <option value="minimal">Minimal / Off (Equivalent to no extra reasoning)</option>
             </select>
             <p className="text-[10px] text-zinc-500 font-mono leading-normal pt-1">
-              Controls Chain-of-Thought (CoT) configuration for Dolphin OpenCore 3 series models. Turning it to <span className="text-red-400/95 font-bold">High</span> instructs the engine to analyze multihost structures and solve complex queries before delivering response payloads.
+              Controls Chain-of-Thought (CoT) configuration for Dolphin OpenCore models. Turning it to <span className="text-red-400/95 font-bold">High</span> instructs the engine to analyze multihost structures and solve complex queries before delivering response payloads.
             </p>
           </div>
 

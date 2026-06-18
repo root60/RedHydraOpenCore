@@ -1179,7 +1179,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   }
 
   return (
-    <div className="flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
+    <div className="rh-app-shell flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
       
       {/* Dynamic Ambient Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -1554,7 +1554,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         <header className="rh-main-header h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-40 flex-shrink-0 sticky top-0">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent animate-pulse" />
           
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="rh-header-identity flex items-center gap-2 sm:gap-3">
             {/* Mobile/Tablet Hamburger Toggle */}
             <button
               type="button"
@@ -1582,7 +1582,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
             <span className="w-1.5 h-1.5 bg-red-500/20 rounded-full" />
             
             {/* Active connection telemetry */}
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-red-950/10 border border-red-900/20 rounded-xl text-[10px] font-mono text-red-400">
+            <div className="rh-header-telemetry hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-red-950/10 border border-red-900/20 rounded-xl text-[10px] font-mono text-red-400">
               <span className={`w-1.5 h-1.5 rounded-full ${isGenerating ? 'bg-red-500 animate-ping' : 'bg-emerald-500 animate-pulse'}`} />
               PROXIED://{settings.provider.toUpperCase()} &bull; {settings.modelName}
             </div>
@@ -1591,8 +1591,8 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         </header>
 
         {/* COMPONENT DRAWER DISPATCHER */}
-        <div className={`flex-1 min-h-0 bg-transparent flex flex-col ${navView === 'chat' ? 'overflow-hidden pt-0 px-4 pb-2 md:pt-0 md:px-6 md:pb-3' : 'overflow-y-auto p-6 md:p-8'}`}>
-          <div className={`max-w-4xl mx-auto h-full w-full flex flex-col ${navView === 'chat' ? 'overflow-hidden' : ''}`}>
+        <div className={`rh-center-dispatcher flex-1 min-h-0 bg-transparent flex flex-col ${navView === 'chat' ? 'overflow-hidden pt-0 px-4 pb-2 md:pt-0 md:px-6 md:pb-3' : 'overflow-y-auto p-6 md:p-8'}`}>
+          <div className={`rh-center-workspace max-w-4xl mx-auto h-full w-full flex flex-col ${navView === 'chat' ? 'overflow-hidden' : ''}`}>
 
             {navView === 'prompts' && (
               <PromptLibrary 
@@ -2034,7 +2034,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                       </div>
                     )}
 
-                    <div className="rh-chat-command-footer relative flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-2xl">
+                    <div className="rh-chat-command-footer rh-main-footer relative flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-2xl">
                       <textarea
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
@@ -2050,7 +2050,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                       />
 
                       {/* Left control pills */}
-                      <div className="flex items-center justify-between md:justify-end gap-3.5 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 md:pl-3">
+                      <div className="rh-footer-controls flex items-center justify-between md:justify-end gap-3.5 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 md:pl-3">
                         {/* Token usage counter with inline popover details */}
                         <div className="relative">
                           <button
@@ -2255,7 +2255,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
       {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
       {navView === 'chat' && isAgentMode && (
-        <aside className="redhydra-agent-drawer rh-agent-overlay bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between animate-slide-left select-none">
+        <aside className="redhydra-agent-drawer rh-agent-layout-drawer w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
             {/* High-End Cyberpunk Tab Switcher */}
             <div className="flex items-center gap-1 border-b border-white/5 pb-3">
