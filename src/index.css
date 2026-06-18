@@ -1021,3 +1021,154 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     display: none !important;
   }
 }
+
+/* ===== FINAL HEADER AUTO-ALIGN FIX ===== */
+
+.redhydra-top-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 0.9rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  padding-right: 1rem !important;
+}
+
+.redhydra-header-main {
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.redhydra-header-title-block {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.redhydra-header-title,
+.redhydra-header-tagline,
+.redhydra-header-telemetry {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.redhydra-header-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.5rem !important;
+  width: auto !important;
+  max-width: min(38rem, 46vw) !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0.45rem 0.55rem !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 14px !important;
+  background: rgba(10, 10, 10, 0.55) !important;
+  backdrop-filter: blur(10px) !important;
+  justify-self: end !important;
+  align-self: center !important;
+  position: relative !important;
+  right: auto !important;
+}
+
+.redhydra-header-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: fit-content !important;
+  height: 2.2rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.redhydra-header-mode-select {
+  height: 2.2rem !important;
+  min-width: 12rem !important;
+  max-width: 15rem !important;
+  width: 14rem !important;
+  flex: 0 0 auto !important;
+}
+
+/* When agent drawer exists, keep header controls away from right edge */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-top-header {
+    padding-right: calc(var(--redhydra-agent-width) + 1rem) !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    max-width: min(34rem, calc(100vw - var(--redhydra-agent-width) - 28rem)) !important;
+    justify-self: start !important;
+    margin-left: auto !important;
+  }
+}
+
+/* Laptop */
+@media (max-width: 1279px) {
+  .redhydra-top-header {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    padding-right: 1rem !important;
+  }
+
+  .redhydra-header-actions {
+    justify-content: flex-start !important;
+    justify-self: start !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+  }
+
+  .redhydra-header-mode-select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100% !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .redhydra-top-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .redhydra-header-title {
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
+
+  .redhydra-header-tagline,
+  .redhydra-header-telemetry {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100% !important;
+  }
+
+  .redhydra-header-mode-select {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
