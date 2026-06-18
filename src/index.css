@@ -829,3 +829,102 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     justify-content: center;
   }
 }
+
+/* Header right-side option placement fix */
+.redhydra-top-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: clamp(0.75rem, 2vw, 1.5rem) !important;
+  row-gap: 0.75rem !important;
+}
+
+.redhydra-header-main {
+  min-width: 0 !important;
+  align-items: center !important;
+}
+
+.redhydra-header-actions {
+  width: auto !important;
+  max-width: min(42rem, 48vw) !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: clamp(0.5rem, 1vw, 1rem) !important;
+  padding: 0.45rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 1rem !important;
+  background: rgba(10, 10, 10, 0.45) !important;
+  backdrop-filter: blur(12px);
+}
+
+.redhydra-header-action-btn,
+.redhydra-header-mode-select {
+  height: 2.25rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.redhydra-header-action-btn {
+  justify-content: center !important;
+}
+
+.redhydra-header-mode-select {
+  flex: 0 1 14rem !important;
+  width: 14rem !important;
+  max-width: 16rem !important;
+}
+
+/* When Agent drawer is ON, keep header controls away from the drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    max-width: min(38rem, 44vw) !important;
+    margin-right: 0.75rem !important;
+  }
+}
+
+/* Laptop/tablet: title top, controls below but not cornered */
+@media (max-width: 1279px) {
+  .redhydra-top-header {
+    grid-template-columns: 1fr !important;
+  }
+
+  .redhydra-header-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: flex-start !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .redhydra-header-mode-select {
+    flex: 1 1 14rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Mobile: clean button grid */
+@media (max-width: 640px) {
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    padding: 0.5rem !important;
+  }
+
+  .redhydra-header-mode-select {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
