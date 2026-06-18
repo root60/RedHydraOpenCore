@@ -78,8 +78,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCont
 // Initial Defaults
 const DEFAULT_AI_SETTINGS: AISettings = {
   provider: 'built-in-opencore',
-  modelName: 'hydra-opencore-v3',
-  baseUrl: '/api',
+  modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B',
+  baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
   apiKey: '',
   temperature: 0.7,
   maxTokens: 2048,
@@ -345,7 +345,7 @@ function App() {
   }, []);
 
   // Layout setups - Focused on Chat & Agent features by default
-  const [isAgentMode, setIsAgentMode] = useState(true);
+  const [isAgentMode, setIsAgentMode] = useState(false);
   const [modulesMinimized, setModulesMinimized] = useState(true);
   const [rightSidebarTab, setRightSidebarTab] = useState<'sandbox' | 'timeline'>('sandbox');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -2039,7 +2039,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
       {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
       {navView === 'chat' && isAgentMode && (
-        <aside className="w-80 bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4.5 hidden xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
+        <aside className="redhydra-agent-drawer w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
             {/* High-End Cyberpunk Tab Switcher */}
             <div className="flex items-center gap-1 border-b border-white/5 pb-3">
@@ -2101,3 +2101,7 @@ export default function SafeApp() {
     </ErrorBoundary>
   );
 }
+
+
+
+

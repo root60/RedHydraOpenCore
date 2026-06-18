@@ -191,3 +191,1441 @@ textarea {
     padding-right: 1rem !important;
   }
 }
+
+/* RedHydra responsive layout patch */
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+pre,
+code,
+table {
+  max-width: 100%;
+}
+
+pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+table {
+  display: block;
+  overflow-x: auto;
+}
+
+button,
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+[class*="w-["] {
+  max-width: 100%;
+}
+
+[class*="min-w-"] {
+  min-width: 0;
+}
+
+/* Mobile and tablet */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .flex {
+    min-width: 0;
+  }
+
+  .grid {
+    min-width: 0;
+  }
+
+  main,
+  section,
+  article,
+  aside,
+  header,
+  footer {
+    max-width: 100vw;
+  }
+
+  /* Force large app panels to stack instead of overflowing */
+  .lg\:flex-row,
+  .md\:flex-row {
+    flex-direction: column !important;
+  }
+
+  .lg\:grid-cols-2,
+  .lg\:grid-cols-3,
+  .xl\:grid-cols-2,
+  .xl\:grid-cols-3,
+  .md\:grid-cols-2,
+  .md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .w-screen,
+  .min-w-screen {
+    width: 100vw !important;
+  }
+
+  .h-screen,
+  .min-h-screen {
+    min-height: 100dvh !important;
+  }
+
+  .overflow-hidden {
+    overflow-x: hidden;
+  }
+
+  textarea {
+    min-height: 96px;
+  }
+
+  button {
+    white-space: normal;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 8vw, 2.25rem);
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 6vw, 1.875rem);
+  }
+
+  h3 {
+    font-size: clamp(1rem, 5vw, 1.5rem);
+  }
+
+  .p-8,
+  .p-10,
+  .p-12 {
+    padding: 1rem !important;
+  }
+
+  .px-8,
+  .px-10,
+  .px-12 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .gap-8,
+  .gap-10,
+  .gap-12 {
+    gap: 1rem !important;
+  }
+}
+
+/* Header + footer responsive alignment patch */
+#root {
+  width: 100%;
+  max-width: 100dvw;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+#root > div {
+  width: 100%;
+  max-width: 100dvw;
+  overflow-x: hidden;
+}
+
+/* Keep top header/status area inside screen */
+h1,
+h2,
+h3,
+p,
+span,
+button,
+select,
+textarea,
+input {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Prevent top header controls from pushing outside screen */
+select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Make command/footer input area adapt better */
+textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 1024px) {
+  #root {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  main,
+  section,
+  article,
+  aside,
+  header,
+  footer {
+    width: 100%;
+    max-width: 100dvw;
+    min-width: 0;
+  }
+
+  /* Header rows and footer rows should wrap instead of overflowing */
+  [class*="justify-between"],
+  [class*="items-center"] {
+    min-width: 0;
+  }
+
+  /* Top status/header action area */
+  h2 {
+    width: 100%;
+    line-height: 1.25;
+  }
+
+  /* Dropdowns/tabs/buttons should not force wide layout */
+  select,
+  button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
+/* Mobile screens */
+@media (max-width: 768px) {
+  body {
+    width: 100%;
+    max-width: 100dvw;
+    overflow-x: hidden;
+  }
+
+  /* Header auto alignment */
+  h2 {
+    font-size: clamp(1rem, 5vw, 1.35rem);
+  }
+
+  /* Footer command bar alignment */
+  textarea {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-height: 56px;
+  }
+
+  textarea ~ div {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  textarea ~ div > * {
+    flex: 1 1 auto;
+  }
+
+  /* Header buttons/selects stack cleanly */
+  select {
+    width: 100%;
+  }
+
+  button {
+    min-width: 0;
+  }
+
+  /* Right/left hidden panels should not affect mobile width */
+  aside {
+    max-width: 100dvw;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1rem;
+  }
+
+  button,
+  select {
+    font-size: 0.72rem;
+  }
+
+  textarea ~ div {
+    justify-content: center !important;
+  }
+}
+
+/* Agent mode right drawer + composer alignment fix */
+.redhydra-agent-drawer {
+  height: 100dvh;
+  min-width: 15rem;
+  max-width: 20rem;
+  overflow: hidden;
+}
+
+@media (max-width: 1535px) {
+  .redhydra-agent-drawer {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1536px) and (max-width: 1750px) {
+  .redhydra-agent-drawer {
+    width: min(18rem, 20vw) !important;
+    max-width: 20vw !important;
+    padding: 0.875rem !important;
+  }
+
+  .redhydra-agent-drawer button {
+    font-size: 0.55rem !important;
+    gap: 0.25rem !important;
+  }
+}
+
+/* File + Agent Mode + Send controls should wrap cleanly */
+button[title*="Attach files"],
+button[title*="Toggles multi-step"] {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  button[title*="Attach files"],
+  button[title*="Toggles multi-step"] {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  button[title*="Toggles multi-step"] {
+    min-width: 9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  button[title*="Attach files"],
+  button[title*="Toggles multi-step"] {
+    width: 100%;
+  }
+}
+
+/* Final Agent Mode overlay fix */
+.redhydra-agent-drawer {
+  position: fixed !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100dvh !important;
+  width: clamp(15rem, 18vw, 20rem) !important;
+  max-width: 88vw !important;
+  overflow: hidden !important;
+}
+
+.redhydra-agent-drawer * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1279px) {
+  .redhydra-agent-drawer {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .redhydra-agent-drawer {
+    width: min(17rem, 22vw) !important;
+  }
+}
+
+/* Composer/footer fix when Agent Mode is ON */
+.redhydra-composer-textarea {
+  min-width: 0 !important;
+}
+
+.redhydra-composer-actions {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.redhydra-composer-actions button {
+  min-width: 0 !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .redhydra-composer-actions {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .redhydra-composer-actions button {
+    flex: 1 1 auto !important;
+    white-space: normal !important;
+  }
+}
+
+/* Auto-reserve chat space when Agent Mode drawer is ON */
+:root {
+  --redhydra-agent-width: clamp(15rem, 18vw, 20rem);
+}
+
+/* When the fixed Agent drawer exists, shrink the main chat area so drawer does not cover it */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) main {
+    margin-right: var(--redhydra-agent-width) !important;
+    max-width: calc(100dvw - var(--redhydra-agent-width)) !important;
+    transition: margin-right 180ms ease, max-width 180ms ease;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-agent-drawer {
+    width: var(--redhydra-agent-width) !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) header,
+  #root:has(.redhydra-agent-drawer) footer,
+  #root:has(.redhydra-agent-drawer) section,
+  #root:has(.redhydra-agent-drawer) article {
+    max-width: 100% !important;
+  }
+}
+
+/* On smaller screens, hide drawer so it never overlaps chat */
+@media (max-width: 1279px) {
+  .redhydra-agent-drawer {
+    display: none !important;
+  }
+
+  #root main {
+    margin-right: 0 !important;
+    max-width: 100dvw !important;
+  }
+}
+
+/* Keep composer/footer inside the resized chat area */
+#root:has(.redhydra-agent-drawer) .redhydra-composer-actions {
+  flex-wrap: wrap !important;
+}
+
+#root:has(.redhydra-agent-drawer) .redhydra-composer-textarea {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* Token monitor popover alignment */
+.redhydra-token-monitor {
+  min-width: 0;
+}
+
+.redhydra-token-popover {
+  max-height: min(72dvh, 34rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* When Agent Mode drawer is ON, keep token monitor away from the right drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+  }
+}
+
+/* Mobile/tablet token monitor alignment */
+@media (max-width: 768px) {
+  .redhydra-token-popover {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    bottom: 7.5rem !important;
+    width: auto !important;
+    max-width: calc(100dvw - 1rem) !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* Left sidebar hide/show toggle */
+.redhydra-left-sidebar {
+  transition: transform 180ms ease, width 180ms ease, opacity 180ms ease;
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-sidebar {
+  display: none !important;
+}
+
+body.redhydra-left-sidebar-hidden #root main {
+  margin-left: 0 !important;
+  max-width: 100dvw !important;
+}
+
+.redhydra-left-toggle {
+  backdrop-filter: blur(14px);
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
+  left: 1rem !important;
+}
+
+/* Do not show desktop hide button on mobile, because mobile already has hamburger */
+@media (max-width: 1023px) {
+  .redhydra-left-toggle {
+    display: none !important;
+  }
+}
+
+/* Final responsive header alignment */
+.redhydra-top-header {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.redhydra-header-main,
+.redhydra-header-title-block,
+.redhydra-header-subline,
+.redhydra-header-actions {
+  min-width: 0;
+}
+
+.redhydra-header-title,
+.redhydra-header-tagline,
+.redhydra-header-telemetry {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.redhydra-header-actions {
+  flex-shrink: 1;
+}
+
+.redhydra-header-action-btn {
+  flex: 0 1 auto;
+  min-width: fit-content;
+  white-space: nowrap;
+}
+
+.redhydra-header-mode-select {
+  flex: 1 1 14rem;
+  max-width: 18rem;
+}
+
+/* When Agent Mode drawer is active, keep header inside resized chat area */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-top-header {
+    max-width: 100% !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    max-width: 100%;
+  }
+}
+
+/* Laptop/tablet aspect ratio */
+@media (max-width: 1279px) {
+  .redhydra-top-header {
+    align-items: stretch !important;
+  }
+
+  .redhydra-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .redhydra-header-mode-select {
+    max-width: 100%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .redhydra-top-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .redhydra-header-main {
+    align-items: flex-start !important;
+  }
+
+  .redhydra-header-title {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .redhydra-header-tagline,
+  .redhydra-header-telemetry {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem !important;
+  }
+
+  .redhydra-header-mode-select {
+    grid-column: 1 / -1;
+    width: 100% !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .redhydra-header-action-btn {
+    justify-content: center;
+  }
+}
+
+/* Header right-side option placement fix */
+.redhydra-top-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: clamp(0.75rem, 2vw, 1.5rem) !important;
+  row-gap: 0.75rem !important;
+}
+
+.redhydra-header-main {
+  min-width: 0 !important;
+  align-items: center !important;
+}
+
+.redhydra-header-actions {
+  width: auto !important;
+  max-width: min(42rem, 48vw) !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: clamp(0.5rem, 1vw, 1rem) !important;
+  padding: 0.45rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 1rem !important;
+  background: rgba(10, 10, 10, 0.45) !important;
+  backdrop-filter: blur(12px);
+}
+
+.redhydra-header-action-btn,
+.redhydra-header-mode-select {
+  height: 2.25rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.redhydra-header-action-btn {
+  justify-content: center !important;
+}
+
+.redhydra-header-mode-select {
+  flex: 0 1 14rem !important;
+  width: 14rem !important;
+  max-width: 16rem !important;
+}
+
+/* When Agent drawer is ON, keep header controls away from the drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    max-width: min(38rem, 44vw) !important;
+    margin-right: 0.75rem !important;
+  }
+}
+
+/* Laptop/tablet: title top, controls below but not cornered */
+@media (max-width: 1279px) {
+  .redhydra-top-header {
+    grid-template-columns: 1fr !important;
+  }
+
+  .redhydra-header-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: flex-start !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .redhydra-header-mode-select {
+    flex: 1 1 14rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Mobile: clean button grid */
+@media (max-width: 640px) {
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    padding: 0.5rem !important;
+  }
+
+  .redhydra-header-mode-select {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Compact live token monitor */
+.redhydra-token-monitor {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.redhydra-token-popover {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem !important;
+  max-height: min(58dvh, 24rem) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0.85rem !important;
+}
+
+.redhydra-token-popover > :first-child {
+  grid-column: 1 / -1;
+}
+
+.redhydra-token-popover .space-y-2,
+.redhydra-token-popover .space-y-1 {
+  margin-top: 0 !important;
+}
+
+.redhydra-token-policy-row {
+  grid-column: 1 / -1;
+}
+
+.redhydra-token-popover #token-usage-chart-container {
+  height: 5.25rem !important;
+  min-height: 5.25rem !important;
+}
+
+.redhydra-token-popover .recharts-wrapper,
+.redhydra-token-popover .recharts-surface {
+  max-width: 100% !important;
+}
+
+/* Keep monitor away from Agent drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+    width: min(42rem, calc(100dvw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+/* Tablet/mobile token monitor becomes one clean column */
+@media (max-width: 768px) {
+  .redhydra-token-popover {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    bottom: 7.25rem !important;
+    width: auto !important;
+    max-width: calc(100dvw - 1.5rem) !important;
+    grid-template-columns: 1fr !important;
+    max-height: 55dvh !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    height: 4.75rem !important;
+  }
+}
+
+/* Left sidebar hide/show */
+.redhydra-left-sidebar {
+  transition: width 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-sidebar {
+  display: none !important;
+}
+
+body.redhydra-left-sidebar-hidden #root main {
+  margin-left: 0 !important;
+  max-width: 100dvw !important;
+}
+
+.redhydra-left-toggle {
+  backdrop-filter: blur(14px);
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
+  display: inline-flex !important;
+}
+
+@media (max-width: 1023px) {
+  .redhydra-left-toggle,
+  .redhydra-sidebar-hide-btn {
+    display: none !important;
+  }
+}
+
+/* ===== FINAL HEADER AUTO-ALIGN FIX ===== */
+
+.redhydra-top-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 0.9rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  padding-right: 1rem !important;
+}
+
+.redhydra-header-main {
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.redhydra-header-title-block {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.redhydra-header-title,
+.redhydra-header-tagline,
+.redhydra-header-telemetry {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.redhydra-header-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.5rem !important;
+  width: auto !important;
+  max-width: min(38rem, 46vw) !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0.45rem 0.55rem !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 14px !important;
+  background: rgba(10, 10, 10, 0.55) !important;
+  backdrop-filter: blur(10px) !important;
+  justify-self: end !important;
+  align-self: center !important;
+  position: relative !important;
+  right: auto !important;
+}
+
+.redhydra-header-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: fit-content !important;
+  height: 2.2rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.redhydra-header-mode-select {
+  height: 2.2rem !important;
+  min-width: 12rem !important;
+  max-width: 15rem !important;
+  width: 14rem !important;
+  flex: 0 0 auto !important;
+}
+
+/* When agent drawer exists, keep header controls away from right edge */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-top-header {
+    padding-right: calc(var(--redhydra-agent-width) + 1rem) !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    max-width: min(34rem, calc(100vw - var(--redhydra-agent-width) - 28rem)) !important;
+    justify-self: start !important;
+    margin-left: auto !important;
+  }
+}
+
+/* Laptop */
+@media (max-width: 1279px) {
+  .redhydra-top-header {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    padding-right: 1rem !important;
+  }
+
+  .redhydra-header-actions {
+    justify-content: flex-start !important;
+    justify-self: start !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+  }
+
+  .redhydra-header-mode-select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100% !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .redhydra-top-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .redhydra-header-title {
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
+
+  .redhydra-header-tagline,
+  .redhydra-header-telemetry {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100% !important;
+  }
+
+  .redhydra-header-mode-select {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* Auto model registry sync badge */
+.redhydra-auto-sync-status {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+/* ===== TRUE FINAL HEADER VISIBILITY + ALIGNMENT FIX ===== */
+
+.redhydra-top-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: block !important;
+  padding-right: 1rem !important;
+  overflow: visible !important;
+}
+
+.redhydra-header-shell {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.redhydra-header-main {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.redhydra-header-title-block {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.redhydra-header-title,
+.redhydra-header-tagline,
+.redhydra-header-telemetry {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.redhydra-header-actions {
+  position: static !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  right: auto !important;
+  left: auto !important;
+  transform: none !important;
+  justify-self: stretch !important;
+  align-self: stretch !important;
+  overflow: visible !important;
+}
+
+.redhydra-header-action-btn {
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+  height: auto !important;
+  white-space: nowrap !important;
+}
+
+.redhydra-header-mode-select {
+  flex: 0 1 16rem !important;
+  width: 16rem !important;
+  min-width: 14rem !important;
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.redhydra-header-capacity-badge {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+/* If Agent Mode is ON, main already reserves drawer width. Header must not reserve extra again. */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-top-header {
+    padding-right: 1rem !important;
+    max-width: 100% !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* Laptop and tablet */
+@media (max-width: 1279px) {
+  .redhydra-header-actions {
+    justify-content: flex-start !important;
+  }
+
+  .redhydra-header-mode-select {
+    flex: 1 1 14rem !important;
+    width: auto !important;
+  }
+
+  .redhydra-header-capacity-badge {
+    flex: 1 1 100% !important;
+    text-align: center !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .redhydra-top-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .redhydra-header-mode-select,
+  .redhydra-header-capacity-badge {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ===== FINAL TOKEN MONITOR ASPECT-RATIO FIX ===== */
+
+.redhydra-token-popover {
+  position: fixed !important;
+  right: 1rem !important;
+  bottom: 5.75rem !important;
+
+  width: min(46rem, calc(100dvw - 2rem)) !important;
+  max-width: calc(100dvw - 2rem) !important;
+
+  max-height: min(36dvh, 18rem) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+}
+
+/* Keep title/status full width */
+.redhydra-token-popover > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+/* Compact internal spacing */
+.redhydra-token-popover .space-y-3,
+.redhydra-token-popover .space-y-2,
+.redhydra-token-popover .space-y-1 {
+  margin-top: 0 !important;
+}
+
+.redhydra-token-popover * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Make chart shorter and cleaner */
+.redhydra-token-popover #token-usage-chart-container {
+  height: 4.5rem !important;
+  min-height: 4.5rem !important;
+  max-height: 4.5rem !important;
+}
+
+.redhydra-token-popover .recharts-wrapper,
+.redhydra-token-popover .recharts-surface {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Keep token monitor away from Agent Mode drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+    width: min(42rem, calc(100dvw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+/* Wide laptop/desktop: make it horizontal and short */
+@media (min-aspect-ratio: 16/10) {
+  .redhydra-token-popover {
+    grid-template-columns: repeat(4, minmax(8rem, 1fr)) !important;
+    max-height: min(30dvh, 15rem) !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    height: 3.75rem !important;
+    min-height: 3.75rem !important;
+    max-height: 3.75rem !important;
+  }
+}
+
+/* Short-height screens: reduce height more */
+@media (max-height: 760px) {
+  .redhydra-token-popover {
+    bottom: 5.25rem !important;
+    max-height: 28dvh !important;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)) !important;
+    font-size: 10px !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    height: 3.25rem !important;
+    min-height: 3.25rem !important;
+    max-height: 3.25rem !important;
+  }
+}
+
+/* Tablet/mobile: one clean compact column */
+@media (max-width: 768px) {
+  .redhydra-token-popover {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    bottom: 7.25rem !important;
+    width: auto !important;
+    max-width: calc(100dvw - 1.5rem) !important;
+    max-height: 42dvh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .redhydra-token-popover {
+    padding: 0.6rem !important;
+    gap: 0.45rem !important;
+    max-height: 40dvh !important;
+  }
+}
+
+/* ===== CLEAN HEADER LAYOUT — OVERRIDES OLD HEADER FIXES ===== */
+
+.rh-clean-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.rh-clean-header-inner {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+}
+
+.rh-clean-header-info {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.rh-clean-title-wrap {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.rh-clean-title {
+  font-size: clamp(0.85rem, 1.2vw, 1rem) !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+  color: rgb(244 244 245) !important;
+  letter-spacing: 0.01em !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+.rh-clean-status-line {
+  margin-top: 0.25rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  font-family: monospace !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.13em !important;
+  color: rgb(113 113 122) !important;
+  text-transform: uppercase !important;
+}
+
+.rh-clean-model {
+  color: rgba(248, 113, 113, 0.9) !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.rh-clean-dot {
+  color: rgb(63 63 70) !important;
+}
+
+.rh-clean-toolbar {
+  position: static !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 1rem !important;
+  background: rgba(0, 0, 0, 0.38) !important;
+  backdrop-filter: blur(12px) !important;
+  margin: 0 !important;
+  right: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.rh-clean-toolbar-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.rh-clean-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.rh-danger-btn {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-clean-mode-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127, 29, 29, 0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+  outline: none !important;
+}
+
+.rh-clean-capacity {
+  margin-left: auto !important;
+  min-width: fit-content !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16, 185, 129, 0.24) !important;
+  background: rgba(16, 185, 129, 0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  white-space: nowrap !important;
+}
+
+/* Agent drawer active: header stays inside chat space, no extra right push */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-clean-header {
+    padding-right: 1rem !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .rh-clean-toolbar {
+    max-width: 100% !important;
+  }
+}
+
+/* Laptop/tablet */
+@media (max-width: 1279px) {
+  .rh-clean-capacity {
+    margin-left: 0 !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .rh-clean-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .rh-clean-status-line {
+    font-size: 0.52rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .rh-clean-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-clean-toolbar-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-clean-mode-select,
+  .rh-clean-capacity {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .rh-clean-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -164,7 +164,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   setTimeout(() => {
                     setOnlineSynced(true);
                     setIsSyncing(false);
-                    onShowToast("🌐 Preloaded Gemini 2.5 online models loaded into preset matrix!", "success");
+                    onShowToast("🌐 Default model connected: dphn/Dolphin3.0-Qwen2.5-0.5B", "success");
                   }, 1200);
                 }}
                 className={`py-1.5 px-3 rounded-lg text-[9px] font-mono font-bold uppercase transition-all duration-300 flex items-center gap-1 w-full sm:w-auto justify-center ${
@@ -596,3 +596,4 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     </div>
   );
 };
+
