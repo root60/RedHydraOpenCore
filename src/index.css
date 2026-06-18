@@ -1427,3 +1427,205 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     max-height: 40dvh !important;
   }
 }
+
+/* ===== CLEAN HEADER LAYOUT — OVERRIDES OLD HEADER FIXES ===== */
+
+.rh-clean-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.rh-clean-header-inner {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+}
+
+.rh-clean-header-info {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.rh-clean-title-wrap {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.rh-clean-title {
+  font-size: clamp(0.85rem, 1.2vw, 1rem) !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+  color: rgb(244 244 245) !important;
+  letter-spacing: 0.01em !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+.rh-clean-status-line {
+  margin-top: 0.25rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  font-family: monospace !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.13em !important;
+  color: rgb(113 113 122) !important;
+  text-transform: uppercase !important;
+}
+
+.rh-clean-model {
+  color: rgba(248, 113, 113, 0.9) !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.rh-clean-dot {
+  color: rgb(63 63 70) !important;
+}
+
+.rh-clean-toolbar {
+  position: static !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 1rem !important;
+  background: rgba(0, 0, 0, 0.38) !important;
+  backdrop-filter: blur(12px) !important;
+  margin: 0 !important;
+  right: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.rh-clean-toolbar-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.rh-clean-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.rh-danger-btn {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-clean-mode-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127, 29, 29, 0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+  outline: none !important;
+}
+
+.rh-clean-capacity {
+  margin-left: auto !important;
+  min-width: fit-content !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16, 185, 129, 0.24) !important;
+  background: rgba(16, 185, 129, 0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  white-space: nowrap !important;
+}
+
+/* Agent drawer active: header stays inside chat space, no extra right push */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-clean-header {
+    padding-right: 1rem !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .rh-clean-toolbar {
+    max-width: 100% !important;
+  }
+}
+
+/* Laptop/tablet */
+@media (max-width: 1279px) {
+  .rh-clean-capacity {
+    margin-left: 0 !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .rh-clean-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .rh-clean-status-line {
+    font-size: 0.52rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .rh-clean-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-clean-toolbar-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-clean-mode-select,
+  .rh-clean-capacity {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .rh-clean-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+}
