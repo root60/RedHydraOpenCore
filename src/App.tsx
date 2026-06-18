@@ -1544,14 +1544,14 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       </aside>
 
       {/* 2. MAIN CENTER DISPLAY FRAME */}
-      <main className="flex-1 flex flex-col items-stretch h-screen overflow-hidden min-w-0 bg-[#050505] relative">
+      <main className="rh-main-frame flex-1 flex flex-col items-stretch h-screen overflow-hidden min-w-0 bg-[#050505] relative">
         
         {/* Dynamic Cyberpunk Grid Layer */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(239,68,68,0.012)_1px,transparent_1px),linear-gradient(to_bottom,rgba(239,68,68,0.012)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none z-0" />
         <div className="absolute left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-red-500/30 to-transparent pointer-events-none z-10 animate-laser-scan" />
         
         {/* TOP STATUS BAR BAR */}
-        <header className="h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-40 flex-shrink-0 sticky top-0">
+        <header className="rh-main-header h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-40 flex-shrink-0 sticky top-0">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent animate-pulse" />
           
           <div className="flex items-center gap-2 sm:gap-3">
@@ -2255,7 +2255,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
       {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
       {navView === 'chat' && isAgentMode && (
-        <aside className="redhydra-agent-drawer w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
+        <aside className="redhydra-agent-drawer rh-agent-overlay bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
             {/* High-End Cyberpunk Tab Switcher */}
             <div className="flex items-center gap-1 border-b border-white/5 pb-3">
