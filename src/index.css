@@ -3161,178 +3161,820 @@ header {
     translate: 0 -4px;
   }
 }
-/* ===== CLEAN SETTINGS CHAT CONTROLS CARD ===== */
+/* =========================================================
+   REDHYDRA FINAL: boot loader + settings controls + detached token dashboard
+   ========================================================= */
 
-.rh-settings-chat-controls {
-  max-width: 760px !important;
-  padding: 0.75rem !important;
-  margin: 0 auto 0.75rem auto !important;
-  border-radius: 1rem !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(239,68,68,0.08), transparent 28%),
-    rgba(8,8,10,0.72) !important;
-  box-shadow:
-    0 16px 42px rgba(0,0,0,0.30),
-    inset 0 0 16px rgba(255,255,255,0.018) !important;
-  backdrop-filter: blur(16px) !important;
-}
-
-.rh-settings-chat-controls-head {
+/* keep any old header controls hidden if stale JSX/CSS remains */
+.redhydra-header-actions,
+.rh-clean-toolbar,
+.rh-fixed-toolbar,
+.rh-app-toolbar,
+.rh-forced-toolbar,
+.rh-final-header-actions {
   display: none !important;
 }
 
+/* Settings chat controls moved from header */
+.rh-settings-page-shell {
+  width: 100%;
+  max-width: 100%;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rh-settings-chat-controls {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(0.85rem, 1.8vw, 1.15rem);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at top left, rgba(239,68,68,0.10), transparent 30%),
+    linear-gradient(180deg, rgba(10,10,12,0.92), rgba(3,3,4,0.82));
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  backdrop-filter: blur(18px);
+}
+
+.rh-settings-chat-controls-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.rh-settings-chat-controls-head h3 {
+  margin: 0;
+  color: rgb(244 244 245);
+  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+  font-weight: 800;
+}
+
+.rh-settings-chat-controls-head p {
+  margin: 0.2rem 0 0;
+  color: rgb(113 113 122);
+  font-family: monospace;
+  font-size: 0.68rem;
+}
+
+.rh-settings-capacity-pill {
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(16,185,129,0.25);
+  background: rgba(16,185,129,0.07);
+  color: rgb(52 211 153);
+  font-family: monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .rh-settings-chat-controls-grid {
-  display: grid !important;
-  grid-template-columns: auto auto minmax(12rem, 1fr) !important;
-  gap: 0.5rem !important;
-  align-items: center !important;
+  display: grid;
+  grid-template-columns: auto auto minmax(14rem, 1fr);
+  gap: 0.55rem;
+  align-items: center;
 }
 
 .rh-settings-control-btn,
 .rh-settings-mode-select {
-  height: 2.15rem !important;
-  border-radius: 0.75rem !important;
-  font-size: 0.66rem !important;
+  height: 2.35rem;
+  border-radius: 0.8rem;
+  font-family: monospace;
+  font-size: 0.72rem;
 }
 
 .rh-settings-control-btn {
-  padding: 0 0.7rem !important;
-  white-space: nowrap !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: rgb(203 213 225);
+}
+
+.rh-settings-control-btn:hover {
+  border-color: rgba(248,113,113,0.28);
+  background: rgba(248,113,113,0.08);
+  color: white;
+}
+
+.rh-settings-danger-btn {
+  border-color: rgba(239,68,68,0.28);
+  background: rgba(239,68,68,0.07);
+  color: rgb(248 113 113);
 }
 
 .rh-settings-mode-select {
-  width: 100% !important;
-  min-width: 12rem !important;
+  width: 100%;
+  min-width: 0;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(127,29,29,0.55);
+  background: rgb(10 10 10);
+  color: rgb(228 228 231);
+  outline: none;
 }
 
-/* Mobile clean stack */
+@media (max-width: 768px) {
+  .rh-settings-chat-controls-head { flex-direction: column; }
+  .rh-settings-chat-controls-grid { grid-template-columns: 1fr 1fr; }
+  .rh-settings-mode-select { grid-column: 1 / -1; }
+}
+
+@media (max-width: 460px) {
+  .rh-settings-chat-controls-grid { grid-template-columns: 1fr; }
+  .rh-settings-mode-select { grid-column: auto; }
+}
+
+/* detached token monitor; fixed overlay means no chat ratio/layout impact */
+.rh-token-independent-dashboard {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: clamp(6rem, 9vh, 7.25rem) !important;
+  transform: translateX(-50%) translateY(-8px) !important;
+
+  width: min(860px, calc(100vw - 2rem)) !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: min(30vh, 15rem) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  gap: 0.65rem !important;
+
+  padding: 0.8rem !important;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(248,113,113,0.14), transparent 28%),
+    linear-gradient(180deg, rgba(12,12,14,0.97), rgba(4,4,5,0.92)) !important;
+  box-shadow:
+    0 28px 75px rgba(0,0,0,0.82),
+    0 0 38px rgba(248,113,113,0.10) !important;
+  backdrop-filter: blur(20px) !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 9999 !important;
+}
+
+.rh-token-independent-dashboard:hover {
+  transform: translateX(-50%) translateY(-14px) scale(1.01) !important;
+}
+
+.rh-token-independent-dashboard > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-independent-dashboard * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  line-height: 1.15 !important;
+}
+
+.rh-token-chart,
+.rh-token-independent-dashboard #token-usage-chart-container {
+  height: clamp(3rem, 6vh, 4rem) !important;
+  min-height: clamp(3rem, 6vh, 4rem) !important;
+  max-height: clamp(3rem, 6vh, 4rem) !important;
+  width: 100% !important;
+}
+
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-independent-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+    width: min(760px, calc(100vw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .rh-token-independent-dashboard {
+    left: 0.65rem !important;
+    right: 0.65rem !important;
+    bottom: 7rem !important;
+    transform: translateY(-6px) !important;
+    width: auto !important;
+    max-width: calc(100vw - 1.3rem) !important;
+    max-height: 42vh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Boot loading screen */
+.rh-boot-screen {
+  min-height: 100dvh;
+  width: 100vw;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #020202;
+  color: rgb(226 232 240);
+  isolation: isolate;
+}
+
+.rh-boot-grid {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(239,68,68,0.16), transparent 18%),
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: auto, 44px 44px, 44px 44px;
+  transform: perspective(900px) rotateX(58deg) translateY(-10%);
+  animation: rh-boot-grid-drift 13s linear infinite;
+  z-index: -4;
+}
+
+.rh-boot-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(248,113,113,0.14), transparent 30%);
+  opacity: 0.82;
+  z-index: -3;
+}
+
+.rh-boot-orb {
+  position: absolute;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 999px;
+  filter: blur(86px);
+  opacity: 0.24;
+  z-index: -2;
+  animation: rh-boot-orb 8s ease-in-out infinite;
+}
+
+.rh-boot-orb-a { top: -12rem; left: -10rem; background: rgb(239 68 68); }
+.rh-boot-orb-b { right: -12rem; bottom: -14rem; background: rgb(127 29 29); animation-delay: -2.4s; }
+
+.rh-boot-scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(239,68,68,0.05) 50%, transparent 100%);
+  animation: rh-boot-scan 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.rh-boot-card {
+  width: min(760px, calc(100vw - 2rem));
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 1.65rem;
+  padding: clamp(1.1rem, 3vw, 2rem);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(248,113,113,0.13), transparent 30%),
+    linear-gradient(180deg, rgba(12,12,14,0.88), rgba(4,4,5,0.78));
+  box-shadow: 0 34px 120px rgba(0,0,0,0.86), 0 0 70px rgba(239,68,68,0.10);
+  backdrop-filter: blur(22px);
+  transform: translate3d(calc((var(--mx, 50%) - 50%) * 0.05), calc((var(--my, 50%) - 50%) * 0.04), 0);
+  transition: transform 140ms ease;
+}
+
+.rh-boot-core-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 12.5rem;
+}
+
+.rh-boot-core {
+  width: 8.8rem;
+  height: 8.8rem;
+  border-radius: 999px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(248,113,113,0.34);
+  background: radial-gradient(circle, rgba(239,68,68,0.18), rgba(0,0,0,0.55));
+  box-shadow: inset 0 0 30px rgba(248,113,113,0.08), 0 0 36px rgba(239,68,68,0.20);
+}
+
+.rh-boot-core-ring,
+.rh-boot-core-ring-2 {
+  position: absolute;
+  inset: -0.7rem;
+  border-radius: inherit;
+  border: 1px dashed rgba(248,113,113,0.35);
+  animation: rh-boot-spin 7s linear infinite;
+}
+
+.rh-boot-core-ring-2 {
+  inset: -1.45rem;
+  border-style: solid;
+  opacity: 0.5;
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+.rh-boot-core-icon {
+  width: 3rem;
+  height: 3rem;
+  color: rgb(248 113 113);
+  filter: drop-shadow(0 0 12px rgba(248,113,113,0.55));
+}
+
+.rh-boot-nodes span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgb(248 113 113);
+  box-shadow: 0 0 14px rgba(248,113,113,0.8);
+  transform: rotate(calc(var(--i, 0) * 60deg)) translateX(7.4rem);
+}
+.rh-boot-nodes span:nth-child(1) { --i: 0; }
+.rh-boot-nodes span:nth-child(2) { --i: 1; }
+.rh-boot-nodes span:nth-child(3) { --i: 2; }
+.rh-boot-nodes span:nth-child(4) { --i: 3; }
+.rh-boot-nodes span:nth-child(5) { --i: 4; }
+.rh-boot-nodes span:nth-child(6) { --i: 5; }
+
+.rh-boot-copy { text-align: center; }
+.rh-boot-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: monospace;
+  font-size: 0.66rem;
+  color: rgb(248 113 113);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.rh-boot-live-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgb(52 211 153);
+  box-shadow: 0 0 12px rgba(52,211,153,0.8);
+  animation: rh-boot-pulse 1.35s ease-in-out infinite;
+}
+.rh-boot-copy h1 {
+  margin: 0.55rem 0 0.35rem;
+  font-size: clamp(1.6rem, 5vw, 3.2rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  color: white;
+  text-shadow: 0 0 28px rgba(239,68,68,0.22);
+}
+.rh-boot-copy p {
+  margin: 0 auto;
+  max-width: 42rem;
+  font-family: monospace;
+  font-size: clamp(0.74rem, 1.3vw, 0.9rem);
+  color: rgb(161 161 170);
+}
+
+.rh-boot-terminal {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 1rem;
+  background: rgba(0,0,0,0.44);
+  font-family: monospace;
+  font-size: 0.68rem;
+}
+.rh-boot-terminal-head,
+.rh-boot-terminal-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.rh-boot-terminal-head {
+  justify-content: flex-start;
+  color: rgb(248 113 113);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.55rem;
+}
+.rh-boot-terminal-line { padding: 0.25rem 0; border-top: 1px solid rgba(255,255,255,0.04); }
+.rh-boot-terminal-line span { color: rgb(113 113 122); }
+.rh-boot-terminal-line b { color: rgb(228 228 231); text-align: right; overflow-wrap: anywhere; }
+
+.rh-boot-progress-shell { margin-top: 1rem; }
+.rh-boot-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: rgb(113 113 122);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.45rem;
+}
+.rh-boot-progress-meta b { color: rgb(248 113 113); }
+.rh-boot-progress-track {
+  height: 0.62rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.rh-boot-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgb(127 29 29), rgb(248 113 113), rgb(251 191 36));
+  box-shadow: 0 0 18px rgba(248,113,113,0.38);
+  transition: width 220ms ease;
+}
+
+.rh-boot-feature-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.rh-boot-feature-row div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.4rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.85rem;
+  background: rgba(255,255,255,0.035);
+  color: rgb(203 213 225);
+  font-family: monospace;
+  font-size: 0.65rem;
+}
+.rh-boot-feature-row svg { color: rgb(248 113 113); }
+
+.rh-boot-launch-btn {
+  margin: 1rem auto 0;
+  height: 2.65rem;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(248,113,113,0.35);
+  background: rgba(127,29,29,0.22);
+  color: white;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 24px rgba(239,68,68,0.12);
+}
+.rh-boot-launch-btn:hover { background: rgba(239,68,68,0.28); transform: translateY(-2px); }
+
 @media (max-width: 640px) {
-  .rh-settings-chat-controls {
-    max-width: 100% !important;
-    padding: 0.65rem !important;
-  }
+  .rh-boot-core-wrap { height: 10rem; }
+  .rh-boot-core { width: 6.8rem; height: 6.8rem; }
+  .rh-boot-nodes span { transform: rotate(calc(var(--i, 0) * 60deg)) translateX(5.65rem); }
+  .rh-boot-feature-row { grid-template-columns: 1fr; }
+}
 
-  .rh-settings-chat-controls-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
+@keyframes rh-boot-spin { to { rotate: 360deg; } }
+@keyframes rh-boot-pulse { 0%, 100% { opacity: 0.45; transform: scale(0.84); } 50% { opacity: 1; transform: scale(1.18); } }
+@keyframes rh-boot-grid-drift { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 0 0, 44px 44px, 44px 44px; } }
+@keyframes rh-boot-scan { 0%, 100% { transform: translateY(-18%); opacity: 0.18; } 50% { transform: translateY(18%); opacity: 0.48; } }
+@keyframes rh-boot-orb { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(4rem,2rem,0) scale(1.12); } }
 
-  .rh-settings-mode-select {
-    grid-column: 1 / -1 !important;
-    min-width: 0 !important;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .rh-boot-screen *, .rh-boot-screen::before { animation: none !important; transition: none !important; }
 }
 
 
 /* =========================================================
-   FINAL: CLEAN HEADER + AUTO SYNC + MANUAL SIDEBAR TOGGLE
+   REDHYDRA FINAL COMPLETE UI PACK
+   Full-screen animated background, live chat, compact token portal,
+   clean settings controls, auto model sync, manual sidebar toggle.
    ========================================================= */
 
-/* Remove right-side header buttons/selects completely */
-header button:not([title="Toggle Workspace Sidebar"]):not(.rh-sidebar-manual-toggle),
-header select,
-header .redhydra-header-actions,
-header .rh-clean-toolbar,
-header .rh-fixed-toolbar,
-header .rh-app-toolbar,
-header .rh-forced-toolbar,
-header .rh-final-header-actions {
-  display: none !important;
+html, body {
+  min-height: 100%;
+  background: #020202 !important;
+  overflow-x: hidden !important;
 }
 
-/* Floating manual sidebar toggle */
+#root {
+  position: relative !important;
+  z-index: 5 !important;
+  min-height: 100dvh !important;
+  background: transparent !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -18%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(239,68,68,0.18), transparent 22%),
+    radial-gradient(circle at 16% 18%, rgba(248,113,113,0.12), transparent 26%),
+    radial-gradient(circle at 84% 20%, rgba(127,29,29,0.18), transparent 30%),
+    radial-gradient(circle at 50% 110%, rgba(239,68,68,0.10), transparent 32%),
+    linear-gradient(rgba(255,255,255,0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.026) 1px, transparent 1px);
+  background-size: auto, auto, auto, auto, 38px 38px, 38px 38px;
+  opacity: 0.86;
+  transform: rotate(-1deg) scale(1.04);
+  animation: rh-full-bg-grid-rush 16s linear infinite, rh-full-bg-breath 5.8s ease-in-out infinite;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(239,68,68,0.035) 36%, rgba(248,113,113,0.08) 48%, rgba(239,68,68,0.035) 60%, transparent 100%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 2px, transparent 5px);
+  mix-blend-mode: screen;
+  opacity: 0.48;
+  animation: rh-full-bg-energy-sweep 7.5s ease-in-out infinite, rh-full-bg-scanline 3.2s linear infinite;
+}
+
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 74%, rgba(248,113,113,0.08), transparent 24%),
+    radial-gradient(circle at 82% 68%, rgba(239,68,68,0.07), transparent 26%),
+    linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.38));
+  opacity: 0.8;
+  animation: rh-full-bg-depth-drift 12s ease-in-out infinite;
+}
+
+#root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, rgba(248,113,113,0.22) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255,255,255,0.11) 0 1px, transparent 1.4px);
+  background-size: 110px 110px, 160px 160px;
+  background-position: 0 0, 55px 40px;
+  opacity: 0.18;
+  animation: rh-full-bg-particles 28s linear infinite;
+}
+
+main, section, article, aside, header, footer { position: relative; }
+header, aside, footer, .rh-settings-chat-controls, [class*="bg-[#"], [class*="bg-zinc"], [class*="bg-black"], [class*="border-white"], [class*="border-red"] { backdrop-filter: blur(14px) saturate(1.08); }
+
+header button:not([title="Toggle Workspace Sidebar"]):not(.rh-sidebar-manual-toggle), header select, header .redhydra-header-actions, header .rh-clean-toolbar, header .rh-fixed-toolbar, header .rh-app-toolbar, header .rh-forced-toolbar, header .rh-final-header-actions { display: none !important; }
+
 .rh-sidebar-manual-toggle {
-  position: fixed !important;
-  left: 0.72rem !important;
-  top: 5.15rem !important;
-  z-index: 9997 !important;
-
-  width: 2.15rem !important;
-  height: 2.15rem !important;
-  border-radius: 999px !important;
+  position: fixed !important; left: 0.72rem !important; top: 5.15rem !important; z-index: 9997 !important;
+  width: 2.15rem !important; height: 2.15rem !important; border-radius: 999px !important;
   border: 1px solid rgba(248,113,113,0.28) !important;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(248,113,113,0.24), transparent 35%),
-    rgba(8,8,10,0.88) !important;
-  color: rgb(248 113 113) !important;
+  background: radial-gradient(circle at 30% 20%, rgba(248,113,113,0.24), transparent 35%), rgba(8,8,10,0.88) !important;
+  color: rgb(248 113 113) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.55), 0 0 24px rgba(248,113,113,0.12), inset 0 0 16px rgba(255,255,255,0.025) !important;
+  backdrop-filter: blur(14px) saturate(1.2) !important; cursor: pointer !important;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease !important;
+}
+.rh-sidebar-manual-toggle:hover { transform: translateY(-1px) scale(1.06) !important; border-color: rgba(248,113,113,0.52) !important; box-shadow: 0 18px 42px rgba(0,0,0,0.62), 0 0 34px rgba(248,113,113,0.22) !important; }
+.rh-sidebar-toggle-mark { font-size: 1.15rem !important; line-height: 1 !important; font-family: monospace !important; font-weight: 900 !important; }
+.rh-sidebar-manual-toggle-collapsed { color: rgb(52 211 153) !important; border-color: rgba(16,185,129,0.35) !important; box-shadow: 0 14px 34px rgba(0,0,0,0.55), 0 0 24px rgba(16,185,129,0.13) !important; }
+.redhydra-left-sidebar.rh-left-sidebar-collapsed { transform: translateX(-100%) !important; opacity: 0 !important; pointer-events: none !important; }
+@media (min-width: 1024px) { .redhydra-left-sidebar.rh-left-sidebar-collapsed { width: 0 !important; min-width: 0 !important; max-width: 0 !important; flex-basis: 0 !important; border-right: 0 !important; overflow: hidden !important; } }
+@media (max-width: 640px) { .rh-sidebar-manual-toggle { top: 4.75rem !important; left: 0.6rem !important; width: 2rem !important; height: 2rem !important; } }
 
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.rh-settings-chat-controls { max-width: 760px !important; padding: 0.75rem !important; margin: 0 auto 0.75rem auto !important; border-radius: 1rem !important; border: 1px solid rgba(255,255,255,0.08) !important; background: radial-gradient(circle at 0% 0%, rgba(239,68,68,0.08), transparent 28%), rgba(8,8,10,0.72) !important; box-shadow: 0 16px 42px rgba(0,0,0,0.30), inset 0 0 16px rgba(255,255,255,0.018) !important; backdrop-filter: blur(16px) !important; }
+.rh-settings-chat-controls-head { display: none !important; }
+.rh-settings-chat-controls-grid { display: grid !important; grid-template-columns: auto auto minmax(12rem, 1fr) !important; gap: 0.5rem !important; align-items: center !important; }
+.rh-settings-control-btn, .rh-settings-mode-select { height: 2.15rem !important; border-radius: 0.75rem !important; font-size: 0.66rem !important; }
+.rh-settings-control-btn { padding: 0 0.7rem !important; white-space: nowrap !important; }
+.rh-settings-mode-select { width: 100% !important; min-width: 12rem !important; }
+@media (max-width: 640px) { .rh-settings-chat-controls { max-width: 100% !important; padding: 0.65rem !important; } .rh-settings-chat-controls-grid { grid-template-columns: 1fr 1fr !important; } .rh-settings-mode-select { grid-column: 1 / -1 !important; min-width: 0 !important; } }
 
-  box-shadow:
-    0 14px 34px rgba(0,0,0,0.55),
-    0 0 24px rgba(248,113,113,0.12),
-    inset 0 0 16px rgba(255,255,255,0.025) !important;
+.rh-token-backdrop { position: fixed !important; inset: 0 !important; z-index: 9998 !important; background: transparent !important; pointer-events: auto !important; }
+body > .rh-token-independent-dashboard, .rh-token-independent-dashboard {
+  position: fixed !important; left: 50% !important; right: auto !important; top: auto !important; bottom: clamp(4.8rem, 8vh, 6.4rem) !important; transform: translateX(-50%) translateY(-6px) !important;
+  width: clamp(22rem, 48vw, 42rem) !important; max-width: calc(100vw - 2rem) !important; min-width: 20rem !important; height: auto !important; min-height: 0 !important; max-height: min(24vh, 12.5rem) !important;
+  display: grid !important; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)) !important; gap: 0.45rem !important; padding: 0.58rem !important; border-radius: 0.95rem !important; border: 1px solid rgba(255,255,255,0.13) !important;
+  background: radial-gradient(circle at 8% 0%, rgba(248,113,113,0.16), transparent 26%), radial-gradient(circle at 92% 8%, rgba(239,68,68,0.10), transparent 24%), linear-gradient(180deg, rgba(12,12,14,0.98), rgba(3,3,5,0.94)) !important;
+  box-shadow: 0 22px 55px rgba(0,0,0,0.82), 0 0 28px rgba(248,113,113,0.10), inset 0 0 22px rgba(255,255,255,0.025) !important;
+  backdrop-filter: blur(20px) saturate(1.25) !important; overflow-y: auto !important; overflow-x: hidden !important; z-index: 9999 !important; contain: layout paint style !important; will-change: transform, opacity !important; animation: rh-token-holo-in 220ms ease-out, rh-token-subtle-float 5s ease-in-out infinite;
+}
+.rh-token-independent-dashboard:hover { transform: translateX(-50%) translateY(-10px) scale(1.008) !important; }
+.rh-token-independent-dashboard > :first-child { grid-column: 1 / -1 !important; padding-bottom: 0.35rem !important; margin-bottom: 0.15rem !important; }
+.rh-token-independent-dashboard * { min-width: 0 !important; max-width: 100% !important; line-height: 1.08 !important; }
+.rh-token-chart, .rh-token-independent-dashboard #token-usage-chart-container { height: clamp(2.55rem, 5vh, 3.35rem) !important; min-height: clamp(2.55rem, 5vh, 3.35rem) !important; max-height: clamp(2.55rem, 5vh, 3.35rem) !important; width: 100% !important; }
+.rh-token-independent-dashboard div:has(#token-usage-chart-container), .rh-token-independent-dashboard div.fixed:has(#token-usage-chart-container), .rh-token-independent-dashboard div.absolute:has(#token-usage-chart-container), .rh-token-independent-dashboard div[class*="bottom-full"]:has(#token-usage-chart-container) { position: static !important; inset: auto !important; transform: none !important; width: auto !important; max-width: 100% !important; max-height: none !important; display: block !important; padding: 0 !important; margin: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+@media (min-width: 1280px) and (min-aspect-ratio: 16/10) { .rh-token-independent-dashboard { width: clamp(34rem, 46vw, 50rem) !important; max-height: min(21vh, 11rem) !important; grid-template-columns: repeat(4, minmax(8rem, 1fr)) !important; } .rh-token-chart, .rh-token-independent-dashboard #token-usage-chart-container { height: 2.75rem !important; min-height: 2.75rem !important; max-height: 2.75rem !important; } }
+@media (max-height: 760px) { .rh-token-independent-dashboard { bottom: 4.65rem !important; max-height: 22vh !important; padding: 0.5rem !important; gap: 0.4rem !important; } .rh-token-chart, .rh-token-independent-dashboard #token-usage-chart-container { height: 2.45rem !important; min-height: 2.45rem !important; max-height: 2.45rem !important; } }
+@media (min-width: 1280px) { #root:has(.redhydra-agent-drawer) .rh-token-independent-dashboard { left: calc((100vw - var(--redhydra-agent-width)) / 2) !important; width: min(40rem, calc(100vw - var(--redhydra-agent-width) - 2rem)) !important; } }
+@media (max-width: 768px) { .rh-token-independent-dashboard { left: 0.6rem !important; right: 0.6rem !important; bottom: 6.8rem !important; transform: translateY(-5px) !important; width: auto !important; min-width: 0 !important; max-width: calc(100vw - 1.2rem) !important; max-height: 38vh !important; grid-template-columns: 1fr !important; } .rh-token-independent-dashboard:hover { transform: translateY(-8px) scale(1.004) !important; } }
 
-  backdrop-filter: blur(14px) saturate(1.2) !important;
-  cursor: pointer !important;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease !important;
+.rh-chat-live-shell { position: relative !important; isolation: isolate !important; border-radius: 1.25rem !important; overflow: hidden !important; --chat-mx: 50%; --chat-my: 45%; }
+.rh-chat-live-shell::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(circle at var(--chat-mx) var(--chat-my), rgba(248,113,113,0.15), transparent 18rem), radial-gradient(circle at 18% 18%, rgba(239,68,68,0.075), transparent 18rem), radial-gradient(circle at 82% 28%, rgba(127,29,29,0.08), transparent 20rem), linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px); background-size: auto, auto, auto, 34px 34px, 34px 34px; opacity: 0.48 !important; animation: rh-chat-grid-flow 18s linear infinite; }
+.rh-chat-live-shell::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, transparent 0%, rgba(248,113,113,0.035) 48%, transparent 58%), radial-gradient(circle at 50% 110%, rgba(239,68,68,0.08), transparent 30%); mix-blend-mode: screen; opacity: 0.24 !important; animation: rh-chat-scan-sweep 7s ease-in-out infinite; }
+.rh-chat-live-shell > * { position: relative !important; z-index: 2 !important; }
+.rh-chat-scroll-feed { position: relative !important; padding: clamp(0.35rem, 1vw, 0.75rem) clamp(0.35rem, 1vw, 0.75rem) 0.75rem 0 !important; background: linear-gradient(180deg, rgba(0,0,0,0.20), rgba(0,0,0,0.05)), radial-gradient(circle at 50% 0%, rgba(255,255,255,0.025), transparent 30%) !important; }
+.rh-chat-scroll-feed article, .rh-chat-scroll-feed [class*="rounded-2xl"], .rh-chat-scroll-feed [class*="rounded-xl"] { backdrop-filter: blur(12px) saturate(1.08) !important; box-shadow: 0 12px 38px rgba(0,0,0,0.28), inset 0 0 18px rgba(255,255,255,0.018) !important; transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease !important; }
+.rh-chat-scroll-feed article:hover, .rh-chat-scroll-feed [class*="rounded-2xl"]:hover, .rh-chat-scroll-feed [class*="rounded-xl"]:hover { transform: translateY(-1px); box-shadow: 0 16px 46px rgba(0,0,0,0.34), 0 0 26px rgba(239,68,68,0.055), inset 0 0 18px rgba(255,255,255,0.022) !important; }
+.rh-chat-live-shell p, .rh-chat-live-shell li, .rh-chat-live-shell span, .rh-chat-live-shell code, .rh-chat-live-shell pre, .rh-chat-scroll-feed article, [class*="prose"], pre, code { text-shadow: 0 1px 2px rgba(0,0,0,0.62); }
+.rh-chat-command-footer { position: relative !important; z-index: 5 !important; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.55) 26%, rgba(0,0,0,0.72)) !important; backdrop-filter: blur(10px) !important; }
+.rh-chat-command-footer textarea { background: radial-gradient(circle at 12% 0%, rgba(248,113,113,0.055), transparent 24%), rgba(5,5,6,0.88) !important; border-color: rgba(255,255,255,0.10) !important; box-shadow: 0 14px 42px rgba(0,0,0,0.35), inset 0 0 18px rgba(255,255,255,0.018) !important; }
+.rh-chat-command-footer textarea:focus { border-color: rgba(248,113,113,0.42) !important; box-shadow: 0 0 0 1px rgba(248,113,113,0.26), 0 16px 48px rgba(0,0,0,0.42), 0 0 34px rgba(248,113,113,0.11) !important; }
+.rh-chat-scroll-feed::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1; background: radial-gradient(circle, rgba(248,113,113,0.20) 0 1px, transparent 1.6px), radial-gradient(circle, rgba(255,255,255,0.10) 0 1px, transparent 1.4px); background-size: 90px 90px, 130px 130px; background-position: 0 0, 45px 30px; opacity: 0.22; animation: rh-chat-particles 24s linear infinite; }
+.redhydra-auto-sync-status button { display: none !important; }
+.redhydra-auto-sync-status { border-color: rgba(16,185,129,0.25) !important; background: radial-gradient(circle at 0% 0%, rgba(16,185,129,0.10), transparent 30%), rgba(6,10,9,0.78) !important; }
+button, select, textarea, input, [role="button"] { transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background-color 150ms ease, color 150ms ease, opacity 150ms ease !important; }
+button:hover, [role="button"]:hover { transform: translateY(-1px); box-shadow: 0 0 18px rgba(248,113,113,0.10), inset 0 0 12px rgba(255,255,255,0.02); }
+button:active, [role="button"]:active { transform: translateY(0) scale(0.985); }
+textarea:focus, input:focus, select:focus { box-shadow: 0 0 0 1px rgba(239,68,68,0.35), 0 0 28px rgba(239,68,68,0.10) !important; }
+
+@keyframes rh-full-bg-grid-rush { from { background-position: center, center, center, center, 0 0, 0 0; } to { background-position: center, center, center, center, 76px 76px, 76px 76px; } }
+@keyframes rh-full-bg-breath { 0%,100% { filter: saturate(1.05) contrast(1); opacity:0.72; } 50% { filter:saturate(1.35) contrast(1.08); opacity:0.92; } }
+@keyframes rh-full-bg-energy-sweep { 0%,100% { transform:translateX(-10%) translateY(-3%) rotate(0deg); opacity:0.26; } 50% { transform:translateX(10%) translateY(3%) rotate(1deg); opacity:0.58; } }
+@keyframes rh-full-bg-scanline { from { background-position:-120vw 0, 0 0; } to { background-position:120vw 0, 0 24px; } }
+@keyframes rh-full-bg-depth-drift { 0%,100% { transform:translateY(-2%) scale(1); opacity:0.55; } 50% { transform:translateY(2%) scale(1.025); opacity:0.82; } }
+@keyframes rh-full-bg-particles { from { background-position:0 0, 55px 40px; } to { background-position:110px 220px, -105px 260px; } }
+@keyframes rh-token-holo-in { from { opacity:0; transform:translateX(-50%) translateY(8px) scale(0.975); filter:blur(8px); } to { opacity:1; transform:translateX(-50%) translateY(-6px) scale(1); filter:blur(0); } }
+@keyframes rh-token-subtle-float { 0%,100% { translate:0 0; } 50% { translate:0 -3px; } }
+@keyframes rh-chat-grid-flow { from { background-position:center,center,center,0 0,0 0; } to { background-position:center,center,center,34px 34px,34px 34px; } }
+@keyframes rh-chat-scan-sweep { 0%,100% { opacity:0.22; transform:translateY(-8%); } 50% { opacity:0.48; transform:translateY(8%); } }
+@keyframes rh-chat-particles { from { background-position:0 0, 45px 30px; } to { background-position:90px 180px, -85px 210px; } }
+
+@media (max-width: 768px), (max-height: 740px) { body::before { opacity: 0.54; background-size: auto, auto, auto, auto, 50px 50px, 50px 50px; } body::after { opacity: 0.28; } #root::after { opacity: 0.10; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; } }
+
+/* =========================================================
+   FINAL AGENT MODE LAYOUT FIX
+   Header/footer stay inside center screen when right Agent drawer opens
+   ========================================================= */
+
+/* Root flex children must shrink safely */
+#root,
+#root > div {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
 }
 
-.rh-sidebar-manual-toggle:hover {
-  transform: translateY(-1px) scale(1.06) !important;
-  border-color: rgba(248,113,113,0.52) !important;
-  box-shadow:
-    0 18px 42px rgba(0,0,0,0.62),
-    0 0 34px rgba(248,113,113,0.22) !important;
+/* Main center frame */
+.rh-main-frame {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: auto !important;
+  overflow: hidden !important;
+  contain: layout style !important;
 }
 
-.rh-sidebar-toggle-mark {
-  font-size: 1.15rem !important;
-  line-height: 1 !important;
-  font-family: monospace !important;
-  font-weight: 900 !important;
+/* When Agent drawer opens, center frame must shrink, not overflow */
+.rh-main-frame.rh-main-agent-active,
+#root:has(.redhydra-agent-drawer) .rh-main-frame {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
-.rh-sidebar-manual-toggle-collapsed {
-  color: rgb(52 211 153) !important;
-  border-color: rgba(16,185,129,0.35) !important;
-  box-shadow:
-    0 14px 34px rgba(0,0,0,0.55),
-    0 0 24px rgba(16,185,129,0.13) !important;
+/* Header must never calculate using full screen width */
+.rh-main-header,
+#root:has(.redhydra-agent-drawer) .rh-main-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding-right: clamp(0.75rem, 1.5vw, 1.25rem) !important;
+  padding-left: clamp(0.75rem, 1.5vw, 1.25rem) !important;
+  overflow: hidden !important;
+  gap: 0.75rem !important;
 }
 
-/* True left sidebar collapse */
-.redhydra-left-sidebar.rh-left-sidebar-collapsed {
-  transform: translateX(-100%) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
+/* Header inner row should shrink instead of pushing footer/header out */
+.rh-main-header > div:not(.absolute),
+.rh-main-header h2,
+.rh-main-header span {
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
-@media (min-width: 1024px) {
-  .redhydra-left-sidebar.rh-left-sidebar-collapsed {
-    width: 0 !important;
-    min-width: 0 !important;
-    max-width: 0 !important;
-    flex-basis: 0 !important;
-    border-right: 0 !important;
-    overflow: hidden !important;
+.rh-main-header h2 {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Model telemetry line becomes compact when right drawer is open */
+#root:has(.redhydra-agent-drawer) .rh-main-header div[class*="bg-red-950"][class*="font-mono"] {
+  max-width: min(26vw, 18rem) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  flex: 0 1 auto !important;
+}
+
+/* Content dispatcher must stay inside available width */
+.rh-center-dispatcher,
+#root:has(.redhydra-agent-drawer) .rh-center-dispatcher {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Workspace should auto-adjust when agent drawer is visible */
+.rh-center-workspace {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: min(100%, 56rem) !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-center-workspace {
+  max-width: min(100%, 52rem) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Right agent drawer gets a fixed stable flex width */
+.redhydra-agent-drawer {
+  flex: 0 0 clamp(15rem, 20vw, 20rem) !important;
+  width: clamp(15rem, 20vw, 20rem) !important;
+  min-width: 15rem !important;
+  max-width: 20rem !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+/* Footer/input area must wrap inside the center area, not force width */
+.rh-chat-command-footer,
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.rh-chat-command-footer > div,
+.rh-chat-command-footer form,
+.rh-chat-command-footer textarea {
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.rh-chat-command-footer textarea {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+}
+
+/* Action row can wrap on reduced width */
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer [class*="justify-between"],
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer [class*="items-center"] {
+  min-width: 0 !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer button {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+/* Make token counter smaller when Agent drawer is active */
+#root:has(.redhydra-agent-drawer) #token-usage-counter-btn {
+  padding-left: 0.55rem !important;
+  padding-right: 0.55rem !important;
+}
+
+/* On medium screens, agent drawer is hidden by Tailwind; keep full width */
+@media (max-width: 1535px) {
+  .rh-main-frame,
+  .rh-main-frame.rh-main-agent-active {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .rh-center-workspace,
+  #root:has(.redhydra-agent-drawer) .rh-center-workspace {
+    max-width: min(100%, 56rem) !important;
   }
 }
 
-/* Keep toggle reachable on mobile */
-@media (max-width: 640px) {
-  .rh-sidebar-manual-toggle {
-    top: 4.75rem !important;
-    left: 0.6rem !important;
-    width: 2rem !important;
-    height: 2rem !important;
+/* Very tight desktop widths: reduce footer button text pressure */
+@media (min-width: 1536px) and (max-width: 1700px) {
+  #root:has(.redhydra-agent-drawer) .rh-chat-command-footer button {
+    font-size: 0.66rem !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
   }
-}
 
-/* Passive auto-sync card should have no manual button */
-.redhydra-auto-sync-status button {
-  display: none !important;
-}
-
-.redhydra-auto-sync-status {
-  border-color: rgba(16,185,129,0.25) !important;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(16,185,129,0.10), transparent 30%),
-    rgba(6,10,9,0.78) !important;
+  #root:has(.redhydra-agent-drawer) .rh-main-header h2 {
+    font-size: 0.68rem !important;
+  }
 }

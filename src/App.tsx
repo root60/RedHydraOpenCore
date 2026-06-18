@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import {
@@ -219,10 +220,105 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+
+interface BootLoadingScreenProps {
+  progress: number;
+  status: string;
+  modelName: string;
+  baseUrl: string;
+  onLaunch: () => void;
+}
+
+function BootLoadingScreen({ progress, status, modelName, baseUrl, onLaunch }: BootLoadingScreenProps) {
+  const [cursor, setCursor] = useState({ x: 50, y: 50 });
+  const safeProgress = Math.min(100, Math.max(0, progress));
+
+  return (
+    <div
+      className="rh-boot-screen"
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setCursor({
+          x: ((e.clientX - rect.left) / rect.width) * 100,
+          y: ((e.clientY - rect.top) / rect.height) * 100,
+        });
+      }}
+      style={{ '--mx': `${cursor.x}%`, '--my': `${cursor.y}%` } as React.CSSProperties}
+    >
+      <div className="rh-boot-grid" />
+      <div className="rh-boot-orb rh-boot-orb-a" />
+      <div className="rh-boot-orb rh-boot-orb-b" />
+      <div className="rh-boot-scan" />
+
+      <div className="rh-boot-card">
+        <div className="rh-boot-core-wrap">
+          <div className="rh-boot-core">
+            <div className="rh-boot-core-ring" />
+            <div className="rh-boot-core-ring rh-boot-core-ring-2" />
+            <Bot className="rh-boot-core-icon" />
+          </div>
+          <div className="rh-boot-nodes">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+
+        <div className="rh-boot-copy">
+          <div className="rh-boot-kicker">
+            <span className="rh-boot-live-dot" />
+            MODEL HANDSHAKE SEQUENCE
+          </div>
+          <h1>RedHydra OpenCore</h1>
+          <p>{status}</p>
+        </div>
+
+        <div className="rh-boot-terminal">
+          <div className="rh-boot-terminal-head">
+            <Terminal className="w-3.5 h-3.5" />
+            <span>runtime.link</span>
+          </div>
+          <div className="rh-boot-terminal-line"><span>provider</span><b>built-in-opencore</b></div>
+          <div className="rh-boot-terminal-line"><span>model</span><b>{modelName}</b></div>
+          <div className="rh-boot-terminal-line"><span>endpoint</span><b>{baseUrl.replace(/^https?:\/\//, '')}</b></div>
+          <div className="rh-boot-terminal-line"><span>status</span><b>{safeProgress >= 100 ? 'READY' : 'SYNCING'}</b></div>
+        </div>
+
+        <div className="rh-boot-progress-shell">
+          <div className="rh-boot-progress-meta">
+            <span>boot progress</span>
+            <b>{Math.round(safeProgress)}%</b>
+          </div>
+          <div className="rh-boot-progress-track">
+            <div className="rh-boot-progress-fill" style={{ width: `${safeProgress}%` }} />
+          </div>
+        </div>
+
+        <div className="rh-boot-feature-row">
+          <div><Shield className="w-4 h-4" /><span>Secure Proxy</span></div>
+          <div><Zap className="w-4 h-4" /><span>32K Context</span></div>
+          <div><Sparkles className="w-4 h-4" /><span>Live Stream</span></div>
+        </div>
+
+        <button type="button" onClick={onLaunch} className="rh-boot-launch-btn">
+          <Power className="w-4 h-4" />
+          Launch Interface
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [navView, setNavView] = useState<ViewType>('chat');
   const [settings, setSettings] = useState<AISettings>(DEFAULT_AI_SETTINGS);
   const [memoryPrefs, setMemoryPrefs] = useState<MemoryPrefs>(DEFAULT_MEMORY_PREFS);
+  const [isBooting, setIsBooting] = useState(() => sessionStorage.getItem('redhydra_boot_ready') !== '1');
+  const [bootProgress, setBootProgress] = useState(0);
+  const [bootStatus, setBootStatus] = useState('Initializing RedHydra kernel and auto-linking model endpoint...');
 
   const renderMessageContent = (content: string) => {
     const thinkStart = content.indexOf('<thinking>');
@@ -516,6 +612,67 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       }));
     }
   }, []);
+
+
+  useEffect(() => {
+    if (!isBooting) return;
+
+    let done = false;
+    const controller = new AbortController();
+    const bootSteps = [
+      { at: 8, label: 'Initializing local interface kernel...' },
+      { at: 22, label: 'Auto-linking Dolphin endpoint...' },
+      { at: 38, label: `Warming endpoint: ${settings.baseUrl.replace(/^https?:\/\//, '')}` },
+      { at: 58, label: `Auto-syncing model: ${settings.modelName}` },
+      { at: 78, label: 'Preparing streaming transport and token monitor...' },
+      { at: 94, label: 'Finalizing RedHydra interface...' },
+    ];
+
+    const startedAt = Date.now();
+    const interval = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      const next = Math.min(96, Math.round(elapsed / 32));
+      setBootProgress(next);
+      const current = bootSteps.reduce((acc, step) => (next >= step.at ? step : acc), bootSteps[0]);
+      setBootStatus(current.label);
+    }, 90);
+
+    fetch(settings.baseUrl, {
+      method: 'GET',
+      mode: 'no-cors',
+      signal: controller.signal,
+      cache: 'no-store',
+    }).catch(() => {
+      // Cold HF Spaces or CORS can fail here. The app must still launch.
+    });
+
+    const finishTimer = window.setTimeout(() => {
+      if (done) return;
+      done = true;
+      setBootStatus('Dolphin endpoint synced. Launching RedHydra interface...');
+      setBootProgress(100);
+      window.setTimeout(() => {
+        sessionStorage.setItem('redhydra_boot_ready', '1');
+        setIsBooting(false);
+      }, 520);
+    }, 3600);
+
+    return () => {
+      done = true;
+      controller.abort();
+      window.clearInterval(interval);
+      window.clearTimeout(finishTimer);
+    };
+  }, [isBooting, settings.baseUrl, settings.modelName]);
+
+  const handleBootLaunch = () => {
+    setBootProgress(100);
+    setBootStatus('Manual launch confirmed. Opening interface...');
+    window.setTimeout(() => {
+      sessionStorage.setItem('redhydra_boot_ready', '1');
+      setIsBooting(false);
+    }, 260);
+  };
 
   // New Chat Action
   const handleNewChat = (mode: AssistantModeType = 'general', welcomeText?: string) => {
@@ -1009,6 +1166,18 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
     .slice(-1)[0];
   const activeAgentPlan = lastAssistantMessageWithAgentPlan?.agentPlan;
 
+  if (isBooting) {
+    return (
+      <BootLoadingScreen
+        progress={bootProgress}
+        status={bootStatus}
+        modelName={settings.modelName}
+        baseUrl={settings.baseUrl}
+        onLaunch={handleBootLaunch}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
       
@@ -1028,7 +1197,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
         title={isSidebarCollapsed ? "Show left sidebar" : "Hide left sidebar"}
         aria-label={isSidebarCollapsed ? "Show left sidebar" : "Hide left sidebar"}
       >
-        <span className="rh-sidebar-toggle-mark">{isSidebarCollapsed ? "?" : "�"}</span>
+        <span className="rh-sidebar-toggle-mark">{isSidebarCollapsed ? "☰" : "‹"}</span>
       </button>
 
       {/* Sidebar Backdrop Overlay for Mobile/Tablets */}
@@ -1040,7 +1209,11 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       )}
 
       {/* 1. LEFT SIDEBAR PANEL */}
-      <aside className={`redhydra-left-sidebar fixed inset-y-0 left-0 lg:relative w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 lg:z-25 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${isSidebarCollapsed ? "rh-left-sidebar-collapsed -translate-x-full lg:-translate-x-full opacity-0 pointer-events-none" : (isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}`}>
+      <aside className={`redhydra-left-sidebar fixed inset-y-0 left-0 lg:relative w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 lg:z-25 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${
+        isSidebarCollapsed
+          ? "rh-left-sidebar-collapsed -translate-x-full lg:-translate-x-full opacity-0 pointer-events-none"
+          : (isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")
+      }`}>
         <div className="flex flex-col flex-1 min-h-0">
           
           {/* Logo Brand Header */}
@@ -1415,50 +1588,6 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {navView === 'chat' && (
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handleClearChat}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-900/30 rounded-xl text-[10.5px] font-mono transition-all hover:shadow-[0_0_8px_rgba(239,68,68,0.1)]"
-                  title="Clear conversation"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Prune Chat
-                </button>
-                <button
-                  onClick={() => handleExportChat('md')}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 rounded-xl text-[10.5px] font-mono text-slate-300 transition-colors"
-                  title="Export message transcripts"
-                >
-                  <Download className="w-3 h-3" />
-                  Export Logs
-                </button>
-              </div>
-            )}
-            
-            {/* Dropdown switch shortcut for assistant models inside chat */}
-            {navView === 'chat' && activeChat && (
-              <select
-                value={activeChat.assistantMode}
-                onChange={(e) => {
-                  const val = e.target.value as AssistantModeType;
-                  setChats((prev) =>
-                    prev.map((c) => (c.id === activeChatId ? { ...c, assistantMode: val } : c))
-                  );
-                  addToast(`Assistant synchronized to ${val.toUpperCase()}`, "info");
-                }}
-                className="px-2.5 py-1.5 text-xs font-mono text-zinc-150 bg-[#0a0a0a] border border-red-900/30 rounded-xl focus:border-red-500/50 focus:ring-0 focus:outline-none"
-              >
-                <option value="general">GENERAL CONSOLE</option>
-                <option value="developer">DEVELOPMENT CO-PILOT</option>
-                <option value="cyber_learning">CYBER LAB</option>
-                <option value="researcher">ANALYTICAL RESEARCH</option>
-                <option value="writer">SCRIBE COMPOSER</option>
-                <option value="code_reviewer">CODE REVIEW AUDITOR</option>
-              </select>
-            )}
-          </div>
         </header>
 
         {/* COMPONENT DRAWER DISPATCHER */}
@@ -1494,21 +1623,80 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
             )}
 
             {navView === 'settings' && (
-              <SettingsPanel
-                settings={settings}
-                onUpdateSettings={setSettings}
-                memoryPrefs={memoryPrefs}
-                onUpdateMemoryPrefs={setMemoryPrefs}
-                onClearAllMemory={handleWipeAllBrowserMemory}
-                onShowToast={addToast}
-              />
+              <div className="rh-settings-page-shell">
+
+              {/* RH_SETTINGS_CHAT_CONTROLS_START */}
+              <div className="rh-settings-chat-controls">
+<div className="rh-settings-chat-controls-grid">
+                  <button
+                    type="button"
+                    onClick={handleClearChat}
+                    className="rh-settings-control-btn rh-settings-danger-btn"
+                    title="Clear active chat"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Prune Chat
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleExportChat('md')}
+                    className="rh-settings-control-btn"
+                    title="Export message transcripts"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Export Logs
+                  </button>
+
+                  {activeChat && (
+                    <select
+                      value={activeChat.assistantMode}
+                      onChange={(e) => {
+                        const val = e.target.value as AssistantModeType;
+                        setChats((prev) =>
+                          prev.map((c) => (c.id === activeChatId ? { ...c, assistantMode: val } : c))
+                        );
+                        addToast(`Assistant synchronized to ${val.toUpperCase()}`, "info");
+                      }}
+                      className="rh-settings-mode-select"
+                      title="Select assistant mode"
+                    >
+                      <option value="general">GENERAL CONSOLE</option>
+                      <option value="developer">DEVELOPMENT CO-PILOT</option>
+                      <option value="cyber_learning">CYBER LAB</option>
+                      <option value="researcher">ANALYTICAL RESEARCH</option>
+                      <option value="writer">SCRIBE COMPOSER</option>
+                      <option value="code_reviewer">CODE REVIEW AUDITOR</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+              {/* RH_SETTINGS_CHAT_CONTROLS_END */}
+                <SettingsPanel
+                  settings={settings}
+                  onUpdateSettings={setSettings}
+                  memoryPrefs={memoryPrefs}
+                  onUpdateMemoryPrefs={setMemoryPrefs}
+                  onClearAllMemory={handleWipeAllBrowserMemory}
+                  onShowToast={addToast}
+                />
+              </div>
             )}
 
             {navView === 'chat' && activeChat && (
-              <div className="flex flex-col h-full bg-transparent overflow-hidden">
+              <div
+                  className="rh-chat-live-shell flex flex-col h-full bg-transparent overflow-hidden"
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    e.currentTarget.style.setProperty('--chat-mx', `${x}%`);
+                    e.currentTarget.style.setProperty('--chat-my', `${y}%`);
+                  }}
+                >
                 
                 {/* Chat items scrolling list */}
-                <div ref={chatScrollContainerRef} className="flex-1 overflow-y-auto pr-2 space-y-5 flex-col flex select-text">
+                <div ref={chatScrollContainerRef} className="rh-chat-scroll-feed flex-1 overflow-y-auto pr-2 space-y-5 flex-col flex select-text">
                   {activeChat.messages.length === 0 ? (
                     <div className="h-full flex flex-col justify-center max-w-2xl mx-auto py-8">
                       <div className="p-6 rounded-2xl bg-gradient-to-br from-red-950/15 via-black/40 to-red-950/5 border border-red-550/25 backdrop-blur-xl space-y-6 shadow-[0_0_35px_rgba(239,68,68,0.08)] text-left relative overflow-hidden group animate-crt-flicker animate-cyber-pulse">
@@ -1846,7 +2034,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                       </div>
                     )}
 
-                    <div className="relative flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-2xl">
+                    <div className="rh-chat-command-footer relative flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-2xl">
                       <textarea
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
@@ -1883,12 +2071,12 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                             <span className="text-[9px] opacity-60">TKNS</span>
                           </button>
 
-                          {showTokenDetails && (
+                          {showTokenDetails && createPortal((
                             <>
-                              {/* Overlay backing for smooth tap outs */}
-                              <div className="fixed inset-0 z-40" onClick={() => setShowTokenDetails(false)} />
+{/* Overlay backing for smooth tap outs */}
+                              <div className="rh-token-backdrop" onClick={() => setShowTokenDetails(false)} />
                               
-                              <div className="absolute right-0 bottom-full mb-3.5 w-72 sm:w-80 md:w-[350px] bg-[#0a0a0b] border border-white/10 rounded-2xl p-4 shadow-2xl font-mono text-xs z-50 animate-fade-in space-y-3 mr-[-80px] md:mr-0">
+                              <div className="rh-token-independent-dashboard">
                                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
                                   <div className="flex items-center gap-1.5 text-zinc-200 font-bold text-[10px] uppercase tracking-wider">
                                     <Zap className="w-3.5 h-3.5 text-red-500" />
@@ -1951,8 +2139,8 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                                       <span>Consumptional Runline (Last 10 msgs)</span>
                                       <span className="text-emerald-500 text-[8px] animate-pulse">● Live Tracking</span>
                                     </div>
-                                    <div className="h-28 w-full select-none" id="token-usage-chart-container">
-                                      <ResponsiveContainer width="100%" height={110}>
+                                    <div className="rh-token-chart" id="token-usage-chart-container">
+                                      <ResponsiveContainer width="100%" height={68}>
                                         <BarChart
                                           data={last10MessagesTokens}
                                           margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
@@ -1997,7 +2185,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                                 </div>
                               </div>
                             </>
-                          )}
+                          ), document.body)}
                         </div>
 
                         {/* File trigger button */}
