@@ -648,3 +648,66 @@ button[title*="Toggles multi-step"] {
   min-width: 0 !important;
   width: 100% !important;
 }
+
+/* Token monitor popover alignment */
+.redhydra-token-monitor {
+  min-width: 0;
+}
+
+.redhydra-token-popover {
+  max-height: min(72dvh, 34rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* When Agent Mode drawer is ON, keep token monitor away from the right drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+  }
+}
+
+/* Mobile/tablet token monitor alignment */
+@media (max-width: 768px) {
+  .redhydra-token-popover {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    bottom: 7.5rem !important;
+    width: auto !important;
+    max-width: calc(100dvw - 1rem) !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* Left sidebar hide/show toggle */
+.redhydra-left-sidebar {
+  transition: transform 180ms ease, width 180ms ease, opacity 180ms ease;
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-sidebar {
+  display: none !important;
+}
+
+body.redhydra-left-sidebar-hidden #root main {
+  margin-left: 0 !important;
+  max-width: 100dvw !important;
+}
+
+.redhydra-left-toggle {
+  backdrop-filter: blur(14px);
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
+  left: 1rem !important;
+}
+
+/* Do not show desktop hide button on mobile, because mobile already has hamburger */
+@media (max-width: 1023px) {
+  .redhydra-left-toggle {
+    display: none !important;
+  }
+}
