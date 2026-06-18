@@ -711,3 +711,121 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     display: none !important;
   }
 }
+
+/* Final responsive header alignment */
+.redhydra-top-header {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.redhydra-header-main,
+.redhydra-header-title-block,
+.redhydra-header-subline,
+.redhydra-header-actions {
+  min-width: 0;
+}
+
+.redhydra-header-title,
+.redhydra-header-tagline,
+.redhydra-header-telemetry {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.redhydra-header-actions {
+  flex-shrink: 1;
+}
+
+.redhydra-header-action-btn {
+  flex: 0 1 auto;
+  min-width: fit-content;
+  white-space: nowrap;
+}
+
+.redhydra-header-mode-select {
+  flex: 1 1 14rem;
+  max-width: 18rem;
+}
+
+/* When Agent Mode drawer is active, keep header inside resized chat area */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-top-header {
+    max-width: 100% !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions {
+    max-width: 100%;
+  }
+}
+
+/* Laptop/tablet aspect ratio */
+@media (max-width: 1279px) {
+  .redhydra-top-header {
+    align-items: stretch !important;
+  }
+
+  .redhydra-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .redhydra-header-mode-select {
+    max-width: 100%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .redhydra-top-header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .redhydra-header-main {
+    align-items: flex-start !important;
+  }
+
+  .redhydra-header-title {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .redhydra-header-tagline,
+  .redhydra-header-telemetry {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .redhydra-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem !important;
+  }
+
+  .redhydra-header-mode-select {
+    grid-column: 1 / -1;
+    width: 100% !important;
+  }
+
+  .redhydra-header-action-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .redhydra-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .redhydra-header-action-btn {
+    justify-content: center;
+  }
+}
