@@ -493,3 +493,55 @@ textarea {
     justify-content: center !important;
   }
 }
+
+/* Agent mode right drawer + composer alignment fix */
+.redhydra-agent-drawer {
+  height: 100dvh;
+  min-width: 15rem;
+  max-width: 20rem;
+  overflow: hidden;
+}
+
+@media (max-width: 1535px) {
+  .redhydra-agent-drawer {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1536px) and (max-width: 1750px) {
+  .redhydra-agent-drawer {
+    width: min(18rem, 20vw) !important;
+    max-width: 20vw !important;
+    padding: 0.875rem !important;
+  }
+
+  .redhydra-agent-drawer button {
+    font-size: 0.55rem !important;
+    gap: 0.25rem !important;
+  }
+}
+
+/* File + Agent Mode + Send controls should wrap cleanly */
+button[title*="Attach files"],
+button[title*="Toggles multi-step"] {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  button[title*="Attach files"],
+  button[title*="Toggles multi-step"] {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  button[title*="Toggles multi-step"] {
+    min-width: 9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  button[title*="Attach files"],
+  button[title*="Toggles multi-step"] {
+    width: 100%;
+  }
+}
