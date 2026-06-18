@@ -82,7 +82,7 @@ const DEFAULT_AI_SETTINGS: AISettings = {
   baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
   apiKey: '',
   temperature: 0.7,
-  maxTokens: 2048,
+  maxTokens: 8192,
   customSystemPrompt: '',
   personality: 'helpful',
   responseStyle: 'structured',
@@ -349,6 +349,7 @@ function App() {
   const [modulesMinimized, setModulesMinimized] = useState(true);
   const [rightSidebarTab, setRightSidebarTab] = useState<'sandbox' | 'timeline'>('sandbox');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [compilationLogs, setCompilationLogs] = useState<string[]>([
     "[BUILD] Initializing RedHydra OpenCore v3.2.0...",
@@ -501,6 +502,20 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   const last10MessagesTokens = useMemo(() => {
     return getLast10MessagesTokenData(activeChat?.messages || []);
   }, [activeChat?.messages]);
+
+  // RH_BOOT_MODEL_AUTO_SYNC
+  useEffect(() => {
+    if (settings.provider === 'built-in-opencore') {
+      setSettings((prev) => ({
+        ...prev,
+        provider: 'built-in-opencore',
+        modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B',
+        baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
+        maxTokens: 8192,
+        streaming: true
+      }));
+    }
+  }, []);
 
   // New Chat Action
   const handleNewChat = (mode: AssistantModeType = 'general', welcomeText?: string) => {
@@ -1001,8 +1016,23 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-900/5 blur-[120px] rounded-full pointer-events-none" />
       
+      {/* Manual Sidebar Hide/Show Toggle */}
+      <button
+        type="button"
+        onClick={() => {
+          const next = !isSidebarCollapsed;
+          setIsSidebarCollapsed(next);
+          setIsSidebarOpen(!next);
+        }}
+        className={`rh-sidebar-manual-toggle ${isSidebarCollapsed ? 'rh-sidebar-manual-toggle-collapsed' : ''}`}
+        title={isSidebarCollapsed ? "Show left sidebar" : "Hide left sidebar"}
+        aria-label={isSidebarCollapsed ? "Show left sidebar" : "Hide left sidebar"}
+      >
+        <span className="rh-sidebar-toggle-mark">{isSidebarCollapsed ? "?" : "�"}</span>
+      </button>
+
       {/* Sidebar Backdrop Overlay for Mobile/Tablets */}
-      {isSidebarOpen && (
+      {isSidebarOpen && !isSidebarCollapsed && (
         <div 
           className="fixed inset-0 bg-black/70 backdrop-blur-[1.5px] z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
@@ -1010,9 +1040,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       )}
 
       {/* 1. LEFT SIDEBAR PANEL */}
-      <aside className={`fixed inset-y-0 left-0 lg:relative w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 lg:z-25 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${
-        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
+      <aside className={`redhydra-left-sidebar fixed inset-y-0 left-0 lg:relative w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 lg:z-25 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${isSidebarCollapsed ? "rh-left-sidebar-collapsed -translate-x-full lg:-translate-x-full opacity-0 pointer-events-none" : (isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}`}>
         <div className="flex flex-col flex-1 min-h-0">
           
           {/* Logo Brand Header */}

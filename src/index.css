@@ -3222,3 +3222,117 @@ header {
     min-width: 0 !important;
   }
 }
+
+
+/* =========================================================
+   FINAL: CLEAN HEADER + AUTO SYNC + MANUAL SIDEBAR TOGGLE
+   ========================================================= */
+
+/* Remove right-side header buttons/selects completely */
+header button:not([title="Toggle Workspace Sidebar"]):not(.rh-sidebar-manual-toggle),
+header select,
+header .redhydra-header-actions,
+header .rh-clean-toolbar,
+header .rh-fixed-toolbar,
+header .rh-app-toolbar,
+header .rh-forced-toolbar,
+header .rh-final-header-actions {
+  display: none !important;
+}
+
+/* Floating manual sidebar toggle */
+.rh-sidebar-manual-toggle {
+  position: fixed !important;
+  left: 0.72rem !important;
+  top: 5.15rem !important;
+  z-index: 9997 !important;
+
+  width: 2.15rem !important;
+  height: 2.15rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(248,113,113,0.28) !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(248,113,113,0.24), transparent 35%),
+    rgba(8,8,10,0.88) !important;
+  color: rgb(248 113 113) !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.55),
+    0 0 24px rgba(248,113,113,0.12),
+    inset 0 0 16px rgba(255,255,255,0.025) !important;
+
+  backdrop-filter: blur(14px) saturate(1.2) !important;
+  cursor: pointer !important;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease !important;
+}
+
+.rh-sidebar-manual-toggle:hover {
+  transform: translateY(-1px) scale(1.06) !important;
+  border-color: rgba(248,113,113,0.52) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,0.62),
+    0 0 34px rgba(248,113,113,0.22) !important;
+}
+
+.rh-sidebar-toggle-mark {
+  font-size: 1.15rem !important;
+  line-height: 1 !important;
+  font-family: monospace !important;
+  font-weight: 900 !important;
+}
+
+.rh-sidebar-manual-toggle-collapsed {
+  color: rgb(52 211 153) !important;
+  border-color: rgba(16,185,129,0.35) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.55),
+    0 0 24px rgba(16,185,129,0.13) !important;
+}
+
+/* True left sidebar collapse */
+.redhydra-left-sidebar.rh-left-sidebar-collapsed {
+  transform: translateX(-100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 1024px) {
+  .redhydra-left-sidebar.rh-left-sidebar-collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    flex-basis: 0 !important;
+    border-right: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Keep toggle reachable on mobile */
+@media (max-width: 640px) {
+  .rh-sidebar-manual-toggle {
+    top: 4.75rem !important;
+    left: 0.6rem !important;
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+}
+
+/* Passive auto-sync card should have no manual button */
+.redhydra-auto-sync-status button {
+  display: none !important;
+}
+
+.redhydra-auto-sync-status {
+  border-color: rgba(16,185,129,0.25) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(16,185,129,0.10), transparent 30%),
+    rgba(6,10,9,0.78) !important;
+}
