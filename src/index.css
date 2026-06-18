@@ -346,3 +346,150 @@ select {
     gap: 1rem !important;
   }
 }
+
+/* Header + footer responsive alignment patch */
+#root {
+  width: 100%;
+  max-width: 100dvw;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+#root > div {
+  width: 100%;
+  max-width: 100dvw;
+  overflow-x: hidden;
+}
+
+/* Keep top header/status area inside screen */
+h1,
+h2,
+h3,
+p,
+span,
+button,
+select,
+textarea,
+input {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Prevent top header controls from pushing outside screen */
+select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Make command/footer input area adapt better */
+textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 1024px) {
+  #root {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  main,
+  section,
+  article,
+  aside,
+  header,
+  footer {
+    width: 100%;
+    max-width: 100dvw;
+    min-width: 0;
+  }
+
+  /* Header rows and footer rows should wrap instead of overflowing */
+  [class*="justify-between"],
+  [class*="items-center"] {
+    min-width: 0;
+  }
+
+  /* Top status/header action area */
+  h2 {
+    width: 100%;
+    line-height: 1.25;
+  }
+
+  /* Dropdowns/tabs/buttons should not force wide layout */
+  select,
+  button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
+/* Mobile screens */
+@media (max-width: 768px) {
+  body {
+    width: 100%;
+    max-width: 100dvw;
+    overflow-x: hidden;
+  }
+
+  /* Header auto alignment */
+  h2 {
+    font-size: clamp(1rem, 5vw, 1.35rem);
+  }
+
+  /* Footer command bar alignment */
+  textarea {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-height: 56px;
+  }
+
+  textarea ~ div {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  textarea ~ div > * {
+    flex: 1 1 auto;
+  }
+
+  /* Header buttons/selects stack cleanly */
+  select {
+    width: 100%;
+  }
+
+  button {
+    min-width: 0;
+  }
+
+  /* Right/left hidden panels should not affect mobile width */
+  aside {
+    max-width: 100dvw;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1rem;
+  }
+
+  button,
+  select {
+    font-size: 0.72rem;
+  }
+
+  textarea ~ div {
+    justify-content: center !important;
+  }
+}

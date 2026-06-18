@@ -345,7 +345,7 @@ function App() {
   }, []);
 
   // Layout setups - Focused on Chat & Agent features by default
-  const [isAgentMode, setIsAgentMode] = useState(true);
+  const [isAgentMode, setIsAgentMode] = useState(false);
   const [modulesMinimized, setModulesMinimized] = useState(true);
   const [rightSidebarTab, setRightSidebarTab] = useState<'sandbox' | 'timeline'>('sandbox');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -2101,3 +2101,4 @@ export default function SafeApp() {
     </ErrorBoundary>
   );
 }
+
