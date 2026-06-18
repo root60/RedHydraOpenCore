@@ -1629,3 +1629,217 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ===== REAL FINAL HEADER + TOKEN MONITOR FIX ===== */
+
+/* Header: always visible, never stuck in right corner */
+.rh-fixed-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.rh-fixed-header-inner {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.65rem !important;
+}
+
+.rh-fixed-title-row {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.rh-fixed-title-block {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.rh-fixed-title {
+  font-size: clamp(0.82rem, 1.1vw, 1rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  color: rgb(244 244 245) !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.rh-fixed-model-line {
+  margin-top: 0.25rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  font-family: monospace !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.1em !important;
+  color: rgb(113 113 122) !important;
+  text-transform: uppercase !important;
+}
+
+.rh-fixed-model-name {
+  color: rgba(248, 113, 113, 0.9) !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.rh-fixed-toolbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  background: rgba(0,0,0,0.38) !important;
+  position: static !important;
+  right: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+.rh-fixed-toolbar-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.rh-fixed-danger {
+  border-color: rgba(239,68,68,0.28) !important;
+  background: rgba(239,68,68,0.06) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-fixed-mode-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127,29,29,0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+}
+
+.rh-fixed-capacity {
+  margin-left: auto !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16,185,129,0.24) !important;
+  background: rgba(16,185,129,0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* Agent mode: header stays inside the already-resized chat area */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-fixed-header {
+    padding-right: 1rem !important;
+  }
+}
+
+/* Mobile header */
+@media (max-width: 640px) {
+  .rh-fixed-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-fixed-toolbar-btn,
+  .rh-fixed-mode-select,
+  .rh-fixed-capacity {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-fixed-mode-select,
+  .rh-fixed-capacity {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Token monitor: compact wide dashboard, not tall strip */
+.rh-token-popover,
+.redhydra-token-popover {
+  position: fixed !important;
+  right: 1rem !important;
+  bottom: 5.75rem !important;
+  width: min(44rem, calc(100dvw - 2rem)) !important;
+  max-width: calc(100dvw - 2rem) !important;
+  max-height: min(34dvh, 17rem) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)) !important;
+  gap: 0.55rem !important;
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+}
+
+.rh-token-popover > :first-child,
+.redhydra-token-popover > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-popover *,
+.redhydra-token-popover * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-token-popover #token-usage-chart-container,
+.redhydra-token-popover #token-usage-chart-container {
+  height: 3.8rem !important;
+  min-height: 3.8rem !important;
+  max-height: 3.8rem !important;
+}
+
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-popover,
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+    width: min(38rem, calc(100dvw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .rh-token-popover,
+  .redhydra-token-popover {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    bottom: 7.25rem !important;
+    width: auto !important;
+    max-height: 42dvh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
