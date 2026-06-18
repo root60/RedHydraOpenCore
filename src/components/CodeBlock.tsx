@@ -54,3 +54,4 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ code, language = 'javascri
     </div>
   );
 };
+

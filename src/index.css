@@ -1428,7 +1428,7 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
   }
 }
 
-/* ===== CLEAN HEADER LAYOUT — OVERRIDES OLD HEADER FIXES ===== */
+/* ===== CLEAN HEADER LAYOUT   OVERRIDES OLD HEADER FIXES ===== */
 
 .rh-clean-header {
   width: 100% !important;
@@ -1627,5 +1627,1537 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
 @media (max-width: 420px) {
   .rh-clean-toolbar {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* ===== REAL FINAL HEADER + TOKEN MONITOR FIX ===== */
+
+/* Header: always visible, never stuck in right corner */
+.rh-fixed-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.rh-fixed-header-inner {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.65rem !important;
+}
+
+.rh-fixed-title-row {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.rh-fixed-title-block {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.rh-fixed-title {
+  font-size: clamp(0.82rem, 1.1vw, 1rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  color: rgb(244 244 245) !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.rh-fixed-model-line {
+  margin-top: 0.25rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  font-family: monospace !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.1em !important;
+  color: rgb(113 113 122) !important;
+  text-transform: uppercase !important;
+}
+
+.rh-fixed-model-name {
+  color: rgba(248, 113, 113, 0.9) !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.rh-fixed-toolbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  background: rgba(0,0,0,0.38) !important;
+  position: static !important;
+  right: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+.rh-fixed-toolbar-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+.rh-fixed-danger {
+  border-color: rgba(239,68,68,0.28) !important;
+  background: rgba(239,68,68,0.06) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-fixed-mode-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127,29,29,0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+}
+
+.rh-fixed-capacity {
+  margin-left: auto !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16,185,129,0.24) !important;
+  background: rgba(16,185,129,0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* Agent mode: header stays inside the already-resized chat area */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-fixed-header {
+    padding-right: 1rem !important;
+  }
+}
+
+/* Mobile header */
+@media (max-width: 640px) {
+  .rh-fixed-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-fixed-toolbar-btn,
+  .rh-fixed-mode-select,
+  .rh-fixed-capacity {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-fixed-mode-select,
+  .rh-fixed-capacity {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Token monitor: compact wide dashboard, not tall strip */
+.rh-token-popover,
+.redhydra-token-popover {
+  position: fixed !important;
+  right: 1rem !important;
+  bottom: 5.75rem !important;
+  width: min(44rem, calc(100dvw - 2rem)) !important;
+  max-width: calc(100dvw - 2rem) !important;
+  max-height: min(34dvh, 17rem) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)) !important;
+  gap: 0.55rem !important;
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+}
+
+.rh-token-popover > :first-child,
+.redhydra-token-popover > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-popover *,
+.redhydra-token-popover * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-token-popover #token-usage-chart-container,
+.redhydra-token-popover #token-usage-chart-container {
+  height: 3.8rem !important;
+  min-height: 3.8rem !important;
+  max-height: 3.8rem !important;
+}
+
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-popover,
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+    width: min(38rem, calc(100dvw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .rh-token-popover,
+  .redhydra-token-popover {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    bottom: 7.25rem !important;
+    width: auto !important;
+    max-height: 42dvh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ===== FORCED MAIN INTERFACE FIX ===== */
+
+/* Visible toolbar placed in the real app flow */
+.rh-forced-toolbar {
+  width: calc(100% - 2rem) !important;
+  max-width: 980px !important;
+  margin: 0.75rem auto 0 auto !important;
+  padding: 0.55rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(14px) !important;
+  position: relative !important;
+  z-index: 40 !important;
+}
+
+.rh-forced-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+}
+
+.rh-forced-danger {
+  border-color: rgba(239,68,68,0.3) !important;
+  background: rgba(239,68,68,0.07) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-forced-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127,29,29,0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+}
+
+.rh-forced-capacity {
+  margin-left: auto !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16,185,129,0.25) !important;
+  background: rgba(16,185,129,0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* If Agent drawer is ON, toolbar stays inside chat width */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-forced-toolbar {
+    max-width: min(900px, calc(100vw - var(--redhydra-agent-width) - 22rem)) !important;
+  }
+}
+
+/* Mobile toolbar */
+@media (max-width: 640px) {
+  .rh-forced-toolbar {
+    width: calc(100% - 1rem) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-forced-btn,
+  .rh-forced-select,
+  .rh-forced-capacity {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-forced-select,
+  .rh-forced-capacity {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Token monitor forced dashboard */
+.rh-token-dashboard {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 5.8rem !important;
+  transform: translateX(-50%) !important;
+
+  width: min(720px, calc(100vw - 2rem)) !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: min(32vh, 16rem) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgb(10,10,11) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.75) !important;
+  z-index: 120 !important;
+}
+
+.rh-token-dashboard > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-dashboard * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-token-dashboard #token-usage-chart-container {
+  height: 3.8rem !important;
+  min-height: 3.8rem !important;
+  max-height: 3.8rem !important;
+}
+
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .rh-token-dashboard {
+    width: calc(100vw - 1rem) !important;
+    bottom: 7rem !important;
+    grid-template-columns: 1fr !important;
+    max-height: 42vh !important;
+  }
+}
+
+/* ===== APP SHELL TOOLBAR FIX ===== */
+
+.rh-app-toolbar {
+  width: min(980px, calc(100vw - 340px)) !important;
+  margin: 0.75rem auto 0 auto !important;
+  padding: 0.55rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(0,0,0,0.62) !important;
+  backdrop-filter: blur(14px) !important;
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+.rh-app-toolbar-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+}
+
+.rh-app-danger {
+  border-color: rgba(239,68,68,0.3) !important;
+  background: rgba(239,68,68,0.08) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-app-mode-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127,29,29,0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+}
+
+.rh-app-capacity {
+  margin-left: auto !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16,185,129,0.25) !important;
+  background: rgba(16,185,129,0.07) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* Large screens with left sidebar and agent drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-app-toolbar {
+    width: min(900px, calc(100vw - var(--redhydra-agent-width) - 340px)) !important;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1279px) {
+  .rh-app-toolbar {
+    width: calc(100vw - 2rem) !important;
+  }
+
+  .rh-app-capacity {
+    margin-left: 0 !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .rh-app-toolbar {
+    width: calc(100vw - 1rem) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-app-toolbar-btn,
+  .rh-app-mode-select,
+  .rh-app-capacity {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-app-mode-select,
+  .rh-app-capacity {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* ===== TOKEN DASHBOARD FIX ===== */
+
+.rh-token-dashboard {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 5.9rem !important;
+  transform: translateX(-50%) !important;
+
+  width: min(760px, calc(100vw - 2rem)) !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: min(32vh, 16rem) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgb(10,10,11) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.75) !important;
+  z-index: 150 !important;
+}
+
+.rh-token-dashboard > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-dashboard * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-token-dashboard #token-usage-chart-container {
+  height: 3.75rem !important;
+  min-height: 3.75rem !important;
+  max-height: 3.75rem !important;
+}
+
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .rh-token-dashboard {
+    width: calc(100vw - 1rem) !important;
+    bottom: 7rem !important;
+    grid-template-columns: 1fr !important;
+    max-height: 42vh !important;
+  }
+}
+
+/* =========================================================
+   FINAL FORCE FIX: HEADER BUTTONS + TOKEN MONITOR DASHBOARD
+   ========================================================= */
+
+/* Header action wrapper: target all possible old/new header containers */
+.redhydra-header-actions,
+.rh-clean-toolbar,
+.rh-fixed-toolbar,
+.rh-app-toolbar,
+.rh-forced-toolbar,
+div:has(> button[title*="Clear active chat"]):has(> button[title*="Export"]),
+div:has(> button[title*="Clear"]):has(> button[title*="Export"]) {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+
+  width: min(100%, 720px) !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin-left: auto !important;
+  margin-right: clamp(0.75rem, 2vw, 1.25rem) !important;
+  margin-top: 0 !important;
+
+  padding: 0.5rem !important;
+  gap: 0.5rem !important;
+
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 1rem !important;
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(14px) !important;
+
+  z-index: 80 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+/* Force header buttons/dropdown visible */
+button[title*="Clear active chat"],
+button[title*="Clear"],
+button[title*="Export"],
+select[title*="assistant"],
+select[title*="Assistant"],
+.redhydra-header-action-btn,
+.rh-clean-toolbar-btn,
+.rh-fixed-toolbar-btn,
+.rh-app-toolbar-btn,
+.rh-forced-btn,
+.redhydra-header-mode-select,
+.rh-clean-mode-select,
+.rh-fixed-mode-select,
+.rh-app-mode-select,
+.rh-forced-select {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  height: 2.2rem !important;
+  min-height: 2.2rem !important;
+  max-height: 2.2rem !important;
+
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: 100% !important;
+
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 90 !important;
+}
+
+/* Select must behave like a normal dropdown */
+select[title*="assistant"],
+select[title*="Assistant"],
+.redhydra-header-mode-select,
+.rh-clean-mode-select,
+.rh-fixed-mode-select,
+.rh-app-mode-select,
+.rh-forced-select {
+  display: block !important;
+  width: 15rem !important;
+  min-width: 13rem !important;
+  max-width: 18rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+
+/* Main top header should reserve space properly */
+.redhydra-top-header,
+.rh-clean-header,
+.rh-fixed-header,
+.rh-app-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+/* Wide screens: right buttons stay visible but not stuck to screen edge */
+@media (min-width: 1280px) {
+  .redhydra-header-actions,
+  .rh-clean-toolbar,
+  .rh-fixed-toolbar,
+  .rh-app-toolbar,
+  .rh-forced-toolbar,
+  div:has(> button[title*="Clear active chat"]):has(> button[title*="Export"]),
+  div:has(> button[title*="Clear"]):has(> button[title*="Export"]) {
+    width: min(680px, 46vw) !important;
+    justify-content: flex-end !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-header-actions,
+  #root:has(.redhydra-agent-drawer) .rh-clean-toolbar,
+  #root:has(.redhydra-agent-drawer) .rh-fixed-toolbar,
+  #root:has(.redhydra-agent-drawer) .rh-app-toolbar,
+  #root:has(.redhydra-agent-drawer) .rh-forced-toolbar {
+    width: min(620px, calc(100vw - var(--redhydra-agent-width) - 360px)) !important;
+    margin-right: 1rem !important;
+  }
+}
+
+/* Tablet: buttons move under title in clean row */
+@media (max-width: 1279px) {
+  .redhydra-header-actions,
+  .rh-clean-toolbar,
+  .rh-fixed-toolbar,
+  .rh-app-toolbar,
+  .rh-forced-toolbar,
+  div:has(> button[title*="Clear active chat"]):has(> button[title*="Export"]),
+  div:has(> button[title*="Clear"]):has(> button[title*="Export"]) {
+    width: calc(100% - 1rem) !important;
+    margin: 0.65rem auto 0 auto !important;
+    justify-content: flex-start !important;
+  }
+
+  select[title*="assistant"],
+  select[title*="Assistant"],
+  .redhydra-header-mode-select,
+  .rh-clean-mode-select,
+  .rh-fixed-mode-select,
+  .rh-app-mode-select,
+  .rh-forced-select {
+    flex: 1 1 14rem !important;
+    width: auto !important;
+  }
+}
+
+/* Mobile: buttons become clean grid */
+@media (max-width: 640px) {
+  .redhydra-header-actions,
+  .rh-clean-toolbar,
+  .rh-fixed-toolbar,
+  .rh-app-toolbar,
+  .rh-forced-toolbar,
+  div:has(> button[title*="Clear active chat"]):has(> button[title*="Export"]),
+  div:has(> button[title*="Clear"]):has(> button[title*="Export"]) {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    width: calc(100% - 1rem) !important;
+    margin: 0.5rem auto 0 auto !important;
+  }
+
+  button[title*="Clear active chat"],
+  button[title*="Clear"],
+  button[title*="Export"],
+  select[title*="assistant"],
+  select[title*="Assistant"] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  select[title*="assistant"],
+  select[title*="Assistant"],
+  .redhydra-header-mode-select,
+  .rh-clean-mode-select,
+  .rh-fixed-mode-select,
+  .rh-app-mode-select,
+  .rh-forced-select {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* =========================================================
+   TOKEN MONITOR: force compact aspect-ratio dashboard
+   ========================================================= */
+
+/* Target old absolute/fixed token popover by chart container */
+div.absolute:has(#token-usage-chart-container),
+div.fixed:has(#token-usage-chart-container),
+div[class*="bottom-full"]:has(#token-usage-chart-container),
+.redhydra-token-popover,
+.rh-token-popover,
+.rh-token-dashboard {
+  position: fixed !important;
+
+  left: 50% !important;
+  right: auto !important;
+  bottom: clamp(5.5rem, 9vh, 6.5rem) !important;
+  transform: translateX(-50%) !important;
+
+  width: min(760px, calc(100vw - 2rem)) !important;
+  max-width: calc(100vw - 2rem) !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(30vh, 15.5rem) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  background: rgb(10,10,11) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.75) !important;
+
+  z-index: 999 !important;
+}
+
+/* Token popover title row full width */
+div.absolute:has(#token-usage-chart-container) > :first-child,
+div.fixed:has(#token-usage-chart-container) > :first-child,
+div[class*="bottom-full"]:has(#token-usage-chart-container) > :first-child,
+.redhydra-token-popover > :first-child,
+.rh-token-popover > :first-child,
+.rh-token-dashboard > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+/* Compact all token text */
+div:has(#token-usage-chart-container) * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  line-height: 1.15 !important;
+}
+
+/* Compact chart */
+#token-usage-chart-container {
+  height: clamp(3.2rem, 7vh, 4.1rem) !important;
+  min-height: clamp(3.2rem, 7vh, 4.1rem) !important;
+  max-height: clamp(3.2rem, 7vh, 4.1rem) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Wide aspect ratio: token monitor becomes wider and shorter */
+@media (min-aspect-ratio: 16/10) {
+  div.absolute:has(#token-usage-chart-container),
+  div.fixed:has(#token-usage-chart-container),
+  div[class*="bottom-full"]:has(#token-usage-chart-container),
+  .redhydra-token-popover,
+  .rh-token-popover,
+  .rh-token-dashboard {
+    width: min(860px, calc(100vw - 3rem)) !important;
+    max-height: min(24vh, 13rem) !important;
+    grid-template-columns: repeat(4, minmax(130px, 1fr)) !important;
+  }
+
+  #token-usage-chart-container {
+    height: 3.1rem !important;
+    min-height: 3.1rem !important;
+    max-height: 3.1rem !important;
+  }
+}
+
+/* Agent Mode ON: keep token monitor centered inside chat area */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) div.absolute:has(#token-usage-chart-container),
+  #root:has(.redhydra-agent-drawer) div.fixed:has(#token-usage-chart-container),
+  #root:has(.redhydra-agent-drawer) div[class*="bottom-full"]:has(#token-usage-chart-container),
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover,
+  #root:has(.redhydra-agent-drawer) .rh-token-popover,
+  #root:has(.redhydra-agent-drawer) .rh-token-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+    width: min(720px, calc(100vw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+/* Mobile token dashboard */
+@media (max-width: 640px) {
+  div.absolute:has(#token-usage-chart-container),
+  div.fixed:has(#token-usage-chart-container),
+  div[class*="bottom-full"]:has(#token-usage-chart-container),
+  .redhydra-token-popover,
+  .rh-token-popover,
+  .rh-token-dashboard {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    bottom: 7rem !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: calc(100vw - 1rem) !important;
+    max-height: 42vh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   FINAL POLISHED RESPONSIVE HEADER + FLOATING TOKEN MONITOR
+   ========================================================= */
+
+/* Hide older duplicate toolbar attempts */
+.redhydra-header-actions,
+.rh-clean-toolbar,
+.rh-fixed-toolbar,
+.rh-app-toolbar,
+.rh-forced-toolbar {
+  display: none !important;
+}
+
+/* Main header */
+.rh-final-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(0.5rem, 1.2vw, 1rem) !important;
+  padding: 0.65rem clamp(0.9rem, 1.8vw, 1.5rem) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  background:
+    radial-gradient(circle at top left, rgba(239,68,68,0.08), transparent 30%),
+    linear-gradient(180deg, rgba(3,3,3,0.94), rgba(3,3,3,0.82)) !important;
+  backdrop-filter: blur(18px) !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 70 !important;
+}
+
+.rh-final-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(248,113,113,0.55), transparent);
+  animation: rh-scanline 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.rh-final-header-left {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+}
+
+.rh-final-mobile-menu {
+  padding: 0.5rem !important;
+  border-radius: 0.75rem !important;
+  background: rgba(9,9,11,0.9) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  color: rgb(161 161 170) !important;
+  flex-shrink: 0 !important;
+}
+
+.rh-final-title-wrap {
+  min-width: 0 !important;
+}
+
+.rh-final-title {
+  margin: 0 !important;
+  font-size: clamp(0.78rem, 1vw, 0.98rem) !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  color: rgb(244 244 245) !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.rh-final-model-line {
+  margin-top: 0.18rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  max-width: 100% !important;
+  font-family: monospace !important;
+  font-size: clamp(0.48rem, 0.62vw, 0.58rem) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: rgb(113 113 122) !important;
+}
+
+.rh-final-dot {
+  color: rgb(63 63 70) !important;
+}
+
+.rh-final-model-name {
+  color: rgba(248,113,113,0.9) !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Compact right-side buttons */
+.rh-final-header-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: clamp(0.3rem, 0.65vw, 0.5rem) !important;
+  width: auto !important;
+  max-width: min(43vw, 34rem) !important;
+  min-width: 0 !important;
+  padding: 0.35rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(0,0,0,0.42) !important;
+  box-shadow: inset 0 0 18px rgba(255,255,255,0.025) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.rh-final-header-btn {
+  height: clamp(1.65rem, 2.6vw, 1.95rem) !important;
+  padding: 0 clamp(0.45rem, 0.9vw, 0.7rem) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  background: rgba(255,255,255,0.045) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: clamp(0.52rem, 0.72vw, 0.62rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.28rem !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.rh-final-header-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(248,113,113,0.28) !important;
+  background: rgba(248,113,113,0.08) !important;
+  color: white !important;
+}
+
+.rh-final-danger-btn {
+  border-color: rgba(239,68,68,0.24) !important;
+  color: rgb(248 113 113) !important;
+  background: rgba(239,68,68,0.055) !important;
+}
+
+.rh-final-header-select {
+  height: clamp(1.65rem, 2.6vw, 1.95rem) !important;
+  width: clamp(9.5rem, 13vw, 13rem) !important;
+  min-width: 0 !important;
+  max-width: 13rem !important;
+  padding: 0 0.55rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(127,29,29,0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: clamp(0.52rem, 0.72vw, 0.62rem) !important;
+  outline: none !important;
+  flex: 0 1 auto !important;
+}
+
+.rh-final-capacity-pill {
+  height: clamp(1.65rem, 2.6vw, 1.95rem) !important;
+  padding: 0 0.6rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(16,185,129,0.22) !important;
+  background: rgba(16,185,129,0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: clamp(0.48rem, 0.62vw, 0.56rem) !important;
+  font-weight: 800 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+/* Big screens with Agent drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-final-header-actions {
+    max-width: min(38vw, 31rem) !important;
+  }
+}
+
+/* Tablets / medium aspect ratios */
+@media (max-width: 1100px) {
+  .rh-final-header {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+  }
+
+  .rh-final-header-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: flex-start !important;
+    border-radius: 1rem !important;
+  }
+
+  .rh-final-header-select {
+    flex: 1 1 11rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  .rh-final-title {
+    white-space: normal !important;
+  }
+
+  .rh-final-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.4rem !important;
+  }
+
+  .rh-final-header-btn,
+  .rh-final-header-select,
+  .rh-final-capacity-pill {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .rh-final-header-select,
+  .rh-final-capacity-pill {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Floating token monitor dashboard */
+div.absolute:has(#token-usage-chart-container),
+div.fixed:has(#token-usage-chart-container),
+div[class*="bottom-full"]:has(#token-usage-chart-container),
+.redhydra-token-popover,
+.rh-token-popover,
+.rh-token-dashboard {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: clamp(6.2rem, 9vh, 7.2rem) !important;
+  transform: translateX(-50%) translateY(-6px) !important;
+
+  width: min(820px, calc(100vw - 2.25rem)) !important;
+  max-width: calc(100vw - 2.25rem) !important;
+  max-height: min(28vh, 14.5rem) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(248,113,113,0.12), transparent 30%),
+    linear-gradient(180deg, rgba(12,12,14,0.96), rgba(5,5,6,0.92)) !important;
+  box-shadow:
+    0 28px 70px rgba(0,0,0,0.78),
+    0 0 35px rgba(248,113,113,0.08) !important;
+  backdrop-filter: blur(18px) !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 999 !important;
+
+  animation: rh-token-float 4.8s ease-in-out infinite;
+}
+
+div.absolute:has(#token-usage-chart-container):hover,
+div.fixed:has(#token-usage-chart-container):hover,
+div[class*="bottom-full"]:has(#token-usage-chart-container):hover,
+.redhydra-token-popover:hover,
+.rh-token-popover:hover,
+.rh-token-dashboard:hover {
+  transform: translateX(-50%) translateY(-11px) scale(1.01) !important;
+  box-shadow:
+    0 34px 85px rgba(0,0,0,0.85),
+    0 0 48px rgba(248,113,113,0.13) !important;
+}
+
+div:has(#token-usage-chart-container) > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+div:has(#token-usage-chart-container) * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  line-height: 1.12 !important;
+}
+
+#token-usage-chart-container {
+  height: clamp(3rem, 6.5vh, 3.8rem) !important;
+  min-height: clamp(3rem, 6.5vh, 3.8rem) !important;
+  max-height: clamp(3rem, 6.5vh, 3.8rem) !important;
+}
+
+/* Wide screens: token monitor wider and flatter */
+@media (min-aspect-ratio: 16/10) {
+  div.absolute:has(#token-usage-chart-container),
+  div.fixed:has(#token-usage-chart-container),
+  div[class*="bottom-full"]:has(#token-usage-chart-container),
+  .redhydra-token-popover,
+  .rh-token-popover,
+  .rh-token-dashboard {
+    width: min(920px, calc(100vw - 3rem)) !important;
+    max-height: min(24vh, 12.5rem) !important;
+    grid-template-columns: repeat(4, minmax(130px, 1fr)) !important;
+  }
+}
+
+/* Agent drawer: token monitor floats inside chat area */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) div.absolute:has(#token-usage-chart-container),
+  #root:has(.redhydra-agent-drawer) div.fixed:has(#token-usage-chart-container),
+  #root:has(.redhydra-agent-drawer) div[class*="bottom-full"]:has(#token-usage-chart-container),
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover,
+  #root:has(.redhydra-agent-drawer) .rh-token-popover,
+  #root:has(.redhydra-agent-drawer) .rh-token-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+    width: min(780px, calc(100vw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  div.absolute:has(#token-usage-chart-container),
+  div.fixed:has(#token-usage-chart-container),
+  div[class*="bottom-full"]:has(#token-usage-chart-container),
+  .redhydra-token-popover,
+  .rh-token-popover,
+  .rh-token-dashboard {
+    left: 0.6rem !important;
+    right: 0.6rem !important;
+    bottom: 7rem !important;
+    transform: translateY(-4px) !important;
+    width: auto !important;
+    max-width: calc(100vw - 1.2rem) !important;
+    max-height: 42vh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Subtle full-app graphics, not oversaturated */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(239,68,68,0.07), transparent 26%),
+    radial-gradient(circle at 86% 22%, rgba(244,63,94,0.055), transparent 24%),
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: auto, auto, 42px 42px, 42px 42px;
+  opacity: 0.62;
+  animation: rh-grid-drift 18s linear infinite;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(180deg, transparent, rgba(239,68,68,0.035), transparent);
+  mix-blend-mode: screen;
+  opacity: 0.38;
+  animation: rh-ambient-sweep 9s ease-in-out infinite;
+}
+
+#root {
+  position: relative;
+  z-index: 3;
+}
+
+button,
+select,
+textarea {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+@keyframes rh-scanline {
+  0%, 100% { opacity: 0.18; transform: translateX(-18%); }
+  50% { opacity: 0.8; transform: translateX(18%); }
+}
+
+@keyframes rh-token-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4px; }
+}
+
+@keyframes rh-grid-drift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 0, 0 0, 42px 42px, 42px 42px; }
+}
+
+@keyframes rh-ambient-sweep {
+  0%, 100% { opacity: 0.2; transform: translateY(-8%); }
+  50% { opacity: 0.42; transform: translateY(8%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   FINAL: REMOVE HEADER CONTROLS + SETTINGS CONTROLS + TOKEN DASHBOARD
+   ========================================================= */
+
+/* Hide all old header action toolbar attempts */
+.redhydra-header-actions,
+.rh-clean-toolbar,
+.rh-fixed-toolbar,
+.rh-app-toolbar,
+.rh-forced-toolbar,
+.rh-final-header-actions,
+div:has(> button[title*="Clear active chat"]):has(> button[title*="Export"]) {
+  display: none !important;
+}
+
+/* Keep header only for title/model status */
+.redhydra-top-header,
+.rh-clean-header,
+.rh-fixed-header,
+.rh-final-header,
+header {
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* Settings page shell */
+.rh-settings-page-shell {
+  width: 100%;
+  max-width: 100%;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Settings chat controls */
+.rh-settings-chat-controls {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(0.85rem, 1.8vw, 1.15rem);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at top left, rgba(239,68,68,0.10), transparent 30%),
+    linear-gradient(180deg, rgba(10,10,12,0.92), rgba(3,3,4,0.82));
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  backdrop-filter: blur(18px);
+}
+
+.rh-settings-chat-controls-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.rh-settings-chat-controls-head h3 {
+  margin: 0;
+  color: rgb(244 244 245);
+  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+  font-weight: 800;
+}
+
+.rh-settings-chat-controls-head p {
+  margin: 0.2rem 0 0;
+  color: rgb(113 113 122);
+  font-family: monospace;
+  font-size: 0.68rem;
+}
+
+.rh-settings-capacity-pill {
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(16,185,129,0.25);
+  background: rgba(16,185,129,0.07);
+  color: rgb(52 211 153);
+  font-family: monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.rh-settings-chat-controls-grid {
+  display: grid;
+  grid-template-columns: auto auto minmax(14rem, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.rh-settings-control-btn,
+.rh-settings-mode-select {
+  height: 2.35rem;
+  border-radius: 0.8rem;
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
+.rh-settings-control-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: rgb(203 213 225);
+}
+
+.rh-settings-control-btn:hover {
+  border-color: rgba(248,113,113,0.28);
+  background: rgba(248,113,113,0.08);
+  color: white;
+}
+
+.rh-settings-danger-btn {
+  border-color: rgba(239,68,68,0.28);
+  background: rgba(239,68,68,0.07);
+  color: rgb(248 113 113);
+}
+
+.rh-settings-mode-select {
+  width: 100%;
+  min-width: 0;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(127,29,29,0.55);
+  background: rgb(10 10 10);
+  color: rgb(228 228 231);
+  outline: none;
+}
+
+/* Responsive settings controls */
+@media (max-width: 768px) {
+  .rh-settings-chat-controls-head {
+    flex-direction: column;
+  }
+
+  .rh-settings-chat-controls-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rh-settings-mode-select {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 460px) {
+  .rh-settings-chat-controls-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rh-settings-mode-select {
+    grid-column: auto;
+  }
+}
+
+/* =========================================================
+   Independent Token Monitor Dashboard
+   ========================================================= */
+
+.rh-token-independent-dashboard {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: clamp(6rem, 9vh, 7.25rem) !important;
+  transform: translateX(-50%) translateY(-8px) !important;
+
+  width: min(820px, calc(100vw - 2rem)) !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: min(30vh, 15rem) !important;
+
+  display: grid !important;
+  grid-template-columns: minmax(160px, 0.8fr) minmax(220px, 1fr) minmax(220px, 1.1fr) !important;
+  gap: 0.65rem !important;
+
+  padding: 0.8rem !important;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(248,113,113,0.14), transparent 28%),
+    linear-gradient(180deg, rgba(12,12,14,0.97), rgba(4,4,5,0.92)) !important;
+  box-shadow:
+    0 28px 75px rgba(0,0,0,0.82),
+    0 0 38px rgba(248,113,113,0.10) !important;
+  backdrop-filter: blur(20px) !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 9999 !important;
+
+  animation: rh-token-float-clean 4.8s ease-in-out infinite;
+}
+
+.rh-token-independent-dashboard:hover {
+  transform: translateX(-50%) translateY(-14px) scale(1.01) !important;
+}
+
+.rh-token-independent-dashboard > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-independent-dashboard * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  line-height: 1.15 !important;
+}
+
+.rh-token-chart,
+.rh-token-independent-dashboard #token-usage-chart-container {
+  height: clamp(3rem, 6vh, 4rem) !important;
+  min-height: clamp(3rem, 6vh, 4rem) !important;
+  max-height: clamp(3rem, 6vh, 4rem) !important;
+  width: 100% !important;
+}
+
+/* Agent drawer: keep token monitor inside available screen */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-independent-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+    width: min(760px, calc(100vw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+/* Wide screens: flatter dashboard */
+@media (min-aspect-ratio: 16/10) {
+  .rh-token-independent-dashboard {
+    width: min(920px, calc(100vw - 3rem)) !important;
+    max-height: min(24vh, 12.5rem) !important;
+    grid-template-columns: repeat(4, minmax(130px, 1fr)) !important;
+  }
+}
+
+/* Mobile token dashboard */
+@media (max-width: 720px) {
+  .rh-token-independent-dashboard {
+    left: 0.65rem !important;
+    right: 0.65rem !important;
+    bottom: 7rem !important;
+    transform: translateY(-6px) !important;
+    width: auto !important;
+    max-width: calc(100vw - 1.3rem) !important;
+    max-height: 42vh !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .rh-token-independent-dashboard:hover {
+    transform: translateY(-10px) scale(1.005) !important;
+  }
+}
+
+@keyframes rh-token-float-clean {
+  0%, 100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
   }
 }

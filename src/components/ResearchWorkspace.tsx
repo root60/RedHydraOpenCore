@@ -146,3 +146,4 @@ export const ResearchWorkspace: React.FC<ResearchWorkspaceProps> = ({ onExecute,
     </div>
   );
 };
+
