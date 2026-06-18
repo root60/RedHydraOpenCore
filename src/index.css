@@ -928,3 +928,96 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Compact live token monitor */
+.redhydra-token-monitor {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.redhydra-token-popover {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem !important;
+  max-height: min(58dvh, 24rem) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0.85rem !important;
+}
+
+.redhydra-token-popover > :first-child {
+  grid-column: 1 / -1;
+}
+
+.redhydra-token-popover .space-y-2,
+.redhydra-token-popover .space-y-1 {
+  margin-top: 0 !important;
+}
+
+.redhydra-token-policy-row {
+  grid-column: 1 / -1;
+}
+
+.redhydra-token-popover #token-usage-chart-container {
+  height: 5.25rem !important;
+  min-height: 5.25rem !important;
+}
+
+.redhydra-token-popover .recharts-wrapper,
+.redhydra-token-popover .recharts-surface {
+  max-width: 100% !important;
+}
+
+/* Keep monitor away from Agent drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+    width: min(42rem, calc(100dvw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+/* Tablet/mobile token monitor becomes one clean column */
+@media (max-width: 768px) {
+  .redhydra-token-popover {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    bottom: 7.25rem !important;
+    width: auto !important;
+    max-width: calc(100dvw - 1.5rem) !important;
+    grid-template-columns: 1fr !important;
+    max-height: 55dvh !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    height: 4.75rem !important;
+  }
+}
+
+/* Left sidebar hide/show */
+.redhydra-left-sidebar {
+  transition: width 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-sidebar {
+  display: none !important;
+}
+
+body.redhydra-left-sidebar-hidden #root main {
+  margin-left: 0 !important;
+  max-width: 100dvw !important;
+}
+
+.redhydra-left-toggle {
+  backdrop-filter: blur(14px);
+}
+
+body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
+  display: inline-flex !important;
+}
+
+@media (max-width: 1023px) {
+  .redhydra-left-toggle,
+  .redhydra-sidebar-hide-btn {
+    display: none !important;
+  }
+}
