@@ -545,3 +545,59 @@ button[title*="Toggles multi-step"] {
     width: 100%;
   }
 }
+
+/* Final Agent Mode overlay fix */
+.redhydra-agent-drawer {
+  position: fixed !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100dvh !important;
+  width: clamp(15rem, 18vw, 20rem) !important;
+  max-width: 88vw !important;
+  overflow: hidden !important;
+}
+
+.redhydra-agent-drawer * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1279px) {
+  .redhydra-agent-drawer {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .redhydra-agent-drawer {
+    width: min(17rem, 22vw) !important;
+  }
+}
+
+/* Composer/footer fix when Agent Mode is ON */
+.redhydra-composer-textarea {
+  min-width: 0 !important;
+}
+
+.redhydra-composer-actions {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.redhydra-composer-actions button {
+  min-width: 0 !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .redhydra-composer-actions {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .redhydra-composer-actions button {
+    flex: 1 1 auto !important;
+    white-space: normal !important;
+  }
+}
