@@ -1843,3 +1843,159 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ===== FORCED MAIN INTERFACE FIX ===== */
+
+/* Visible toolbar placed in the real app flow */
+.rh-forced-toolbar {
+  width: calc(100% - 2rem) !important;
+  max-width: 980px !important;
+  margin: 0.75rem auto 0 auto !important;
+  padding: 0.55rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(14px) !important;
+  position: relative !important;
+  z-index: 40 !important;
+}
+
+.rh-forced-btn {
+  height: 2.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgb(203 213 225) !important;
+  font-family: monospace !important;
+  font-size: 0.62rem !important;
+  white-space: nowrap !important;
+}
+
+.rh-forced-danger {
+  border-color: rgba(239,68,68,0.3) !important;
+  background: rgba(239,68,68,0.07) !important;
+  color: rgb(248 113 113) !important;
+}
+
+.rh-forced-select {
+  height: 2.15rem !important;
+  min-width: 14rem !important;
+  max-width: 18rem !important;
+  flex: 0 1 16rem !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(127,29,29,0.55) !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(228 228 231) !important;
+  font-family: monospace !important;
+  font-size: 0.65rem !important;
+}
+
+.rh-forced-capacity {
+  margin-left: auto !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(16,185,129,0.25) !important;
+  background: rgba(16,185,129,0.06) !important;
+  color: rgb(52 211 153) !important;
+  font-family: monospace !important;
+  font-size: 0.56rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* If Agent drawer is ON, toolbar stays inside chat width */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-forced-toolbar {
+    max-width: min(900px, calc(100vw - var(--redhydra-agent-width) - 22rem)) !important;
+  }
+}
+
+/* Mobile toolbar */
+@media (max-width: 640px) {
+  .rh-forced-toolbar {
+    width: calc(100% - 1rem) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-forced-btn,
+  .rh-forced-select,
+  .rh-forced-capacity {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rh-forced-select,
+  .rh-forced-capacity {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Token monitor forced dashboard */
+.rh-token-dashboard {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 5.8rem !important;
+  transform: translateX(-50%) !important;
+
+  width: min(720px, calc(100vw - 2rem)) !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: min(32vh, 16rem) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgb(10,10,11) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.75) !important;
+  z-index: 120 !important;
+}
+
+.rh-token-dashboard > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+.rh-token-dashboard * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-token-dashboard #token-usage-chart-container {
+  height: 3.8rem !important;
+  min-height: 3.8rem !important;
+  max-height: 3.8rem !important;
+}
+
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .rh-token-dashboard {
+    left: calc((100vw - var(--redhydra-agent-width)) / 2) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .rh-token-dashboard {
+    width: calc(100vw - 1rem) !important;
+    bottom: 7rem !important;
+    grid-template-columns: 1fr !important;
+    max-height: 42vh !important;
+  }
+}
