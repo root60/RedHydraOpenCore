@@ -601,3 +601,50 @@ button[title*="Toggles multi-step"] {
     white-space: normal !important;
   }
 }
+
+/* Auto-reserve chat space when Agent Mode drawer is ON */
+:root {
+  --redhydra-agent-width: clamp(15rem, 18vw, 20rem);
+}
+
+/* When the fixed Agent drawer exists, shrink the main chat area so drawer does not cover it */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) main {
+    margin-right: var(--redhydra-agent-width) !important;
+    max-width: calc(100dvw - var(--redhydra-agent-width)) !important;
+    transition: margin-right 180ms ease, max-width 180ms ease;
+  }
+
+  #root:has(.redhydra-agent-drawer) .redhydra-agent-drawer {
+    width: var(--redhydra-agent-width) !important;
+  }
+
+  #root:has(.redhydra-agent-drawer) header,
+  #root:has(.redhydra-agent-drawer) footer,
+  #root:has(.redhydra-agent-drawer) section,
+  #root:has(.redhydra-agent-drawer) article {
+    max-width: 100% !important;
+  }
+}
+
+/* On smaller screens, hide drawer so it never overlaps chat */
+@media (max-width: 1279px) {
+  .redhydra-agent-drawer {
+    display: none !important;
+  }
+
+  #root main {
+    margin-right: 0 !important;
+    max-width: 100dvw !important;
+  }
+}
+
+/* Keep composer/footer inside the resized chat area */
+#root:has(.redhydra-agent-drawer) .redhydra-composer-actions {
+  flex-wrap: wrap !important;
+}
+
+#root:has(.redhydra-agent-drawer) .redhydra-composer-textarea {
+  min-width: 0 !important;
+  width: 100% !important;
+}
