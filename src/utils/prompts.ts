@@ -100,3 +100,4 @@ export const BUILTIN_PROMPTS: PromptTemplate[] = [
       "Explain this simply and directly. Use easy words and short sentences.",
   },
 ];
+

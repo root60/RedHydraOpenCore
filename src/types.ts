@@ -98,3 +98,4 @@ export interface MemoryPrefs {
   recentChatsSaved: boolean;
   customPromptTemplates: PromptTemplate[];
 }
+

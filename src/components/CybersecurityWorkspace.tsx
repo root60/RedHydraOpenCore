@@ -164,3 +164,4 @@ export const CybersecurityWorkspace: React.FC<CybersecurityWorkspaceProps> = ({ 
     </div>
   );
 };
+
