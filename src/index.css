@@ -1172,3 +1172,10 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     grid-template-columns: 1fr !important;
   }
 }
+/* Auto model registry sync badge */
+.redhydra-auto-sync-status {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
