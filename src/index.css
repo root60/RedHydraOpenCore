@@ -1315,3 +1315,115 @@ body.redhydra-left-sidebar-hidden .redhydra-left-toggle {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ===== FINAL TOKEN MONITOR ASPECT-RATIO FIX ===== */
+
+.redhydra-token-popover {
+  position: fixed !important;
+  right: 1rem !important;
+  bottom: 5.75rem !important;
+
+  width: min(46rem, calc(100dvw - 2rem)) !important;
+  max-width: calc(100dvw - 2rem) !important;
+
+  max-height: min(36dvh, 18rem) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)) !important;
+  gap: 0.55rem !important;
+
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+}
+
+/* Keep title/status full width */
+.redhydra-token-popover > :first-child {
+  grid-column: 1 / -1 !important;
+}
+
+/* Compact internal spacing */
+.redhydra-token-popover .space-y-3,
+.redhydra-token-popover .space-y-2,
+.redhydra-token-popover .space-y-1 {
+  margin-top: 0 !important;
+}
+
+.redhydra-token-popover * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Make chart shorter and cleaner */
+.redhydra-token-popover #token-usage-chart-container {
+  height: 4.5rem !important;
+  min-height: 4.5rem !important;
+  max-height: 4.5rem !important;
+}
+
+.redhydra-token-popover .recharts-wrapper,
+.redhydra-token-popover .recharts-surface {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Keep token monitor away from Agent Mode drawer */
+@media (min-width: 1280px) {
+  #root:has(.redhydra-agent-drawer) .redhydra-token-popover {
+    right: calc(var(--redhydra-agent-width) + 1rem) !important;
+    width: min(42rem, calc(100dvw - var(--redhydra-agent-width) - 2rem)) !important;
+  }
+}
+
+/* Wide laptop/desktop: make it horizontal and short */
+@media (min-aspect-ratio: 16/10) {
+  .redhydra-token-popover {
+    grid-template-columns: repeat(4, minmax(8rem, 1fr)) !important;
+    max-height: min(30dvh, 15rem) !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    height: 3.75rem !important;
+    min-height: 3.75rem !important;
+    max-height: 3.75rem !important;
+  }
+}
+
+/* Short-height screens: reduce height more */
+@media (max-height: 760px) {
+  .redhydra-token-popover {
+    bottom: 5.25rem !important;
+    max-height: 28dvh !important;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)) !important;
+    font-size: 10px !important;
+  }
+
+  .redhydra-token-popover #token-usage-chart-container {
+    height: 3.25rem !important;
+    min-height: 3.25rem !important;
+    max-height: 3.25rem !important;
+  }
+}
+
+/* Tablet/mobile: one clean compact column */
+@media (max-width: 768px) {
+  .redhydra-token-popover {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    bottom: 7.25rem !important;
+    width: auto !important;
+    max-width: calc(100dvw - 1.5rem) !important;
+    max-height: 42dvh !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .redhydra-token-popover {
+    padding: 0.6rem !important;
+    gap: 0.45rem !important;
+    max-height: 40dvh !important;
+  }
+}
