@@ -108,17 +108,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="rh-settings-panel-pro space-y-8 pb-12">
       {/* Visual Identity banner */}
       <div className="relative p-6 rounded-xl border border-zinc-900 bg-zinc-950 overflow-hidden">
         <div className="absolute top-0 right-0 w-36 h-36 bg-red-600/5 blur-3xl rounded-full" />
         <h3 className="text-base font-mono font-bold text-zinc-100 flex items-center gap-2 mb-2">
           <Key className="w-4 h-4 text-red-500 animate-pulse" />
-          SYSTEM CREDENTIALS & API CONFORMANCE
+          SYSTEM SETTINGS
         </h3>
         <p className="text-zinc-400 text-xs leading-relaxed max-w-2xl">
           Configure external models or utilize the default, unlimited, and lifetime free server-side RedHydra OpenCore model. 
-          Your client API credentials are saved only in private local browser cache storage (IndexedDB/LocalStorage) and never transmitted to our telemetry log.
+          Configure RedHydra model access, endpoint behavior, memory, and safety controls from one clean panel.
         </p>
 
         {/* Browser storage secure notice */}

@@ -5294,3 +5294,1315 @@ header button[title="Toggle Workspace Sidebar"] {
     --rh-agent-terminal-width: 18rem;
   }
 }
+
+
+/* =========================================================
+   TRUE FINAL RESPONSIVE GUI FIX
+   ChatGPT-like responsive main interface + separated sidebars
+   ========================================================= */
+
+:root {
+  --rh-left-sidebar-width: min(18rem, 86vw);
+  --rh-right-agent-width: clamp(18rem, 24vw, 24rem);
+  --rh-header-height: 4rem;
+  --rh-main-max: 64rem;
+}
+
+/* App shell no longer allows side panels to affect main geometry */
+.rh-responsive-shell,
+.rh-final-isolated-shell,
+.rh-app-shell {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+/* Main interface always owns full screen and never moves from sidebars/agent */
+.rh-responsive-main,
+.rh-main-isolated-frame,
+.rh-main-frame {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  min-width: 0 !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  z-index: 10 !important;
+}
+
+/* Header: ChatGPT-like stable top bar */
+.rh-responsive-header,
+.rh-main-header {
+  height: var(--rh-header-height) !important;
+  min-height: var(--rh-header-height) !important;
+  max-height: var(--rh-header-height) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex: 0 0 var(--rh-header-height) !important;
+  padding-left: clamp(0.85rem, 2vw, 1.5rem) !important;
+  padding-right: clamp(0.85rem, 2vw, 1.5rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.65rem !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  z-index: 50 !important;
+}
+
+.rh-header-identity {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+
+.rh-main-header h1,
+.rh-main-header h2,
+.rh-main-header h3,
+.rh-main-header span,
+.rh-main-header div {
+  min-width: 0 !important;
+}
+
+.rh-main-header h2 {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.rh-header-telemetry {
+  max-width: clamp(12rem, 28vw, 30rem) !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  flex: 0 1 auto !important;
+}
+
+/* Use only ONE sidebar toggle: hide every old/header/mobile sidebar button */
+header button[title*="Toggle Workspace Sidebar"],
+.redhydra-left-sidebar button[title*="Close"],
+.redhydra-left-sidebar button[aria-label*="Close"],
+.redhydra-left-sidebar .lg\:hidden,
+.rh-main-header button:not(.rh-sidebar-manual-toggle),
+.rh-main-header select {
+  display: none !important;
+}
+
+/* Main content adapts by screen width like ChatGPT */
+.rh-responsive-dispatcher,
+.rh-center-dispatcher {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  padding-left: clamp(0.5rem, 2vw, 1.5rem) !important;
+  padding-right: clamp(0.5rem, 2vw, 1.5rem) !important;
+}
+
+.rh-responsive-workspace,
+.rh-center-workspace {
+  width: min(100%, var(--rh-main-max)) !important;
+  max-width: min(100%, var(--rh-main-max)) !important;
+  min-width: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Chat panel/footer stays normal even if Agent Mode is toggled */
+.rh-responsive-footer,
+.rh-chat-command-footer,
+.rh-main-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.rh-chat-command-footer textarea {
+  min-width: 0 !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+}
+
+.rh-footer-controls {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-wrap: wrap !important;
+}
+
+/* Left sidebar: overlay only, no push */
+.redhydra-left-sidebar,
+.rh-left-hard-overlay,
+.rh-left-nav-panel {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: var(--rh-left-sidebar-width) !important;
+  min-width: var(--rh-left-sidebar-width) !important;
+  max-width: var(--rh-left-sidebar-width) !important;
+  height: 100dvh !important;
+  z-index: 7000 !important;
+  margin: 0 !important;
+  flex: none !important;
+  transform: translateX(0) !important;
+  box-shadow: 24px 0 60px rgba(0,0,0,0.50), 1px 0 0 rgba(248,113,113,0.10) !important;
+}
+
+.redhydra-left-sidebar.rh-left-sidebar-collapsed,
+.redhydra-left-sidebar.-translate-x-full,
+.rh-left-sidebar-collapsed {
+  transform: translateX(calc(-1 * var(--rh-left-sidebar-width))) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Single clean toggle blended with sidebar edge */
+.rh-sidebar-manual-toggle {
+  position: fixed !important;
+  top: 4.85rem !important;
+  left: calc(var(--rh-left-sidebar-width) - 1.05rem) !important;
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+  z-index: 7600 !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(248,113,113,0.30) !important;
+  background: rgba(8,8,10,0.86) !important;
+  color: rgb(248 113 113) !important;
+  backdrop-filter: blur(14px) saturate(1.2) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.55), 0 0 24px rgba(248,113,113,0.12) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.rh-sidebar-manual-toggle-collapsed {
+  left: 0.72rem !important;
+  color: rgb(52 211 153) !important;
+  border-color: rgba(16,185,129,0.36) !important;
+}
+
+.rh-sidebar-toggle-mark {
+  line-height: 1 !important;
+  font-size: 1.05rem !important;
+  font-family: monospace !important;
+  font-weight: 900 !important;
+}
+
+/* Right Agent terminal: portal/fixed overlay only, never layout */
+.redhydra-agent-drawer,
+.rh-agent-terminal-overlay,
+.rh-right-agent-panel {
+  position: fixed !important;
+  top: clamp(0.6rem, 1.2vh, 0.9rem) !important;
+  right: clamp(0.6rem, 1.2vw, 0.9rem) !important;
+  bottom: clamp(0.6rem, 1.2vh, 0.9rem) !important;
+  left: auto !important;
+  width: var(--rh-right-agent-width) !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 1.2rem) !important;
+  height: auto !important;
+  max-height: calc(100dvh - 1.2rem) !important;
+  display: flex !important;
+  flex: none !important;
+  margin: 0 !important;
+  z-index: 8000 !important;
+  transform: none !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  border-radius: 1.15rem !important;
+  box-shadow: -22px 0 70px rgba(0,0,0,0.70), 0 0 42px rgba(248,113,113,0.10) !important;
+}
+
+.redhydra-agent-drawer *,
+.rh-agent-terminal-overlay * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Agent toggle should not change main layout: neutralize all previous :has agent width rules */
+#root:has(.redhydra-agent-drawer) .rh-main-frame,
+#root:has(.redhydra-agent-drawer) .rh-main-header,
+#root:has(.redhydra-agent-drawer) .rh-main-footer,
+#root:has(.redhydra-agent-drawer) .rh-center-dispatcher,
+#root:has(.redhydra-agent-drawer) .rh-center-workspace,
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer,
+#root:has(.redhydra-agent-drawer) main,
+#root:has(.redhydra-agent-drawer) header,
+#root:has(.redhydra-agent-drawer) footer {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-right: inherit;
+  transform: none !important;
+  max-width: inherit;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-main-frame {
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-main-header,
+#root:has(.redhydra-agent-drawer) .rh-main-footer,
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Responsive: tablet/mobile feel similar to ChatGPT */
+@media (max-width: 1023px) {
+  :root {
+    --rh-header-height: 3.65rem;
+    --rh-main-max: 100%;
+  }
+
+  .rh-responsive-header,
+  .rh-main-header {
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+
+  .rh-header-telemetry {
+    display: none !important;
+  }
+
+  .rh-responsive-dispatcher,
+  .rh-center-dispatcher {
+    padding-left: 0.55rem !important;
+    padding-right: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+  }
+
+  .rh-sidebar-manual-toggle {
+    left: 0.65rem !important;
+    top: 4.4rem !important;
+  }
+
+  #root:has(.redhydra-left-sidebar.translate-x-0) .rh-sidebar-manual-toggle {
+    left: calc(var(--rh-left-sidebar-width) - 1.05rem) !important;
+  }
+
+  .redhydra-agent-drawer,
+  .rh-agent-terminal-overlay {
+    width: min(24rem, calc(100vw - 1rem)) !important;
+    top: 4.2rem !important;
+    right: 0.5rem !important;
+    bottom: 0.5rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --rh-header-height: 3.4rem;
+  }
+
+  .rh-main-header h2 {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .rh-main-header span {
+    font-size: 0.48rem !important;
+  }
+
+  .rh-chat-command-footer {
+    border-radius: 1rem !important;
+    padding: 0.75rem !important;
+  }
+
+  .rh-chat-command-footer textarea {
+    height: 3rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .rh-footer-controls {
+    width: 100% !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  .rh-footer-controls button {
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+  }
+}
+
+/* Full app background remains active but text stays readable */
+body::before,
+body::after,
+#root::before,
+#root::after {
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .redhydra-agent-drawer,
+  .redhydra-left-sidebar,
+  .rh-sidebar-manual-toggle {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   TRUE FINAL MAIN APP LAYOUT FIX
+   Main interface is fixed and independent. Sidebars/agent cannot resize it.
+   Desktop/mobile ratios behave like a ChatGPT-style stable canvas.
+   ========================================================= */
+
+:root {
+  --rh-left-sidebar-width: 18rem;
+  --rh-agent-terminal-width: clamp(18rem, 24vw, 24rem);
+  --rh-header-height: clamp(3.45rem, 7vh, 4rem);
+  --rh-chat-max-width: 56rem;
+  --rh-screen-pad-x: clamp(0.65rem, 1.6vw, 1.5rem);
+  --rh-screen-pad-y: clamp(0.45rem, 1vh, 0.85rem);
+}
+
+html,
+body,
+#root {
+  width: 100% !important;
+  max-width: 100vw !important;
+  height: 100% !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+  background: #020202 !important;
+}
+
+/* The app root is no longer a layout flex/grid that side panels can affect. */
+.rh-main-app-root,
+.rh-app-shell,
+.rh-responsive-shell,
+.rh-final-isolated-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100dvw !important;
+  height: 100dvh !important;
+  max-width: 100dvw !important;
+  max-height: 100dvh !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  display: block !important;
+  isolation: isolate !important;
+  background: transparent !important;
+}
+
+/* Main interface owns the full window and never responds to left/right panels. */
+.rh-stable-main-frame,
+.rh-main-frame,
+main.rh-main-frame,
+#root:has(.redhydra-agent-drawer) .rh-main-frame,
+#root:has(.redhydra-left-sidebar) .rh-main-frame {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100dvw !important;
+  max-width: 100dvw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  flex: none !important;
+  z-index: 10 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background: rgba(5,5,5,0.62) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Header behaves the same in normal mode, agent mode, desktop, and mobile. */
+.rh-main-header,
+.rh-responsive-header,
+header.rh-main-header,
+#root:has(.redhydra-agent-drawer) .rh-main-header,
+#root:has(.redhydra-left-sidebar) .rh-main-header {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: var(--rh-header-height) !important;
+  min-height: var(--rh-header-height) !important;
+  max-height: var(--rh-header-height) !important;
+  flex: 0 0 var(--rh-header-height) !important;
+  padding-left: var(--rh-screen-pad-x) !important;
+  padding-right: var(--rh-screen-pad-x) !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.rh-header-identity,
+.rh-main-header > div:not(.absolute) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+
+.rh-main-header h1,
+.rh-main-header h2,
+.rh-main-header h3,
+.rh-main-header span,
+.rh-main-header div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-main-header h1,
+.rh-main-header h2,
+.rh-main-header h3 {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.rh-header-telemetry {
+  max-width: min(42vw, 34rem) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  flex: 0 1 auto !important;
+}
+
+/* Do not allow any old header buttons/selects back in. */
+header button:not(.rh-single-sidebar-toggle):not(.rh-sidebar-manual-toggle),
+header select,
+header .redhydra-header-actions,
+header .rh-clean-toolbar,
+header .rh-fixed-toolbar,
+header .rh-app-toolbar,
+header .rh-forced-toolbar,
+header .rh-final-header-actions {
+  display: none !important;
+}
+
+/* Center workspace auto-ratios like ChatGPT: full screen shell, centered content. */
+.rh-center-dispatcher,
+.rh-responsive-dispatcher,
+#root:has(.redhydra-agent-drawer) .rh-center-dispatcher,
+#root:has(.redhydra-left-sidebar) .rh-center-dispatcher {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding-left: var(--rh-screen-pad-x) !important;
+  padding-right: var(--rh-screen-pad-x) !important;
+  padding-bottom: var(--rh-screen-pad-y) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.rh-center-workspace,
+.rh-responsive-workspace,
+#root:has(.redhydra-agent-drawer) .rh-center-workspace,
+#root:has(.redhydra-left-sidebar) .rh-center-workspace {
+  width: 100% !important;
+  max-width: min(100%, var(--rh-chat-max-width)) !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+}
+
+.rh-chat-live-shell {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.rh-chat-scroll-feed {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+/* Footer is inside the main app and never changes when Agent Mode toggles. */
+.rh-main-footer,
+.rh-responsive-footer,
+.rh-chat-command-footer,
+#root:has(.redhydra-agent-drawer) .rh-main-footer,
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer,
+#root:has(.redhydra-left-sidebar) .rh-chat-command-footer {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.rh-chat-command-footer > *,
+.rh-chat-command-footer form,
+.rh-chat-command-footer textarea,
+.rh-chat-command-footer [class*="flex"] {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.rh-chat-command-footer textarea {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+}
+
+.rh-footer-controls,
+.rh-chat-command-footer [class*="justify-between"] {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+}
+
+/* Left sidebar is a pure overlay. It never pushes the main interface. */
+.redhydra-left-sidebar,
+.rh-left-hard-overlay,
+.rh-left-nav-panel {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  right: auto !important;
+  width: var(--rh-left-sidebar-width) !important;
+  min-width: var(--rh-left-sidebar-width) !important;
+  max-width: var(--rh-left-sidebar-width) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  flex: none !important;
+  margin: 0 !important;
+  z-index: 7000 !important;
+  transform: translateX(0) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.redhydra-left-sidebar.rh-left-sidebar-collapsed,
+.redhydra-left-sidebar.-translate-x-full,
+.rh-left-sidebar-collapsed {
+  transform: translateX(calc(-1 * var(--rh-left-sidebar-width))) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* One sidebar toggle only. Place it cleanly on the sidebar edge. */
+.rh-single-sidebar-toggle,
+.rh-sidebar-manual-toggle {
+  position: fixed !important;
+  top: 50% !important;
+  left: calc(var(--rh-left-sidebar-width) - 1.05rem) !important;
+  transform: translateY(-50%) !important;
+  width: 2.15rem !important;
+  height: 2.15rem !important;
+  z-index: 7600 !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(248,113,113,0.34) !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(248,113,113,0.22), transparent 35%),
+    rgba(8,8,10,0.88) !important;
+  color: rgb(248 113 113) !important;
+  backdrop-filter: blur(14px) saturate(1.2) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.55), 0 0 24px rgba(248,113,113,0.14) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+.rh-sidebar-manual-toggle-collapsed {
+  left: 0.7rem !important;
+  color: rgb(52 211 153) !important;
+  border-color: rgba(16,185,129,0.38) !important;
+}
+
+.rh-sidebar-toggle-mark {
+  line-height: 1 !important;
+  font-size: 1.05rem !important;
+  font-family: monospace !important;
+  font-weight: 900 !important;
+}
+
+/* Hide any possible older duplicate sidebar buttons. */
+header button[title*="Sidebar"],
+header button[title*="sidebar"],
+header button[aria-label*="Sidebar"],
+header button[aria-label*="sidebar"] {
+  display: none !important;
+}
+
+/* Right Agent terminal is fully separated from the app. It cannot resize anything. */
+body > .redhydra-agent-drawer,
+body > .rh-agent-terminal-overlay,
+.redhydra-agent-drawer.rh-separated-agent-terminal,
+.rh-agent-terminal-overlay,
+.redhydra-agent-drawer {
+  position: fixed !important;
+  top: clamp(0.6rem, 1.2vh, 0.9rem) !important;
+  right: clamp(0.6rem, 1.2vw, 0.9rem) !important;
+  bottom: clamp(0.6rem, 1.2vh, 0.9rem) !important;
+  left: auto !important;
+  width: var(--rh-agent-terminal-width) !important;
+  min-width: 0 !important;
+  max-width: calc(100dvw - 1.2rem) !important;
+  height: auto !important;
+  max-height: calc(100dvh - 1.2rem) !important;
+  flex: none !important;
+  flex-basis: auto !important;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: 8000 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  border-radius: 1.15rem !important;
+  box-shadow: -22px 0 70px rgba(0,0,0,0.70), 0 0 42px rgba(248,113,113,0.10) !important;
+}
+
+.redhydra-agent-drawer *,
+.rh-agent-terminal-overlay * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Force neutral geometry when any agent/side panel exists. */
+body:has(.redhydra-agent-drawer) .rh-main-frame,
+body:has(.redhydra-agent-drawer) .rh-main-header,
+body:has(.redhydra-agent-drawer) .rh-main-footer,
+body:has(.redhydra-agent-drawer) .rh-center-dispatcher,
+body:has(.redhydra-agent-drawer) .rh-center-workspace,
+body:has(.redhydra-agent-drawer) .rh-chat-command-footer,
+body:has(.redhydra-left-sidebar) .rh-main-frame,
+body:has(.redhydra-left-sidebar) .rh-main-header,
+body:has(.redhydra-left-sidebar) .rh-main-footer,
+body:has(.redhydra-left-sidebar) .rh-center-dispatcher,
+body:has(.redhydra-left-sidebar) .rh-center-workspace,
+body:has(.redhydra-left-sidebar) .rh-chat-command-footer {
+  transform: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Tablet/mobile: ChatGPT-like canvas with overlay side panels. */
+@media (max-width: 1023px) {
+  :root {
+    --rh-left-sidebar-width: min(18rem, 86vw);
+    --rh-header-height: 3.55rem;
+    --rh-chat-max-width: 100%;
+    --rh-screen-pad-x: 0.65rem;
+  }
+
+  .rh-header-telemetry {
+    display: none !important;
+  }
+
+  .rh-main-header h2 {
+    font-size: clamp(0.62rem, 2.5vw, 0.78rem) !important;
+  }
+
+  .rh-main-header span {
+    font-size: clamp(0.45rem, 1.8vw, 0.55rem) !important;
+  }
+
+  .rh-single-sidebar-toggle,
+  .rh-sidebar-manual-toggle {
+    top: 4.45rem !important;
+    left: 0.65rem !important;
+    transform: none !important;
+  }
+
+  body:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed):not(.-translate-x-full)) .rh-sidebar-manual-toggle {
+    left: calc(var(--rh-left-sidebar-width) - 1.05rem) !important;
+  }
+
+  .redhydra-agent-drawer,
+  .rh-agent-terminal-overlay {
+    width: min(24rem, calc(100dvw - 1rem)) !important;
+    top: 4.1rem !important;
+    right: 0.5rem !important;
+    bottom: 0.5rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --rh-header-height: 3.35rem;
+    --rh-screen-pad-x: 0.5rem;
+    --rh-screen-pad-y: 0.45rem;
+  }
+
+  .rh-center-dispatcher {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .rh-chat-command-footer {
+    border-radius: 1rem !important;
+    padding: 0.7rem !important;
+  }
+
+  .rh-chat-command-footer textarea {
+    min-height: 3rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .rh-footer-controls,
+  .rh-chat-command-footer [class*="justify-between"] {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .rh-chat-command-footer button {
+    padding-left: 0.58rem !important;
+    padding-right: 0.58rem !important;
+    font-size: 0.68rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .rh-chat-command-footer button {
+    font-size: 0.6rem !important;
+    padding-left: 0.45rem !important;
+    padding-right: 0.45rem !important;
+  }
+}
+
+
+/* =========================================================
+   NOTIFICATIONS ABOVE MAIN APP + SIMPLE SIDEBAR TOGGLE
+   ========================================================= */
+
+/* Toast/alert portal: always floats above app, sidebars, token monitor and agent terminal */
+.rh-toast-portal-layer {
+  position: fixed !important;
+  top: max(0.85rem, env(safe-area-inset-top)) !important;
+  right: max(0.85rem, env(safe-area-inset-right)) !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: min(24rem, calc(100vw - 1.5rem)) !important;
+  max-width: calc(100vw - 1.5rem) !important;
+  z-index: 2147483000 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 0.55rem !important;
+}
+
+.rh-toast-portal-layer > *,
+.rh-toast-portal-layer [role="alert"],
+.rh-toast-portal-layer button {
+  pointer-events: auto !important;
+}
+
+/* Force any toast container inside portal to respect the portal position */
+.rh-toast-portal-layer [class*="fixed"],
+.rh-toast-portal-layer [class*="absolute"] {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.rh-toast-portal-layer [class*="toast"],
+.rh-toast-portal-layer [role="alert"],
+.rh-toast-portal-layer > div > div {
+  max-width: 100% !important;
+  border-radius: 0.95rem !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background:
+    radial-gradient(circle at top left, rgba(248,113,113,0.12), transparent 28%),
+    rgba(8,8,10,0.92) !important;
+  backdrop-filter: blur(18px) saturate(1.18) !important;
+  box-shadow:
+    0 22px 70px rgba(0,0,0,0.68),
+    0 0 28px rgba(248,113,113,0.12),
+    inset 0 0 18px rgba(255,255,255,0.025) !important;
+  animation: rh-toast-hover-in 210ms ease-out both !important;
+}
+
+@keyframes rh-toast-hover-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.985); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@media (max-width: 640px) {
+  .rh-toast-portal-layer {
+    top: 0.65rem !important;
+    right: 0.65rem !important;
+    left: 0.65rem !important;
+    width: auto !important;
+    align-items: stretch !important;
+  }
+}
+
+/* Remove older duplicate sidebar toggle visuals completely */
+.rh-sidebar-manual-toggle,
+.rh-single-sidebar-toggle,
+header button[title*="Toggle Workspace Sidebar"],
+header button[aria-label*="Toggle Workspace Sidebar"],
+header button[title*="sidebar" i]:not(.rh-sidebar-simple-toggle),
+header button[aria-label*="sidebar" i]:not(.rh-sidebar-simple-toggle) {
+  display: none !important;
+}
+
+/* Single simple sidebar toggle */
+.rh-sidebar-simple-toggle {
+  position: fixed !important;
+  left: 0.72rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10050 !important;
+
+  width: 2.15rem !important;
+  height: 2.9rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: rgba(10,10,12,0.82) !important;
+  color: rgb(212 212 216) !important;
+
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.22rem !important;
+
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.50),
+    inset 0 0 14px rgba(255,255,255,0.025) !important;
+  backdrop-filter: blur(14px) saturate(1.15) !important;
+  cursor: pointer !important;
+  transition:
+    transform 160ms ease,
+    left 180ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease !important;
+}
+
+.rh-sidebar-simple-toggle:hover {
+  transform: translateY(-50%) scale(1.04) !important;
+  border-color: rgba(248,113,113,0.36) !important;
+  background: rgba(15,15,18,0.92) !important;
+  box-shadow:
+    0 18px 44px rgba(0,0,0,0.58),
+    0 0 26px rgba(248,113,113,0.14) !important;
+}
+
+.rh-sidebar-simple-line {
+  width: 0.82rem !important;
+  height: 1.5px !important;
+  border-radius: 999px !important;
+  background: currentColor !important;
+  opacity: 0.85 !important;
+  transition: transform 160ms ease, opacity 160ms ease, background-color 160ms ease !important;
+}
+
+/* Open state: button blends with sidebar edge */
+body:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed)) .rh-sidebar-simple-toggle,
+#root:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed)) .rh-sidebar-simple-toggle {
+  left: calc(var(--rh-left-sidebar-width, 18rem) - 1.05rem) !important;
+  border-color: rgba(248,113,113,0.22) !important;
+  background: rgba(9,9,11,0.86) !important;
+}
+
+.rh-sidebar-simple-toggle-collapsed {
+  left: 0.72rem !important;
+  border-color: rgba(16,185,129,0.28) !important;
+  color: rgb(52 211 153) !important;
+}
+
+.rh-sidebar-simple-toggle-collapsed .rh-sidebar-simple-line:nth-child(1) {
+  transform: translateY(3.5px) rotate(45deg) !important;
+}
+.rh-sidebar-simple-toggle-collapsed .rh-sidebar-simple-line:nth-child(2) {
+  opacity: 0 !important;
+}
+.rh-sidebar-simple-toggle-collapsed .rh-sidebar-simple-line:nth-child(3) {
+  transform: translateY(-3.5px) rotate(-45deg) !important;
+}
+
+/* Keep sidebar width variable consistent with current left panel */
+:root {
+  --rh-left-sidebar-width: 18rem;
+}
+
+.redhydra-left-sidebar {
+  width: var(--rh-left-sidebar-width) !important;
+  max-width: min(var(--rh-left-sidebar-width), 86vw) !important;
+}
+
+@media (max-width: 768px) {
+  .rh-sidebar-simple-toggle {
+    top: auto !important;
+    bottom: 5.25rem !important;
+    left: 0.75rem !important;
+    transform: none !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  .rh-sidebar-simple-toggle:hover {
+    transform: scale(1.04) !important;
+  }
+
+  body:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed)) .rh-sidebar-simple-toggle,
+  #root:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed)) .rh-sidebar-simple-toggle {
+    left: min(calc(86vw - 1.1rem), 16.9rem) !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL SETTINGS LAYOUT + SIMPLE SIDEBAR TOGGLE FIX
+   ========================================================= */
+
+/* Hide every older sidebar toggle variant and old header hamburger. Keep only the new clean toggle. */
+.rh-sidebar-simple-toggle,
+.rh-sidebar-manual-toggle,
+.rh-single-sidebar-toggle,
+header button[title*="Toggle Workspace Sidebar"],
+header button[aria-label*="Toggle Workspace Sidebar"],
+header button[title*="sidebar" i]:not(.rh-sidebar-clean-toggle),
+header button[aria-label*="sidebar" i]:not(.rh-sidebar-clean-toggle) {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* One-click sidebar state behavior. Avoid double-click feeling by tying visibility to collapsed class only. */
+.redhydra-left-sidebar.rh-left-sidebar-collapsed,
+.redhydra-left-sidebar.-translate-x-full.rh-left-sidebar-collapsed {
+  transform: translateX(-100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed) {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Single simple sidebar toggle */
+.rh-sidebar-clean-toggle {
+  position: fixed !important;
+  left: 17.15rem !important;
+  top: 1.05rem !important;
+  z-index: 10020 !important;
+
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: rgba(9,9,11,0.86) !important;
+  color: rgb(212 212 216) !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.48),
+    0 0 16px rgba(248,113,113,0.08),
+    inset 0 0 14px rgba(255,255,255,0.025) !important;
+  backdrop-filter: blur(14px) saturate(1.18) !important;
+  cursor: pointer !important;
+  transition:
+    left 180ms ease,
+    transform 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease !important;
+}
+
+.rh-sidebar-clean-toggle:hover {
+  transform: translateY(-1px) scale(1.04) !important;
+  border-color: rgba(248,113,113,0.35) !important;
+  color: rgb(248 113 113) !important;
+  background: rgba(16,16,18,0.94) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.56),
+    0 0 24px rgba(248,113,113,0.14) !important;
+}
+
+.rh-sidebar-clean-toggle:active {
+  transform: scale(0.96) !important;
+}
+
+.rh-sidebar-clean-toggle.is-closed {
+  left: 0.8rem !important;
+  color: rgb(52 211 153) !important;
+  border-color: rgba(16,185,129,0.28) !important;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.48),
+    0 0 18px rgba(16,185,129,0.10) !important;
+}
+
+.rh-sidebar-clean-icon {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  transform: translateY(-0.5px);
+}
+
+.rh-sidebar-clean-toggle.is-closed .rh-sidebar-clean-icon {
+  font-size: 1.05rem !important;
+}
+
+@media (max-width: 1023px) {
+  .rh-sidebar-clean-toggle {
+    left: 0.8rem !important;
+    top: 0.85rem !important;
+    width: 2.05rem !important;
+    height: 2.05rem !important;
+  }
+
+  #root:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed):not(.-translate-x-full)) .rh-sidebar-clean-toggle,
+  body:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed):not(.-translate-x-full)) .rh-sidebar-clean-toggle {
+    left: min(17.15rem, calc(100vw - 3rem)) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .rh-sidebar-clean-toggle {
+    top: auto !important;
+    bottom: 1rem !important;
+    left: 0.85rem !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  #root:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed):not(.-translate-x-full)) .rh-sidebar-clean-toggle,
+  body:has(.redhydra-left-sidebar:not(.rh-left-sidebar-collapsed):not(.-translate-x-full)) .rh-sidebar-clean-toggle {
+    left: 0.85rem !important;
+  }
+}
+
+/* =========================================================
+   SETTINGS PAGE PRO LAYOUT
+   ========================================================= */
+
+.rh-settings-page-shell {
+  width: 100% !important;
+  max-width: min(1120px, calc(100vw - 2rem)) !important;
+  margin: 0 auto !important;
+  padding: clamp(0.75rem, 2vw, 1.4rem) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.9rem !important;
+  overflow-x: hidden !important;
+}
+
+/* Top chat-control strip, clean and compact */
+.rh-settings-chat-controls {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0.6rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(239,68,68,0.08), transparent 28%),
+    rgba(8,8,10,0.72) !important;
+  box-shadow: 0 16px 42px rgba(0,0,0,0.30), inset 0 0 16px rgba(255,255,255,0.018) !important;
+  backdrop-filter: blur(16px) saturate(1.1) !important;
+}
+
+.rh-settings-chat-controls-head,
+.rh-settings-capacity-pill {
+  display: none !important;
+}
+
+.rh-settings-chat-controls-grid {
+  display: grid !important;
+  grid-template-columns: auto auto minmax(14rem, 1fr) !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+}
+
+.rh-settings-control-btn,
+.rh-settings-mode-select {
+  height: 2.12rem !important;
+  min-height: 2.12rem !important;
+  border-radius: 0.72rem !important;
+  font-size: 0.66rem !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.rh-settings-control-btn {
+  padding: 0 0.75rem !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+}
+
+.rh-settings-mode-select {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 0.75rem !important;
+}
+
+/* Settings panel base */
+.rh-settings-panel-pro {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding-bottom: clamp(2rem, 4vw, 4rem) !important;
+}
+
+/* Settings cards */
+.rh-settings-panel-pro > div {
+  border-radius: 1.1rem !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(248,113,113,0.055), transparent 26%),
+    rgba(8,8,10,0.76) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,0.32),
+    inset 0 0 18px rgba(255,255,255,0.018) !important;
+  backdrop-filter: blur(16px) saturate(1.08) !important;
+  overflow: hidden !important;
+}
+
+.rh-settings-panel-pro h2,
+.rh-settings-panel-pro h3,
+.rh-settings-panel-pro label {
+  letter-spacing: 0.05em !important;
+}
+
+.rh-settings-panel-pro input,
+.rh-settings-panel-pro select,
+.rh-settings-panel-pro textarea {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  border-radius: 0.8rem !important;
+  background: rgba(3,3,5,0.72) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.rh-settings-panel-pro input:focus,
+.rh-settings-panel-pro select:focus,
+.rh-settings-panel-pro textarea:focus {
+  border-color: rgba(248,113,113,0.34) !important;
+  box-shadow: 0 0 0 1px rgba(248,113,113,0.18), 0 0 26px rgba(248,113,113,0.09) !important;
+}
+
+/* Preset buttons and small action boxes */
+.rh-settings-panel-pro button {
+  border-radius: 0.85rem !important;
+}
+
+.rh-settings-panel-pro button:hover {
+  transform: translateY(-1px) !important;
+}
+
+.rh-settings-panel-pro .grid {
+  min-width: 0 !important;
+}
+
+.redhydra-auto-sync-status {
+  border-radius: 0.95rem !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(16,185,129,0.10), transparent 30%),
+    rgba(5,10,8,0.76) !important;
+  box-shadow: inset 0 0 18px rgba(16,185,129,0.035) !important;
+}
+
+/* Tablet/mobile settings layout */
+@media (max-width: 900px) {
+  .rh-settings-page-shell {
+    max-width: calc(100vw - 1rem) !important;
+    padding: 0.75rem !important;
+  }
+
+  .rh-settings-chat-controls-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .rh-settings-mode-select {
+    grid-column: 1 / -1 !important;
+  }
+
+  .rh-settings-panel-pro {
+    gap: 1rem !important;
+  }
+
+  .rh-settings-panel-pro > div {
+    padding: clamp(0.9rem, 3vw, 1.2rem) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .rh-settings-page-shell {
+    padding: 0.55rem !important;
+  }
+
+  .rh-settings-chat-controls-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .rh-settings-control-btn,
+  .rh-settings-mode-select {
+    width: 100% !important;
+  }
+
+  .rh-settings-panel-pro > div {
+    border-radius: 0.95rem !important;
+  }
+
+  .rh-settings-panel-pro .grid {
+    grid-template-columns: 1fr !important;
+  }
+}

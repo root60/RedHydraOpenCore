@@ -1179,25 +1179,26 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   }
 
   return (
-    <div className="rh-app-shell rh-final-isolated-shell flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
+    <div className="rh-app-shell rh-main-app-root bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 scanline-overlay">
       
       {/* Dynamic Ambient Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-900/5 blur-[120px] rounded-full pointer-events-none" />
-      
-      {/* Manual Sidebar Hide/Show Toggle */}
+      {/* Single Left Sidebar Toggle */}
       <button
         type="button"
         onClick={() => {
-          const next = !isSidebarCollapsed;
-          setIsSidebarCollapsed(next);
-          setIsSidebarOpen(!next);
+          setIsSidebarCollapsed((prev) => {
+            const next = !prev;
+            setIsSidebarOpen(!next);
+            return next;
+          });
         }}
-        className={`rh-sidebar-manual-toggle ${isSidebarCollapsed ? 'rh-sidebar-manual-toggle-collapsed' : ''}`}
-        title={isSidebarCollapsed ? "Show left sidebar" : "Hide left sidebar"}
-        aria-label={isSidebarCollapsed ? "Show left sidebar" : "Hide left sidebar"}
+        className={`rh-sidebar-clean-toggle ${isSidebarCollapsed ? 'is-closed' : 'is-open'}`}
+        title={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+        aria-label={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
       >
-        <span className="rh-sidebar-toggle-mark">{isSidebarCollapsed ? "☰" : "‹"}</span>
+        <span className="rh-sidebar-clean-icon">{isSidebarCollapsed ? '☰' : '‹'}</span>
       </button>
 
       {/* Sidebar Backdrop Overlay for Mobile/Tablets */}
@@ -1228,14 +1229,6 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                 <span className="text-[9px] text-slate-500 font-mono tracking-widest uppercase block -mt-0.5">Control Interface</span>
               </div>
             </div>
-            {/* Mobile/Tablet Close Button */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 border border-zinc-800 transition-all focus:outline-none"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
           </div>
 
           {/* Quick Creator */}
@@ -1544,14 +1537,14 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       </aside>
 
       {/* 2. MAIN CENTER DISPLAY FRAME */}
-      <main className="rh-main-frame rh-main-isolated-frame flex-1 flex flex-col items-stretch h-screen overflow-hidden min-w-0 bg-[#050505] relative">
+      <main className="rh-main-frame rh-stable-main-frame flex flex-col items-stretch h-screen overflow-hidden min-w-0 bg-[#050505] relative">
         
         {/* Dynamic Cyberpunk Grid Layer */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(239,68,68,0.012)_1px,transparent_1px),linear-gradient(to_bottom,rgba(239,68,68,0.012)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none z-0" />
         <div className="absolute left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-red-500/30 to-transparent pointer-events-none z-10 animate-laser-scan" />
         
         {/* TOP STATUS BAR BAR */}
-        <header className="rh-main-header h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-40 flex-shrink-0 sticky top-0">
+        <header className="rh-main-header rh-responsive-header h-16 border-b border-red-500/10 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-40 flex-shrink-0 sticky top-0">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent animate-pulse" />
           
           <div className="rh-header-identity flex items-center gap-2 sm:gap-3">
@@ -1583,7 +1576,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
         {/* COMPONENT DRAWER DISPATCHER */}
         <div className={`rh-center-dispatcher flex-1 min-h-0 bg-transparent flex flex-col ${navView === 'chat' ? 'overflow-hidden pt-0 px-4 pb-2 md:pt-0 md:px-6 md:pb-3' : 'overflow-y-auto p-6 md:p-8'}`}>
-          <div className={`rh-center-workspace max-w-4xl mx-auto h-full w-full flex flex-col ${navView === 'chat' ? 'overflow-hidden' : ''}`}>
+          <div className={`rh-center-workspace rh-responsive-workspace max-w-4xl mx-auto h-full w-full flex flex-col ${navView === 'chat' ? 'overflow-hidden' : ''}`}>
 
             {navView === 'prompts' && (
               <PromptLibrary 
@@ -2025,7 +2018,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
                       </div>
                     )}
 
-                    <div className="rh-chat-command-footer rh-main-footer relative flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-2xl">
+                    <div className="rh-chat-command-footer rh-main-footer rh-responsive-footer relative flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-2xl">
                       <textarea
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
@@ -2245,8 +2238,8 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       </main>
 
       {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
-      {navView === 'chat' && isAgentMode && (
-        <aside className="redhydra-agent-drawer rh-agent-hard-overlay rh-right-agent-panel w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
+      {navView === 'chat' && isAgentMode && createPortal((
+        <aside className="redhydra-agent-drawer rh-agent-terminal-overlay rh-separated-agent-terminal bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-4 flex flex-col justify-between animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
             {/* High-End Cyberpunk Tab Switcher */}
             <div className="flex items-center gap-1 border-b border-white/5 pb-3">
@@ -2292,10 +2285,15 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
             </div>
           </div>
         </aside>
-      )}
+      ), document.body)}
 
-      {/* Reusable Toast Stack Notification */}
-      <ToastNotification toasts={toasts} onClose={removeToast} />
+      {/* Reusable Toast Stack Notification - portaled above full app */}
+      {createPortal(
+        <div className="rh-toast-portal-layer">
+          <ToastNotification toasts={toasts} onClose={removeToast} />
+        </div>,
+        document.body
+      )}
 
     </div>
   );
