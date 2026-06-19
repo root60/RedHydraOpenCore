@@ -1179,7 +1179,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   }
 
   return (
-    <div className="rh-app-shell rh-main-grid-shell flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
+    <div className="rh-app-shell rh-sidebars-overlay-mode rh-main-grid-shell flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
       
       {/* Dynamic Ambient Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -2255,7 +2255,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
       {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
       {navView === 'chat' && isAgentMode && (
-        <aside className="redhydra-agent-drawer rh-agent-layout-drawer rh-right-agent-panel w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
+        <aside className="redhydra-agent-drawer rh-agent-overlay-drawer rh-agent-layout-drawer rh-right-agent-panel w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
             {/* High-End Cyberpunk Tab Switcher */}
             <div className="flex items-center gap-1 border-b border-white/5 pb-3">
