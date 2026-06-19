@@ -1179,7 +1179,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
   }
 
   return (
-    <div className="rh-app-shell rh-sidebars-overlay-mode rh-main-grid-shell flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
+    <div className="rh-app-shell rh-final-isolated-shell flex h-screen w-screen bg-[#020202] text-slate-200 overflow-hidden font-sans selection:bg-red-500/20 selection:text-red-300 relative scanline-overlay">
       
       {/* Dynamic Ambient Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
@@ -1209,7 +1209,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       )}
 
       {/* 1. LEFT SIDEBAR PANEL */}
-      <aside className={`redhydra-left-sidebar rh-left-nav-panel fixed inset-y-0 left-0 lg:relative w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 lg:z-25 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${
+      <aside className={`redhydra-left-sidebar rh-left-nav-panel rh-left-hard-overlay fixed inset-y-0 left-0 w-72 bg-[#090909]/95 lg:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between z-50 flex-shrink-0 select-none transition-transform duration-300 ease-in-out ${
         isSidebarCollapsed
           ? "rh-left-sidebar-collapsed -translate-x-full lg:-translate-x-full opacity-0 pointer-events-none"
           : (isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")
@@ -1544,7 +1544,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
       </aside>
 
       {/* 2. MAIN CENTER DISPLAY FRAME */}
-      <main className="rh-main-frame flex-1 flex flex-col items-stretch h-screen overflow-hidden min-w-0 bg-[#050505] relative">
+      <main className="rh-main-frame rh-main-isolated-frame flex-1 flex flex-col items-stretch h-screen overflow-hidden min-w-0 bg-[#050505] relative">
         
         {/* Dynamic Cyberpunk Grid Layer */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(239,68,68,0.012)_1px,transparent_1px),linear-gradient(to_bottom,rgba(239,68,68,0.012)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none z-0" />
@@ -1555,15 +1555,6 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent animate-pulse" />
           
           <div className="rh-header-identity flex items-center gap-2 sm:gap-3">
-            {/* Mobile/Tablet Hamburger Toggle */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 rounded-xl bg-zinc-950 border border-white/5 text-zinc-400 hover:text-white transition-all focus:outline-none"
-              title="Toggle Workspace Sidebar"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
             <div className="flex flex-col text-left">
               <h2 className="text-xs font-mono font-bold tracking-widest uppercase text-red-400 hover:text-red-300 transition-colors duration-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.35)] flex items-center gap-2">
                 <span className="inline-block w-2.5 h-2.5 rounded-sm bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.7)] animate-pulse" />
@@ -2255,7 +2246,7 @@ Your hyper-resilient, open-source, unlimited, and lifetime free AI workspace for
 
       {/* 3. RIGHT AUXILIARY DRAWER: Agent timeline scheduler & Notebook Actions Sandbox */}
       {navView === 'chat' && isAgentMode && (
-        <aside className="redhydra-agent-drawer rh-agent-overlay-drawer rh-agent-layout-drawer rh-right-agent-panel w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
+        <aside className="redhydra-agent-drawer rh-agent-hard-overlay rh-right-agent-panel w-[clamp(15rem,20vw,20rem)] max-w-[22vw] bg-[#0a0a0a]/85 backdrop-blur-xl border-l border-white/5 p-4 hidden 2xl:flex flex-col justify-between z-25 flex-shrink-0 animate-slide-left select-none">
           <div className="flex flex-col flex-1 min-h-0">
             {/* High-End Cyberpunk Tab Switcher */}
             <div className="flex items-center gap-1 border-b border-white/5 pb-3">
