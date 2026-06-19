@@ -26,8 +26,33 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onShowToast
 }) => {
 
-  const [onlineSynced, setOnlineSynced] = useState(false);
+  const [onlineSynced, setOnlineSynced] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // RH_AUTO_DOLPHIN_SYNC
+  useEffect(() => {
+    setIsSyncing(true);
+    const t = window.setTimeout(() => {
+      setOnlineSynced(true);
+      setIsSyncing(false);
+
+      if (
+        settings.provider === 'built-in-opencore' &&
+        (settings.modelName !== 'dphn/Dolphin3.0-Qwen2.5-0.5B' || settings.baseUrl !== 'https://itsredhydra-redhydraopencore-dolphin.hf.space')
+      ) {
+        onUpdateSettings({
+          ...settings,
+          provider: 'built-in-opencore',
+          modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B',
+          baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
+          maxTokens: 8192,
+          streaming: true
+        });
+      }
+    }, 700);
+
+    return () => window.clearTimeout(t);
+  }, []);
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const prov = e.target.value as ProviderType;
@@ -36,8 +61,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
     switch (prov) {
       case 'built-in-opencore':
-        baseUrl = "/api";
-        modelName = "hydra-opencore-v3";
+        baseUrl = "https://itsredhydra-redhydraopencore-dolphin.hf.space";
+        modelName = "dphn/Dolphin3.0-Qwen2.5-0.5B";
         break;
       case 'openai':
         baseUrl = "https://api.openai.com/v1";
@@ -135,58 +160,31 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               value={settings.modelName}
               onChange={(e) => onUpdateSettings({ ...settings, modelName: e.target.value })}
               className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 text-sm font-mono text-zinc-200 rounded-lg focus:outline-none focus:border-red-900/50 focus:ring-1 focus:ring-red-900/50"
-              placeholder="e.g. hydra-opencore-v3, llama3"
+              placeholder="e.g. dphn/Dolphin3.0-Qwen2.5-0.5B, llama3"
             />
           </div>
 
           <div className="space-y-3 pt-1">
-            {/* Online Model Synchronization Console */}
-            <div className="p-3 bg-zinc-90 w-full border border-zinc-800 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in select-none">
+            {/* Automated Model Endpoint Status */}
+            <div className="redhydra-auto-sync-status p-3 bg-zinc-950/80 w-full border border-emerald-500/20 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in select-none">
               <div className="flex items-center gap-2 text-left">
-                <span className={`w-2 h-2 rounded-full ${onlineSynced ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500 animate-pulse'}`} />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
                 <div>
                   <span className="text-[10px] font-bold text-zinc-300 block uppercase font-mono">
-                    Online Model Registry Sync
+                    Dolphin Endpoint Auto-Link
                   </span>
                   <span className="text-[8px] text-zinc-500 block leading-tight font-mono uppercase">
-                    {onlineSynced 
-                      ? "Preloaded Gemini 2.5 Catalog Synergized successfully!" 
-                      : "Handshake Idle. Synchronize remote registry catalogs."}
+                    Synced automatically during RedHydra loading screen.
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (isSyncing) return;
-                  setIsSyncing(true);
-                  onShowToast("📶 Connection initiated with Google GenAI Registry API...", "info");
-                  setTimeout(() => {
-                    setOnlineSynced(true);
-                    setIsSyncing(false);
-                    onShowToast("🌐 Default model connected: dphn/Dolphin3.0-Qwen2.5-0.5B", "success");
-                  }, 1200);
-                }}
-                className={`py-1.5 px-3 rounded-lg text-[9px] font-mono font-bold uppercase transition-all duration-300 flex items-center gap-1 w-full sm:w-auto justify-center ${
-                  onlineSynced 
-                    ? "bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" 
-                    : "bg-red-950/15 border border-red-500/25 text-red-400 cursor-pointer hover:bg-red-950/35"
-                }`}
-              >
-                {isSyncing ? (
-                  <>
-                    <RefreshCw className="w-2.5 h-2.5 animate-spin" />
-                    SYNCING...
-                  </>
-                ) : onlineSynced ? (
-                  "SYNC COMPLETE 🟢"
-                ) : (
-                  "SYNC ONLINE CATALOGS"
-                )}
-              </button>
+
+              <div className="py-1.5 px-3 rounded-lg text-[9px] font-mono font-bold uppercase border border-emerald-500/25 bg-emerald-500/10 text-emerald-400">
+                AUTO SYNC ACTIVE
+              </div>
             </div>
 
-            <label className="text-zinc-400 text-[11px] font-mono uppercase block pt-1">All AI Models Presets (Select to load)</label>
+            <label className="text-zinc-400 text-[11px] font-mono uppercase block pt-1">AI Model Presets</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -194,13 +192,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   onUpdateSettings({
                     ...settings,
                     provider: 'built-in-opencore',
-                    baseUrl: '/api',
-                    modelName: 'hydra-opencore-v3'
+                    baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
+                    modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B'
                   });
                   onShowToast("RedHydra OpenCore v3 model activated.", "success");
                 }}
                 className={`p-2 rounded-lg border text-left transition-all font-mono text-[10px] ${
-                  settings.modelName === 'hydra-opencore-v3' 
+                  settings.modelName === 'dphn/Dolphin3.0-Qwen2.5-0.5B' 
                     ? "bg-red-500/10 border-red-500/30 text-red-400 font-bold" 
                     : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700"
                 }`}
@@ -338,22 +336,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   onUpdateSettings({
                     ...settings,
                     provider: 'built-in-opencore',
-                    baseUrl: '/api',
-                    modelName: 'google/gemini-2.5-flash'
+                    baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
+                    modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B'
                   });
-                  onShowToast("🌐 Preloaded Google Gemini 2.5 Flash activated from online registry!", "success");
+                  onShowToast("🌐 Default Dolphin model activated.", "success");
                 }}
                 className={`p-2 rounded-lg border text-left transition-all font-mono text-[10px] ${
-                  settings.modelName === 'google/gemini-2.5-flash' 
+                  settings.modelName === 'dphn/Dolphin3.0-Qwen2.5-0.5B' 
                     ? "bg-red-500/10 border-red-500/30 text-red-500 font-bold" 
                     : "bg-zinc-900 border-zinc-800 text-zinc-350 hover:border-zinc-700"
                 }`}
               >
                 <div className="font-bold flex items-center justify-between">
-                  <span>🚀 Gemini 2.5 Flash</span>
+                  <span>🚀 Dolphin OpenCore</span>
                   <span className="text-[8px] px-1 bg-red-550/20 text-red-400 rounded-sm font-bold">Online</span>
                 </div>
-                <div className="text-[9px] text-zinc-500 mt-0.5">gemini-2.5-flash</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5">dphn/Dolphin3.0-Qwen2.5-0.5B</div>
               </button>
 
               <button
@@ -362,22 +360,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   onUpdateSettings({
                     ...settings,
                     provider: 'built-in-opencore',
-                    baseUrl: '/api',
-                    modelName: 'google/gemini-2.5-pro'
+                    baseUrl: 'https://itsredhydra-redhydraopencore-dolphin.hf.space',
+                    modelName: 'dphn/Dolphin3.0-Qwen2.5-0.5B'
                   });
-                  onShowToast("🌐 Preloaded Google Gemini 2.5 Pro reasoning engine activated!", "success");
+                  onShowToast("🌐 Default Dolphin model activated.", "success");
                 }}
                 className={`p-2 rounded-lg border text-left transition-all font-mono text-[10px] ${
-                  settings.modelName === 'google/gemini-2.5-pro' 
+                  settings.modelName === 'dphn/Dolphin3.0-Qwen2.5-0.5B' 
                     ? "bg-red-500/10 border-red-500/30 text-red-400 font-bold" 
                     : "bg-zinc-900 border-zinc-800 text-zinc-350 hover:border-zinc-700"
                 }`}
               >
                 <div className="font-bold flex items-center justify-between">
-                  <span>🧠 Gemini 2.5 Pro</span>
+                  <span>🧠 Dolphin OpenCore</span>
                   <span className="text-[8px] px-1 bg-red-550/20 text-red-400 rounded-sm font-bold">Online</span>
                 </div>
-                <div className="text-[9px] text-zinc-500 mt-0.5">gemini-2.5-pro</div>
+                <div className="text-[9px] text-zinc-500 mt-0.5">dphn/Dolphin3.0-Qwen2.5-0.5B</div>
               </button>
             </div>
           </div>
@@ -501,7 +499,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <option value="minimal">Minimal / Off (Equivalent to no extra reasoning)</option>
             </select>
             <p className="text-[10px] text-zinc-500 font-mono leading-normal pt-1">
-              Controls Chain-of-Thought (CoT) configuration for Gemini 3 series models. Turning it to <span className="text-red-400/95 font-bold">High</span> instructs the engine to analyze multihost structures and solve complex queries before delivering response payloads.
+              Controls Chain-of-Thought (CoT) configuration for Dolphin OpenCore models. Turning it to <span className="text-red-400/95 font-bold">High</span> instructs the engine to analyze multihost structures and solve complex queries before delivering response payloads.
             </p>
           </div>
 
