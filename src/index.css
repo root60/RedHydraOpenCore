@@ -4334,3 +4334,345 @@ body::after {
     animation: none !important;
   }
 }
+
+
+/* =========================================================
+   TRUE FINAL MAIN GRID LAYOUT FIX
+   Fixes Agent Mode header/footer resizing by making the app shell
+   a real 3-column grid: left sidebar | main app | agent drawer.
+   ========================================================= */
+
+:root {
+  --rh-left-sidebar-width: 18rem;
+  --rh-agent-width: clamp(16rem, 19vw, 20rem);
+  --rh-app-gap: 0px;
+}
+
+/* The whole app becomes a stable grid on desktop. This prevents the
+   right Agent panel from squeezing header/footer unpredictably. */
+@media (min-width: 1024px) {
+  .rh-app-shell,
+  .rh-main-grid-shell {
+    display: grid !important;
+    grid-template-columns: var(--rh-left-sidebar-width) minmax(0, 1fr) auto !important;
+    grid-template-rows: 100dvh !important;
+    gap: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    align-items: stretch !important;
+  }
+
+  /* Background glow layers and fixed buttons do not participate in grid */
+  .rh-app-shell > .absolute,
+  .rh-main-grid-shell > .absolute,
+  .rh-sidebar-manual-toggle {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Left sidebar column */
+  .rh-left-nav-panel,
+  .redhydra-left-sidebar {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    width: var(--rh-left-sidebar-width) !important;
+    min-width: var(--rh-left-sidebar-width) !important;
+    max-width: var(--rh-left-sidebar-width) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    z-index: 40 !important;
+    overflow: hidden !important;
+  }
+
+  .redhydra-left-sidebar.rh-left-sidebar-collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    border-right: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Main center column */
+  .rh-main-frame,
+  main.rh-main-frame {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    flex: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+    contain: layout style !important;
+  }
+
+  /* Right agent panel column. It is a normal grid column, not overlay. */
+  .redhydra-agent-drawer,
+  .rh-right-agent-panel,
+  .rh-agent-layout-drawer {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: flex !important;
+    width: var(--rh-agent-width) !important;
+    min-width: var(--rh-agent-width) !important;
+    max-width: var(--rh-agent-width) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    flex: none !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    z-index: 35 !important;
+  }
+
+  /* When the right agent drawer is mounted, nothing else gets margins. */
+  #root:has(.redhydra-agent-drawer) .rh-main-frame,
+  #root:has(.redhydra-agent-drawer) main.rh-main-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* Header is locked to the main column width, never viewport width. */
+.rh-main-header,
+#root:has(.redhydra-agent-drawer) .rh-main-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex: 0 0 4rem !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.75rem !important;
+  padding-left: clamp(0.75rem, 1.25vw, 1.25rem) !important;
+  padding-right: clamp(0.75rem, 1.25vw, 1.25rem) !important;
+}
+
+.rh-header-identity,
+.rh-main-header > div:not(.absolute) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+
+.rh-main-header h1,
+.rh-main-header h2,
+.rh-main-header h3,
+.rh-main-header span {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.rh-main-header h1,
+.rh-main-header h2,
+.rh-main-header h3 {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Telemetry compresses first when space is tight. */
+.rh-header-telemetry {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: min(36vw, 24rem) !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-header-telemetry {
+  max-width: min(22vw, 15rem) !important;
+}
+
+@media (min-width: 1536px) and (max-width: 1760px) {
+  #root:has(.redhydra-agent-drawer) .rh-header-telemetry {
+    display: none !important;
+  }
+}
+
+/* Header buttons/selects remain removed. The mobile sidebar hamburger stays. */
+header button:not([title="Toggle Workspace Sidebar"]):not(.rh-sidebar-manual-toggle),
+header select,
+header .redhydra-header-actions,
+header .rh-clean-toolbar,
+header .rh-fixed-toolbar,
+header .rh-app-toolbar,
+header .rh-forced-toolbar,
+header .rh-final-header-actions {
+  display: none !important;
+}
+
+/* Center content and chat area are limited to the actual main column. */
+.rh-center-dispatcher,
+#root:has(.redhydra-agent-drawer) .rh-center-dispatcher {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.rh-center-workspace,
+#root:has(.redhydra-agent-drawer) .rh-center-workspace {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: min(100%, 56rem) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  overflow: hidden !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-center-workspace {
+  max-width: min(100%, 50rem) !important;
+}
+
+/* Footer/input command bar uses grid so it cannot stretch the screen. */
+.rh-chat-command-footer,
+.rh-main-footer,
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer,
+#root:has(.redhydra-agent-drawer) .rh-main-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+}
+
+.rh-chat-command-footer textarea,
+.rh-main-footer textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+  grid-column: 1 !important;
+}
+
+.rh-footer-controls,
+#root:has(.redhydra-agent-drawer) .rh-footer-controls {
+  grid-column: 2 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+  padding-left: 0.5rem !important;
+}
+
+/* If the agent panel makes width tight, footer controls move below textarea. */
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer,
+#root:has(.redhydra-agent-drawer) .rh-main-footer {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-chat-command-footer textarea,
+#root:has(.redhydra-agent-drawer) .rh-main-footer textarea,
+#root:has(.redhydra-agent-drawer) .rh-footer-controls {
+  grid-column: 1 / -1 !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-footer-controls {
+  justify-content: flex-end !important;
+  border-top: 1px solid rgba(255,255,255,0.06) !important;
+  padding-top: 0.55rem !important;
+  padding-left: 0 !important;
+}
+
+#root:has(.redhydra-agent-drawer) .rh-footer-controls button {
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+/* Correct, blended left sidebar hide button: sits on the sidebar edge. */
+.rh-sidebar-manual-toggle {
+  position: fixed !important;
+  left: calc(var(--rh-left-sidebar-width) - 1.05rem) !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 9200 !important;
+  width: 2.1rem !important;
+  height: 3.25rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(248,113,113,0.28) !important;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(248,113,113,0.18), transparent 35%),
+    rgba(7,7,9,0.84) !important;
+  color: rgb(248 113 113) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow:
+    0 16px 36px rgba(0,0,0,0.52),
+    0 0 22px rgba(248,113,113,0.12),
+    inset 0 0 18px rgba(255,255,255,0.025) !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+}
+
+.rh-sidebar-manual-toggle:hover {
+  transform: translateY(-50%) scale(1.055) !important;
+  border-color: rgba(248,113,113,0.50) !important;
+}
+
+.rh-sidebar-manual-toggle-collapsed {
+  left: 0.65rem !important;
+  color: rgb(52 211 153) !important;
+  border-color: rgba(16,185,129,0.34) !important;
+  box-shadow:
+    0 16px 36px rgba(0,0,0,0.52),
+    0 0 22px rgba(16,185,129,0.13) !important;
+}
+
+.rh-sidebar-toggle-mark {
+  font-family: monospace !important;
+  font-size: 1.2rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 1023px) {
+  .rh-app-shell,
+  .rh-main-grid-shell {
+    display: flex !important;
+  }
+
+  .rh-main-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .rh-sidebar-manual-toggle {
+    left: 0.65rem !important;
+    top: 5rem !important;
+    transform: none !important;
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .rh-sidebar-manual-toggle:hover {
+    transform: scale(1.055) !important;
+  }
+}
